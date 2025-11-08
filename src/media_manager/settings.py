@@ -114,6 +114,22 @@ class SettingsManager(QObject):
         templates[template_name] = template
         self.set("rename_templates", templates)
 
+    def get_tmdb_api_key(self) -> Optional[str]:
+        """Get TMDB API key."""
+        return self.get_api_key("tmdb")
+
+    def set_tmdb_api_key(self, api_key: str) -> None:
+        """Set TMDB API key."""
+        self.set_api_key("tmdb", api_key)
+
+    def get_thetvdb_api_key(self) -> Optional[str]:
+        """Get TheTVDB API key."""
+        return self.get_api_key("thetvdb")
+
+    def set_thetvdb_api_key(self, api_key: str) -> None:
+        """Set TheTVDB API key."""
+        self.set_api_key("thetvdb", api_key)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None

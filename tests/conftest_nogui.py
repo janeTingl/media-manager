@@ -1,24 +1,13 @@
-"""Configuration for pytest and test fixtures."""
+"""Configuration for pytest and test fixtures (non-GUI)."""
 
 import tempfile
 from pathlib import Path
 
 import pytest
-from PySide6.QtWidgets import QApplication
 
 from media_manager.logging import setup_logging
 from media_manager.services import get_service_registry
 from media_manager.settings import SettingsManager
-
-
-@pytest.fixture(scope="session")
-def qapp():
-    """Create QApplication instance for tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
-    # Don't quit app here as it might be used by other tests
 
 
 @pytest.fixture
@@ -55,11 +44,3 @@ def pytest_configure(config):
         "markers", "gui: marks tests as GUI tests (may require display)"
     )
     config.addinivalue_line("markers", "slow: marks tests as slow running")
-
-
-def pytest_collection_modifyitems(config, items):
-    """Modify test collection to add markers."""
-    for item in items:
-        # Add GUI marker to tests that use QApplication
-        if "qapp" in item.fixturenames:
-            item.add_marker(pytest.mark.gui)
