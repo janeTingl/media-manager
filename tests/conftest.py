@@ -14,6 +14,11 @@ from src.media_manager.settings import SettingsManager
 @pytest.fixture(scope="session")
 def qapp():
     """Create QApplication instance for tests."""
+    import os
+
+    # Set up headless rendering for CI/testing
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
     app = QApplication.instance()
     if app is None:
         app = QApplication([])

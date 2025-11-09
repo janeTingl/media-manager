@@ -1,6 +1,6 @@
 """Dependency injection and service registry for the media manager application."""
 
-from typing import Any, Dict, Optional, Type, TypeVar, Union, Callable
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union
 
 from PySide6.QtCore import QObject
 

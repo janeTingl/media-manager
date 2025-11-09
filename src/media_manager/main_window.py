@@ -1,6 +1,7 @@
 """Main application window for the media manager."""
 
-from typing import Any
+from pathlib import Path
+from typing import Any, List
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
@@ -9,6 +10,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QListWidget,
     QMainWindow,
+    QMessageBox,
+    QProgressDialog,
     QSplitter,
     QStatusBar,
     QTabWidget,
@@ -17,7 +20,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .file_operations import FileOperationManager
 from .logging import get_logger
+from .preview_panel import PreviewPanel
+from .scanner import MediaScanner
 from .settings import SettingsManager
 
 
@@ -95,11 +101,23 @@ class MainWindow(QMainWindow):
         # Tab widget for different views
         self.tab_widget = QTabWidget()
 
-        # Add placeholder tabs
-        self.tab_widget.addTab(QListWidget(), "Library")
+        # Library tab with file list
+        self.library_list = QListWidget()
+        self.tab_widget.addTab(self.library_list, "Library")
+
+        # Recent tab
         self.tab_widget.addTab(QListWidget(), "Recent")
+
+        # Favorites tab
         self.tab_widget.addTab(QListWidget(), "Favorites")
+
+        # Search tab
         self.tab_widget.addTab(QListWidget(), "Search")
+
+        # Rename preview tab
+        self.preview_panel = PreviewPanel()
+        self.preview_panel.execute_requested.connect(self._on_execute_renames)
+        self.tab_widget.addTab(self.preview_panel, "Rename Preview")
 
         layout.addWidget(self.tab_widget)
 
@@ -126,6 +144,13 @@ class MainWindow(QMainWindow):
 
         # File menu
         file_menu = menubar.addMenu("&File")
+
+        scan_action = QAction("&Scan Directory", self)
+        scan_action.setShortcut("Ctrl+S")
+        scan_action.triggered.connect(self._on_scan_directory)
+        file_menu.addAction(scan_action)
+
+        file_menu.addSeparator()
 
         open_action = QAction("&Open", self)
         open_action.setShortcut("Ctrl+O")
@@ -239,6 +264,103 @@ class MainWindow(QMainWindow):
     def update_item_count(self, count: int) -> None:
         """Update the item count in the status bar."""
         self.item_count_label.setText(f"{count} items")
+
+    def _on_scan_directory(self) -> None:
+        """Handle directory scanning."""
+        from PySide6.QtWidgets import QFileDialog
+
+        directory = QFileDialog.getExistingDirectory(
+            self, "Select Directory to Scan", ""
+        )
+        if directory:
+            self._scan_directory(Path(directory))
+
+    def _scan_directory(self, directory: Path) -> None:
+        """Scan a directory for media files."""
+        self.update_status(f"Scanning {directory}...")
+
+        scanner = MediaScanner()
+        media_files = scanner.scan_directory(directory)
+
+        # Update library list
+        self.library_list.clear()
+        for media in media_files:
+            item_text = f"{media.title}"
+            if media.year:
+                item_text += f" ({media.year})"
+            if media.media_type.value == "tv_episode":
+                item_text += f" - S{media.season:02d}E{media.episode:02d}"
+            item_text += f" [{media.media_type.value}]"
+
+            self.library_list.addItem(item_text)
+
+        # Update preview panel
+        self.preview_panel.set_media_items(media_files)
+
+        # Update status
+        self.update_item_count(len(media_files))
+        self.update_status(f"Found {len(media_files)} media files")
+
+        # Switch to preview tab
+        self.tab_widget.setCurrentWidget(self.preview_panel)
+
+    def _on_execute_renames(self, operations: List, dry_run: bool) -> None:
+        """Handle rename execution request."""
+        if not operations:
+            QMessageBox.information(
+                self, "No Operations", "No operations selected for execution."
+            )
+            return
+
+        # Show progress dialog
+        progress = QProgressDialog(
+            (
+                "Executing rename operations..."
+                if not dry_run
+                else "Validating operations..."
+            ),
+            "Cancel",
+            0,
+            len(operations),
+            self,
+        )
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+
+        try:
+            # Execute operations
+            file_manager = FileOperationManager()
+            success, messages = file_manager.execute_atomic_renames(operations, dry_run)
+
+            # Show results
+            if success:
+                title = "Success" if not dry_run else "Validation Successful"
+                icon = QMessageBox.Icon.Information
+            else:
+                title = "Error" if not dry_run else "Validation Failed"
+                icon = QMessageBox.Icon.Warning
+
+            msg_box = QMessageBox(
+                icon, title, "\n".join(messages), QMessageBox.StandardButton.Ok, self
+            )
+            msg_box.exec()
+
+            # Update operation statuses in preview
+            for i, op in enumerate(operations):
+                if i < len(operations):  # Safety check
+                    if op.executed:
+                        self.preview_panel.update_operation_status(
+                            op, "Completed", True
+                        )
+                    else:
+                        self.preview_panel.update_operation_status(op, "Failed", False)
+
+        except Exception as e:
+            self._logger.exception("Error during rename execution")
+            QMessageBox.critical(self, "Error", f"An unexpected error occurred: {e}")
+
+        finally:
+            progress.close()
 
     def closeEvent(self, event: Any) -> None:
         """Handle window close event."""

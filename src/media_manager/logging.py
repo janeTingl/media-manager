@@ -3,12 +3,12 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 from PySide6.QtCore import QObject
 
 if TYPE_CHECKING:
-    from typing import TextIO
+    pass
 
 
 class Logger(QObject):
@@ -35,7 +35,9 @@ class Logger(QObject):
         console_handler.setFormatter(formatter)
 
         # Setup file handler if specified
-        handlers: list[Union[logging.StreamHandler, logging.FileHandler]] = [console_handler]
+        handlers: list[Union[logging.StreamHandler, logging.FileHandler]] = [
+            console_handler
+        ]
         if log_file:
             log_file.parent.mkdir(parents=True, exist_ok=True)
             file_handler = logging.FileHandler(log_file)
