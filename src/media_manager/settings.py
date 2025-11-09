@@ -114,6 +114,60 @@ class SettingsManager(QObject):
         templates[template_name] = template
         self.set("rename_templates", templates)
 
+    def get_poster_setting(self, key: str, default: Any = None) -> Any:
+        """Get a poster-related setting."""
+        poster_settings = self.get("poster_settings", {})
+        return poster_settings.get(key, default)
+
+    def set_poster_setting(self, key: str, value: Any) -> None:
+        """Set a poster-related setting."""
+        poster_settings = self.get("poster_settings", {})
+        poster_settings[key] = value
+        self.set("poster_settings", poster_settings)
+
+    def get_enabled_poster_types(self) -> list[str]:
+        """Get the list of enabled poster types."""
+        return self.get_poster_setting("enabled_types", ["poster"])
+
+    def set_enabled_poster_types(self, types: list[str]) -> None:
+        """Set the list of enabled poster types."""
+        self.set_poster_setting("enabled_types", types)
+
+    def get_poster_size(self, poster_type: str) -> str:
+        """Get the preferred size for a poster type."""
+        sizes = self.get_poster_setting("sizes", {})
+        return sizes.get(poster_type, "medium")
+
+    def set_poster_size(self, poster_type: str, size: str) -> None:
+        """Set the preferred size for a poster type."""
+        sizes = self.get_poster_setting("sizes", {})
+        sizes[poster_type] = size
+        self.set_poster_setting("sizes", sizes)
+
+    def get_auto_download_posters(self) -> bool:
+        """Get whether to automatically download posters."""
+        return self.get_poster_setting("auto_download", True)
+
+    def set_auto_download_posters(self, auto_download: bool) -> None:
+        """Set whether to automatically download posters."""
+        self.set_poster_setting("auto_download", auto_download)
+
+    def get_max_retries(self) -> int:
+        """Get the maximum number of download retries."""
+        return self.get_poster_setting("max_retries", 3)
+
+    def set_max_retries(self, max_retries: int) -> None:
+        """Set the maximum number of download retries."""
+        self.set_poster_setting("max_retries", max_retries)
+
+    def get_cache_dir(self) -> Optional[str]:
+        """Get the poster cache directory."""
+        return self.get_poster_setting("cache_dir")
+
+    def set_cache_dir(self, cache_dir: str) -> None:
+        """Set the poster cache directory."""
+        self.set_poster_setting("cache_dir", cache_dir)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None

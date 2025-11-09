@@ -19,7 +19,15 @@ from PySide6.QtWidgets import (
 )
 
 from .logging import get_logger
-from .models import MatchStatus, MediaMatch, SearchRequest, SearchResult
+from .models import (
+    DownloadStatus,
+    MatchStatus,
+    MediaMatch,
+    PosterInfo,
+    PosterType,
+    SearchRequest,
+    SearchResult,
+)
 from .workers import SearchWorker
 
 
@@ -29,6 +37,7 @@ class MatchResolutionWidget(QWidget):
     # Signals
     match_updated = Signal(object)  # MediaMatch
     search_requested = Signal(object)  # SearchRequest
+    poster_download_requested = Signal(object, list)  # MediaMatch, list[PosterType]
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -85,7 +94,38 @@ class MatchResolutionWidget(QWidget):
         info_layout.addWidget(QLabel("Overview:"))
         info_layout.addWidget(self.overview_text)
 
+        # Poster section
+        poster_group = QGroupBox("Posters")
+        poster_layout = QVBoxLayout(poster_group)
+
+        # Poster preview
+        self.poster_label = QLabel("No poster available")
+        self.poster_label.setMinimumSize(150, 225)
+        self.poster_label.setMaximumSize(150, 225)
+        self.poster_label.setAlignment(Qt.AlignCenter)
+        self.poster_label.setStyleSheet("border: 1px solid gray; background-color: #f0f0f0;")
+        poster_layout.addWidget(self.poster_label)
+
+        # Poster status
+        self.poster_status_label = QLabel("")
+        self.poster_status_label.setWordWrap(True)
+        poster_layout.addWidget(self.poster_status_label)
+
+        # Poster download buttons
+        poster_buttons_layout = QHBoxLayout()
+        
+        self.download_poster_button = QPushButton("Download Poster")
+        self.download_poster_button.clicked.connect(self._on_download_poster_clicked)
+        poster_buttons_layout.addWidget(self.download_poster_button)
+        
+        self.download_fanart_button = QPushButton("Download Fanart")
+        self.download_fanart_button.clicked.connect(self._on_download_fanart_clicked)
+        poster_buttons_layout.addWidget(self.download_fanart_button)
+        
+        poster_layout.addLayout(poster_buttons_layout)
+
         layout.addWidget(info_group)
+        layout.addWidget(poster_group)
 
         # Action buttons
         action_group = QGroupBox("Actions")
@@ -201,6 +241,74 @@ class MatchResolutionWidget(QWidget):
 
         # Update search field with original title
         self.search_edit.setText(metadata.title)
+
+        # Update poster display
+        self._update_poster_display()
+
+    def _update_poster_display(self) -> None:
+        """Update the poster display and status."""
+        if not self._current_match:
+            self.poster_label.setText("No poster available")
+            self.poster_label.setPixmap(QPixmap())
+            self.poster_status_label.setText("")
+            self.download_poster_button.setEnabled(False)
+            self.download_fanart_button.setEnabled(False)
+            return
+
+        match = self._current_match
+        posters = match.posters
+
+        # Display poster if available
+        poster_info = posters.get(PosterType.POSTER)
+        if poster_info and poster_info.is_downloaded():
+            self._load_poster_image(poster_info.local_path)
+            self.poster_status_label.setText(f"Poster downloaded: {poster_info.local_path.name}")
+        elif poster_info and poster_info.url:
+            self.poster_label.setText("Poster available for download")
+            self.poster_status_label.setText(f"Poster URL: {poster_info.url}")
+        else:
+            self.poster_label.setText("No poster available")
+            self.poster_status_label.setText("")
+
+        # Update download buttons
+        self.download_poster_button.setEnabled(
+            poster_info is not None and 
+            poster_info.url is not None and 
+            not poster_info.is_downloaded()
+        )
+
+        fanart_info = posters.get(PosterType.FANART)
+        self.download_fanart_button.setEnabled(
+            fanart_info is not None and 
+            fanart_info.url is not None and 
+            not fanart_info.is_downloaded()
+        )
+
+    def _load_poster_image(self, image_path: Optional[Path]) -> None:
+        """Load and display a poster image."""
+        from PySide6.QtGui import QPixmap
+
+        if not image_path or not image_path.exists():
+            self.poster_label.setText("No image")
+            self.poster_label.setPixmap(QPixmap())
+            return
+
+        try:
+            pixmap = QPixmap(str(image_path))
+            if not pixmap.isNull():
+                # Scale to fit while maintaining aspect ratio
+                scaled_pixmap = pixmap.scaled(
+                    150, 225, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                )
+                self.poster_label.setPixmap(scaled_pixmap)
+                self.poster_label.setText("")
+            else:
+                self.poster_label.setText("Invalid image")
+                self.poster_label.setPixmap(QPixmap())
+        except Exception as exc:
+            self._logger.error(f"Failed to load poster image: {exc}")
+            self.poster_label.setText("Load error")
+            self.poster_label.setPixmap(QPixmap())
 
     def _update_action_buttons(self) -> None:
         """Update the state of action buttons."""
@@ -373,3 +481,27 @@ class MatchResolutionWidget(QWidget):
     def get_current_match(self) -> Optional[MediaMatch]:
         """Get the currently displayed match."""
         return self._current_match
+
+    @Slot()
+    def _on_download_poster_clicked(self) -> None:
+        """Handle download poster button click."""
+        if not self._current_match:
+            return
+        
+        self.poster_download_requested.emit(self._current_match, [PosterType.POSTER])
+        self._logger.info(f"Requested poster download for {self._current_match.metadata.title}")
+
+    @Slot()
+    def _on_download_fanart_clicked(self) -> None:
+        """Handle download fanart button click."""
+        if not self._current_match:
+            return
+        
+        self.poster_download_requested.emit(self._current_match, [PosterType.FANART])
+        self._logger.info(f"Requested fanart download for {self._current_match.metadata.title}")
+
+    def update_poster_status(self, match: MediaMatch) -> None:
+        """Update poster display after download status change."""
+        if self._current_match and self._current_match.metadata.path == match.metadata.path:
+            self._current_match = match
+            self._update_poster_display()

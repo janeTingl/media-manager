@@ -9,8 +9,11 @@ from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
 from .logging import get_logger
 from .models import (
+    DownloadStatus,
     MatchStatus,
     MediaMatch,
+    PosterInfo,
+    PosterType,
     SearchRequest,
     SearchResult,
     VideoMetadata,
@@ -81,6 +84,27 @@ class MatchWorker(QRunnable):
         elif metadata.year is None:
             base_confidence = 0.7
 
+        # Create mock poster URLs
+        base_hash = hash(str(metadata.path)) % 10000
+        poster_urls = {
+            PosterType.POSTER: f"https://example.com/poster/{base_hash}.jpg",
+            PosterType.FANART: f"https://example.com/fanart/{base_hash}.jpg",
+        }
+
+        # Create poster info objects
+        posters = {
+            PosterType.POSTER: PosterInfo(
+                poster_type=PosterType.POSTER,
+                url=poster_urls[PosterType.POSTER],
+                download_status=DownloadStatus.PENDING,
+            ),
+            PosterType.FANART: PosterInfo(
+                poster_type=PosterType.FANART,
+                url=poster_urls[PosterType.FANART],
+                download_status=DownloadStatus.PENDING,
+            ),
+        }
+
         # Create mock match data
         match = MediaMatch(
             metadata=metadata,
@@ -88,11 +112,12 @@ class MatchWorker(QRunnable):
             confidence=base_confidence,
             matched_title=metadata.title,
             matched_year=metadata.year,
-            external_id=f"mock_{hash(str(metadata.path)) % 10000}",
+            external_id=f"mock_{base_hash}",
             source="MockAPI",
-            poster_url=f"https://example.com/poster/{hash(str(metadata.path))}.jpg",
+            poster_url=poster_urls[PosterType.POSTER],
             overview=f"This is a mock overview for {metadata.title}. "
-                    f"A great {metadata.media_type.value} from {metadata.year or 'unknown'}."
+                    f"A great {metadata.media_type.value} from {metadata.year or 'unknown'}.",
+            posters=posters,
         )
 
         return match
@@ -141,13 +166,20 @@ class SearchWorker(QRunnable):
         for i in range(3):
             confidence = 0.9 - (i * 0.1)  # Decreasing confidence
             year = self.request.year or (2020 + i)
+            result_hash = hash(base_query + str(i)) % 10000
+
+            poster_urls = {
+                PosterType.POSTER: f"https://example.com/poster/{result_hash}.jpg",
+                PosterType.FANART: f"https://example.com/fanart/{result_hash}.jpg",
+            }
 
             result = SearchResult(
                 title=f"{self.request.query.title()} ({i + 1})",
                 year=year,
-                external_id=f"search_{hash(base_query + str(i)) % 10000}",
+                external_id=f"search_{result_hash}",
                 source="MockSearchAPI",
-                poster_url=f"https://example.com/search/{hash(base_query + str(i))}.jpg",
+                poster_url=poster_urls[PosterType.POSTER],
+                poster_urls=poster_urls,
                 overview=f"This is search result {i + 1} for '{self.request.query}'. "
                         f"A matching {self.request.media_type.value} from {year}.",
                 confidence=confidence
@@ -197,6 +229,20 @@ class WorkerManager(QObject):
         self._logger.info(f"Started search worker for '{request.query}'")
         return worker
 
+    def start_poster_download_worker(self, matches: list[MediaMatch], poster_types: list[PosterType]) -> PosterDownloadWorker:
+        """Start a poster download worker and return it."""
+        worker = PosterDownloadWorker(matches, poster_types)
+        self._active_workers.append(worker)
+        self._thread_pool.start(worker)
+
+        # Connect finished signal to cleanup
+        worker.signals.finished.connect(
+            lambda: self._cleanup_worker(worker)
+        )
+
+        self._logger.info(f"Started poster download worker for {len(matches)} matches")
+        return worker
+
     def stop_all_workers(self) -> None:
         """Stop all active workers."""
         for worker in self._active_workers:
@@ -215,3 +261,77 @@ class WorkerManager(QObject):
     def get_active_count(self) -> int:
         """Get the number of active workers."""
         return len(self._active_workers)
+
+
+class PosterDownloadWorkerSignals(QObject):
+    """Signals for the poster download worker."""
+
+    poster_downloaded = Signal(object, object)  # MediaMatch, PosterInfo
+    poster_failed = Signal(object, str)  # MediaMatch, error_message
+    progress = Signal(int, int)  # current, total
+    finished = Signal()
+
+
+class PosterDownloadWorker(QRunnable):
+    """Worker for downloading poster images in background."""
+
+    def __init__(self, matches: list[MediaMatch], poster_types: list[PosterType]) -> None:
+        super().__init__()
+        self.matches = matches
+        self.poster_types = poster_types
+        self.signals = PosterDownloadWorkerSignals()
+        self._logger = get_logger().get_logger(__name__)
+        self._should_stop = False
+
+        # Import here to avoid circular imports
+        from .poster_downloader import PosterDownloader
+        self.poster_downloader = PosterDownloader()
+
+    @Slot()
+    def run(self) -> None:
+        """Run the poster download process."""
+        total_posters = sum(
+            len([pt for pt in self.poster_types if pt in match.posters and match.posters[pt].url])
+            for match in self.matches
+        )
+        current = 0
+
+        for match in self.matches:
+            if self._should_stop:
+                break
+
+            for poster_type in self.poster_types:
+                if self._should_stop:
+                    break
+
+                if poster_type not in match.posters:
+                    continue
+
+                poster_info = match.posters[poster_type]
+                if not poster_info.url or poster_info.is_downloaded():
+                    continue
+
+                current += 1
+                self.signals.progress.emit(current, total_posters)
+
+                try:
+                    success = self.poster_downloader.download_poster(
+                        poster_info, match.metadata.path
+                    )
+                    if success:
+                        self.signals.poster_downloaded.emit(match, poster_info)
+                        self._logger.info(f"Downloaded {poster_type.value} for {match.metadata.title}")
+                    else:
+                        self.signals.poster_failed.emit(
+                            match, f"Failed to download {poster_type.value}: {poster_info.error_message}"
+                        )
+                except Exception as exc:
+                    error_msg = f"Error downloading {poster_type.value} for {match.metadata.title}: {exc}"
+                    self._logger.error(error_msg)
+                    self.signals.poster_failed.emit(match, error_msg)
+
+        self.signals.finished.emit()
+
+    def stop(self) -> None:
+        """Stop the worker."""
+        self._should_stop = True
