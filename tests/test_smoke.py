@@ -3,9 +3,9 @@
 import pytest
 from PySide6.QtWidgets import QMenu
 
-from src.media_manager import __version__
-from src.media_manager.main import create_application
-from src.media_manager.main_window import MainWindow
+from media_manager import __version__
+from media_manager.main import create_application
+from media_manager.main_window import MainWindow
 
 
 class TestApplicationSmoke:
@@ -13,7 +13,7 @@ class TestApplicationSmoke:
 
     def test_import_application(self):
         """Test that the application can be imported."""
-        from src.media_manager.main import main
+        from media_manager.main import main
 
         assert callable(main)
 
@@ -24,7 +24,9 @@ class TestApplicationSmoke:
 
     def test_create_application(self, qapp):
         """Test that QApplication can be created."""
-        app = create_application()
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
         assert app is not None
         assert app.applicationName() == "Media Manager"
         assert app.applicationVersion() == "0.1.0"
@@ -35,8 +37,8 @@ class TestApplicationSmoke:
         window = MainWindow(temp_settings)
         assert window is not None
         assert window.windowTitle() == "Media Manager"
-        assert window.minimumWidth() == 1000
-        assert window.minimumHeight() == 700
+        assert window.minimumWidth() == 1200
+        assert window.minimumHeight() == 800
 
         # Test that UI components exist
         assert hasattr(window, "file_tree")
@@ -96,7 +98,7 @@ class TestApplicationSmoke:
         """Test that tabs are properly created."""
         window = MainWindow(temp_settings)
 
-        assert window.tab_widget.count() == 4
+        assert window.tab_widget.count() == 5
 
         # Check tab titles
         tab_titles = [
@@ -106,6 +108,7 @@ class TestApplicationSmoke:
         assert "Recent" in tab_titles
         assert "Favorites" in tab_titles
         assert "Search" in tab_titles
+        assert "Matching" in tab_titles
 
     @pytest.mark.gui
     def test_settings_manager_basic_operations(self, temp_settings):
@@ -142,7 +145,7 @@ class TestServiceRegistry:
 
     def test_service_registry_basic_operations(self):
         """Test basic service registry operations."""
-        from src.media_manager.services import ServiceRegistry
+        from media_manager.services import ServiceRegistry
 
         registry = ServiceRegistry()
 
@@ -164,7 +167,7 @@ class TestServiceRegistry:
 
     def test_service_registry_singleton_factory(self):
         """Test service registry with singleton factories."""
-        from src.media_manager.services import ServiceRegistry
+        from media_manager.services import ServiceRegistry
 
         registry = ServiceRegistry()
 
@@ -190,7 +193,7 @@ class TestServiceRegistry:
 
     def test_service_registry_non_singleton(self):
         """Test service registry with non-singleton services."""
-        from src.media_manager.services import ServiceRegistry
+        from media_manager.services import ServiceRegistry
 
         registry = ServiceRegistry()
 

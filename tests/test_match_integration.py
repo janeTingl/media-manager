@@ -8,13 +8,13 @@ from typing import List
 from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication
 
-from src.media_manager.main_window import MainWindow
-from src.media_manager.match_manager import MatchManager
-from src.media_manager.models import MediaType, VideoMetadata
-from src.media_manager.scan_engine import ScanEngine
-from src.media_manager.scanner import ScanConfig
-from src.media_manager.services import get_service_registry, ServiceRegistry
-from src.media_manager.workers import WorkerManager
+from media_manager.main_window import MainWindow
+from media_manager.match_manager import MatchManager
+from media_manager.models import MediaType, VideoMetadata
+from media_manager.scan_engine import ScanEngine
+from media_manager.scanner import ScanConfig
+from media_manager.services import get_service_registry, ServiceRegistry
+from media_manager.workers import WorkerManager
 
 
 def _touch_file(path: Path) -> None:
@@ -124,7 +124,7 @@ class TestMatchIntegration:
         match_manager = MatchManager()
         
         # Create search request
-        from src.media_manager.models import SearchRequest
+        from media_manager.models import SearchRequest
         request = SearchRequest(
             query="Inception",
             media_type=MediaType.MOVIE,
@@ -148,7 +148,7 @@ class TestMatchIntegration:
         _setup_test_services()
         
         # Create main window
-        from src.media_manager.settings import SettingsManager
+        from media_manager.settings import SettingsManager
         settings = SettingsManager()
         main_window = MainWindow(settings)
 
@@ -196,7 +196,7 @@ class TestMatchIntegration:
         assert match.needs_review() is True
 
         # Update match to matched
-        from src.media_manager.models import MatchStatus
+        from media_manager.models import MatchStatus
         match.status = MatchStatus.MATCHED
         match.confidence = 0.9
         match_manager.update_match(match)
@@ -266,7 +266,7 @@ class TestMatchIntegration:
         """Test filtering functionality in scan queue."""
         _setup_test_services()
         
-        from src.media_manager.settings import SettingsManager
+        from media_manager.settings import SettingsManager
         settings = SettingsManager()
         main_window = MainWindow(settings)
 

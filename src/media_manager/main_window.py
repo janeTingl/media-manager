@@ -158,18 +158,28 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         """Connect signals between components."""
         # Scan queue signals
-        self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
+        self.scan_queue_widget.match_selected.connect(
+            self.match_resolution_widget.set_match
+        )
         self.scan_queue_widget.start_matching.connect(self._on_start_matching)
         self.scan_queue_widget.clear_queue.connect(self._on_clear_queue)
         self.scan_queue_widget.finalize_requested.connect(self._on_finalize_requested)
 
         # Match resolution signals
-        self.match_resolution_widget.match_updated.connect(self.match_manager.update_match)
-        self.match_resolution_widget.search_requested.connect(self.match_manager.search_matches)
-        self.match_resolution_widget.poster_download_requested.connect(self._on_poster_download_requested)
+        self.match_resolution_widget.match_updated.connect(
+            self.match_manager.update_match
+        )
+        self.match_resolution_widget.search_requested.connect(
+            self.match_manager.search_matches
+        )
+        self.match_resolution_widget.poster_download_requested.connect(
+            self._on_poster_download_requested
+        )
 
         # Match manager signals
-        self.match_manager.match_selected.connect(self.match_resolution_widget.set_match)
+        self.match_manager.match_selected.connect(
+            self.match_resolution_widget.set_match
+        )
         self.match_manager.status_changed.connect(self.update_status)
 
     def _on_start_matching(self) -> None:
@@ -187,7 +197,7 @@ class MainWindow(QMainWindow):
     def _on_clear_queue(self) -> None:
         """Handle clear queue request."""
         self.match_manager.clear_all()
-        self.scan_queue_widget.clear_queue()
+        self.scan_queue_widget.do_clear_queue()
         self.match_resolution_widget.clear_match()
         self.update_status("Queue cleared")
 
@@ -308,30 +318,36 @@ class MainWindow(QMainWindow):
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
-        from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QDialogButtonBox, QTabWidget
+        from PySide6.QtWidgets import (
+            QDialog,
+            QDialogButtonBox,
+            QTabWidget,
+            QVBoxLayout,
+        )
+
         from .poster_settings_widget import PosterSettingsWidget
 
         dialog = QDialog(self)
         dialog.setWindowTitle("Preferences")
         dialog.setMinimumSize(600, 500)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         # Create tab widget for different preference categories
         tab_widget = QTabWidget()
-        
+
         # Poster settings tab
         poster_settings = PosterSettingsWidget()
         poster_settings.settings_changed.connect(self.settings_changed.emit)
         tab_widget.addTab(poster_settings, "Posters")
-        
+
         layout.addWidget(tab_widget)
-        
+
         # Dialog buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         button_box.accepted.connect(dialog.accept)
         layout.addWidget(button_box)
-        
+
         # Show dialog
         dialog.exec()
         self.status_label.setText("Preferences updated")

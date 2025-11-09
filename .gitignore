@@ -136,3 +136,8 @@ Thumbs.db
 # Application specific
 settings.json
 logs/
+.media-manager/
+
+# Virtual environment
+venv/
+ENV/

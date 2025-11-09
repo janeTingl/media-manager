@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.media_manager.models import (
+from media_manager.models import (
     DownloadStatus,
     MediaMatch,
     MediaType,
@@ -14,9 +14,9 @@ from src.media_manager.models import (
     SubtitleInfo,
     VideoMetadata,
 )
-from src.media_manager.subtitle_downloader import SubtitleDownloader
-from src.media_manager.subtitle_provider import MockSubtitleProvider
-from src.media_manager.workers import SubtitleDownloadWorker
+from media_manager.subtitle_downloader import SubtitleDownloader
+from media_manager.subtitle_provider import MockSubtitleProvider
+from media_manager.workers import SubtitleDownloadWorker
 
 
 class TestSubtitleWorkflow:
@@ -176,7 +176,7 @@ class TestSubtitleWorkflow:
 
     def test_subtitle_download_worker(self) -> None:
         """Test SubtitleDownloadWorker with mocked provider."""
-        from src.media_manager.subtitle_provider import MockSubtitleProvider
+        from media_manager.subtitle_provider import MockSubtitleProvider
         from unittest.mock import patch
         
         with tempfile.TemporaryDirectory() as temp_dir:

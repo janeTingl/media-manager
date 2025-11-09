@@ -196,7 +196,7 @@ class ScanQueueWidget(QWidget):
             MatchStatus.PENDING: "⏳",
             MatchStatus.MATCHED: "✓",
             MatchStatus.MANUAL: "🔧",
-            MatchStatus.SKIPPED: "⊘"
+            MatchStatus.SKIPPED: "⊘",
         }
         base_text = f"{status_icons.get(match.status, '?')} {base_text}"
 
@@ -376,7 +376,9 @@ class ScanQueueWidget(QWidget):
     @Slot(object, str)
     def _on_finalize_item_failed(self, match: MediaMatch, message: str) -> None:
         """Update UI when an item fails to finalize."""
-        self.finalize_status_label.setText(f"Failed to finalize {match.metadata.title}: {message}")
+        self.finalize_status_label.setText(
+            f"Failed to finalize {match.metadata.title}: {message}"
+        )
 
     @Slot(object)
     def _on_finalize_finished(self, summary) -> None:
@@ -435,11 +437,15 @@ class ScanQueueWidget(QWidget):
         if total == 0:
             self.status_label.setText("Queue empty")
         elif pending == 0:
-            self.status_label.setText(f"All {total} items processed ({matched} matched)")
+            self.status_label.setText(
+                f"All {total} items processed ({matched} matched)"
+            )
         else:
-            self.status_label.setText(f"{total} items ({matched} matched, {pending} pending)")
+            self.status_label.setText(
+                f"{total} items ({matched} matched, {pending} pending)"
+            )
 
-    def clear_queue(self) -> None:
+    def do_clear_queue(self) -> None:
         """Clear all items from the queue."""
         self._matches.clear()
         self.queue_list.clear()

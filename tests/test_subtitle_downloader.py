@@ -6,9 +6,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.media_manager.models import DownloadStatus, SubtitleFormat, SubtitleLanguage, SubtitleInfo
-from src.media_manager.subtitle_downloader import SubtitleDownloader
-from src.media_manager.subtitle_provider import MockSubtitleProvider, SubtitleResult
+from media_manager.models import DownloadStatus, SubtitleFormat, SubtitleLanguage, SubtitleInfo
+from media_manager.subtitle_downloader import SubtitleDownloader
+from media_manager.subtitle_provider import MockSubtitleProvider, SubtitleResult
 
 
 class TestSubtitleDownloader:
@@ -147,7 +147,7 @@ class TestSubtitleDownloader:
 
     def test_search_subtitles(self) -> None:
         """Test searching for subtitles."""
-        from src.media_manager.models import MediaType
+        from media_manager.models import MediaType
         
         provider = MockSubtitleProvider()
         downloader = SubtitleDownloader(provider=provider)
@@ -239,7 +239,7 @@ class TestSubtitleDownloadIntegration:
 
     def test_download_and_verify_format(self) -> None:
         """Test downloading a subtitle and verifying its format."""
-        from src.media_manager.models import MediaType
+        from media_manager.models import MediaType
         
         with tempfile.TemporaryDirectory() as temp_dir:
             media_path = Path(temp_dir) / "movie.mkv"
@@ -276,7 +276,7 @@ class TestSubtitleDownloadIntegration:
 
     def test_multiple_language_downloads(self) -> None:
         """Test downloading subtitles in multiple languages."""
-        from src.media_manager.models import MediaType
+        from media_manager.models import MediaType
         
         with tempfile.TemporaryDirectory() as temp_dir:
             media_path = Path(temp_dir) / "movie.mkv"

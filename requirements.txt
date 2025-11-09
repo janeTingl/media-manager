@@ -1,0 +1,7 @@
+# Production dependencies
+PySide6>=6.5.0
+
+# Optional dependencies for features
+# Uncomment to use actual API integrations
+# httpx>=0.24.0
+# rapidfuzz>=3.0.0

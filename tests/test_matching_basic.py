@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.media_manager.models import MediaType, VideoMetadata, MediaMatch, MatchStatus
-from src.media_manager.match_manager import MatchManager
-from src.media_manager.services import get_service_registry
-from src.media_manager.workers import WorkerManager
+from media_manager.models import MediaType, VideoMetadata, MediaMatch, MatchStatus
+from media_manager.match_manager import MatchManager
+from media_manager.services import get_service_registry
+from media_manager.workers import WorkerManager
 
 
 def test_basic_models() -> None:
