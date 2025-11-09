@@ -7,6 +7,14 @@ from typing import Dict, List, Optional
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
+from .library_postprocessor import (
+    LibraryPostProcessor,
+    PostProcessingError,
+    PostProcessingOptions,
+    PostProcessingSummary,
+    ProcessingEvent,
+    ProcessingEventType,
+)
 from .logging import get_logger
 from .models import (
     DownloadStatus,
@@ -283,6 +291,21 @@ class WorkerManager(QObject):
         self._logger.info(f"Started subtitle download worker for {len(matches)} matches")
         return worker
 
+    def start_post_processing_worker(self, matches: list[MediaMatch], options: PostProcessingOptions) -> LibraryPostProcessorWorker:
+        """Start a library post-processing worker and return it."""
+        worker = LibraryPostProcessorWorker(matches, options)
+        self._active_workers.append(worker)
+        self._thread_pool.start(worker)
+
+        worker.signals.finished.connect(
+            lambda _summary: self._cleanup_worker(worker)
+        )
+
+        self._logger.info(
+            "Started library post-processing worker for %d items", len(matches)
+        )
+        return worker
+
     def stop_all_workers(self) -> None:
         """Stop all active workers."""
         for worker in self._active_workers:
@@ -451,4 +474,71 @@ class SubtitleDownloadWorker(QRunnable):
 
     def stop(self) -> None:
         """Stop the worker."""
+        self._should_stop = True
+
+
+class LibraryPostProcessorWorkerSignals(QObject):
+    """Signals for the library post-processing worker."""
+
+    item_processed = Signal(object, object, object)
+    item_skipped = Signal(object, object, str)
+    item_failed = Signal(object, str)
+    progress = Signal(int, int)
+    finished = Signal(object)
+    error = Signal(str)
+
+
+class LibraryPostProcessorWorker(QRunnable):
+    """Worker that finalizes media files into the organized library."""
+
+    def __init__(self, matches: list[MediaMatch], options: PostProcessingOptions) -> None:
+        super().__init__()
+        self.matches = matches
+        self.options = options
+        self.signals = LibraryPostProcessorWorkerSignals()
+        self._logger = get_logger().get_logger(__name__)
+        self._post_processor = LibraryPostProcessor()
+        self._should_stop = False
+
+    @Slot()
+    def run(self) -> None:
+        """Execute the post-processing workflow."""
+
+        def progress_callback(current: int, total: int) -> None:
+            if self._should_stop:
+                raise PostProcessingError(
+                    "Post-processing cancelled", None, PostProcessingSummary()
+                )
+            self.signals.progress.emit(current, total)
+
+        def event_callback(event: ProcessingEvent) -> None:
+            if event.type is ProcessingEventType.PROCESSED:
+                self.signals.item_processed.emit(event.match, event.source, event.target)
+            elif event.type is ProcessingEventType.SKIPPED:
+                self.signals.item_skipped.emit(event.match, event.target, event.message or "")
+            elif event.type is ProcessingEventType.FAILED:
+                self.signals.item_failed.emit(event.match, event.message or "")
+
+        try:
+            summary = self._post_processor.process(
+                self.matches,
+                self.options,
+                progress_callback=progress_callback,
+                event_callback=event_callback,
+            )
+        except PostProcessingError as exc:
+            self._logger.error("Library post-processing failed: %s", exc)
+            self.signals.error.emit(str(exc))
+            self.signals.finished.emit(exc.summary)
+            return
+        except Exception as exc:
+            self._logger.error("Unexpected library post-processing error: %s", exc)
+            self.signals.error.emit(str(exc))
+            self.signals.finished.emit(PostProcessingSummary())
+            return
+
+        self.signals.finished.emit(summary)
+
+    def stop(self) -> None:
+        """Request the worker to stop."""
         self._should_stop = True

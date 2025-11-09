@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from PySide6.QtCore import QObject, Signal, Slot
 
+from .library_postprocessor import PostProcessingOptions, PostProcessingSummary
 from .logging import get_logger
 from .models import MediaMatch, PosterType, SearchRequest, SearchResult, VideoMetadata
 from .services import get_service_registry
@@ -141,6 +142,25 @@ class MatchManager(QObject):
         
         self.status_changed.emit(f"Downloading posters for {len(matched_matches)} items...")
 
+    def finalize_library(self, options: PostProcessingOptions):
+        """Finalize matched media items into the organized library."""
+        matched_matches = [m for m in self._matches if m.is_matched()]
+        if not matched_matches:
+            self.status_changed.emit("No matched items ready for finalization")
+            return None
+
+        worker = self._worker_manager.start_post_processing_worker(matched_matches, options)
+
+        worker.signals.item_processed.connect(self._on_finalize_processed)
+        worker.signals.item_skipped.connect(self._on_finalize_skipped)
+        worker.signals.item_failed.connect(self._on_finalize_failed)
+        worker.signals.progress.connect(self._on_finalize_progress)
+        worker.signals.finished.connect(self._on_finalize_finished)
+        worker.signals.error.connect(self._on_finalize_error)
+
+        self.status_changed.emit(f"Starting library finalization for {len(matched_matches)} items")
+        return worker
+
     @Slot(object)
     def _on_match_found(self, match: MediaMatch) -> None:
         """Handle match found from worker."""
@@ -205,3 +225,42 @@ class MatchManager(QObject):
     def _on_poster_download_finished(self) -> None:
         """Handle poster download completion."""
         self.status_changed.emit("Poster download complete")
+
+    @Slot(object, object, object)
+    def _on_finalize_processed(self, match: MediaMatch, source, target) -> None:
+        """Handle a successfully finalized media item."""
+        self.update_match(match)
+        self.status_changed.emit(f"Finalized {match.metadata.title}")
+
+    @Slot(object, object, str)
+    def _on_finalize_skipped(self, match: MediaMatch, target, reason: str) -> None:
+        """Handle a skipped media item during finalization."""
+        self.status_changed.emit(f"Skipped {match.metadata.title}: {reason}")
+
+    @Slot(object, str)
+    def _on_finalize_failed(self, match: MediaMatch, message: str) -> None:
+        """Handle a failed media item during finalization."""
+        self.status_changed.emit(f"Failed to finalize {match.metadata.title}: {message}")
+
+    @Slot(int, int)
+    def _on_finalize_progress(self, current: int, total: int) -> None:
+        """Handle finalization progress updates."""
+        self.status_changed.emit(f"Finalizing {current}/{total} items")
+
+    @Slot(object)
+    def _on_finalize_finished(self, summary: PostProcessingSummary) -> None:
+        """Handle completion of library finalization."""
+        processed = len(summary.processed)
+        skipped = len(summary.skipped)
+        failed = len(summary.failed)
+        message = f"Library finalization complete: {processed} processed"
+        if skipped:
+            message += f", {skipped} skipped"
+        if failed:
+            message += f", {failed} failed"
+        self.status_changed.emit(message)
+
+    @Slot(str)
+    def _on_finalize_error(self, message: str) -> None:
+        """Handle finalization error notifications."""
+        self.status_changed.emit(f"Library finalization error: {message}")
