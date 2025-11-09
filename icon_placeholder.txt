@@ -1,0 +1,9 @@
+# Icon placeholder
+# This file should be replaced with an actual .ico file
+# For now, PyInstaller will work without an icon
+# To create a proper icon, use a tool like GIMP or online converter
+# with a 256x256 PNG image saved as .ico format
+
+# The icon should be placed at: icon.ico
+# Size: 256x256 pixels recommended
+# Format: Windows ICO file with multiple sizes embedded

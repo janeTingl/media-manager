@@ -1,0 +1,29 @@
+# Build requirements for Media Manager Windows executable
+# Install with: pip install -r build-requirements.txt
+
+# Core GUI framework
+PySide6>=6.5.0
+
+# Build tools
+pyinstaller>=5.0.0
+
+# Optional compression tool (smaller executables)
+# Note: UPX may not be available on all systems
+# Install separately if needed: https://upx.github.io/
+# upx>=4.0.0
+
+# Development dependencies (for testing builds)
+# Uncomment if needed for testing
+# pytest>=7.0.0
+# pytest-qt>=4.2.0
+
+# Note: The following dependencies are NOT required for the current implementation
+# as the application uses standard library modules for HTTP and file operations:
+# - httpx
+# - requests  
+# - rapidfuzz
+#
+# If future versions add these dependencies, add them here:
+# httpx>=0.24.0
+# requests>=2.28.0
+# rapidfuzz>=2.13.0
