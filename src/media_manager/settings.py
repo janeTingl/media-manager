@@ -219,6 +219,33 @@ class SettingsManager(QObject):
         """Set the subtitle cache directory."""
         self.set_subtitle_setting("cache_dir", cache_dir)
 
+    def get_nfo_setting(self, key: str, default: Any = None) -> Any:
+        """Get an NFO-related setting."""
+        nfo_settings = self.get("nfo_settings", {})
+        return nfo_settings.get(key, default)
+
+    def set_nfo_setting(self, key: str, value: Any) -> None:
+        """Set an NFO-related setting."""
+        nfo_settings = self.get("nfo_settings", {})
+        nfo_settings[key] = value
+        self.set("nfo_settings", nfo_settings)
+
+    def get_nfo_enabled(self) -> bool:
+        """Get whether NFO generation is enabled."""
+        return self.get_nfo_setting("enabled", True)
+
+    def set_nfo_enabled(self, enabled: bool) -> None:
+        """Set whether NFO generation is enabled."""
+        self.set_nfo_setting("enabled", enabled)
+
+    def get_nfo_target_subfolder(self) -> Optional[str]:
+        """Get the target subfolder for NFO files."""
+        return self.get_nfo_setting("target_subfolder")
+
+    def set_nfo_target_subfolder(self, subfolder: Optional[str]) -> None:
+        """Set the target subfolder for NFO files."""
+        self.set_nfo_setting("target_subfolder", subfolder)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None

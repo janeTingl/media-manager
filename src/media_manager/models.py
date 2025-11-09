@@ -190,6 +190,9 @@ class MediaMatch:
     user_selected: bool = False
     posters: Dict[PosterType, PosterInfo] = None
     subtitles: Dict[SubtitleLanguage, SubtitleInfo] = None
+    runtime: Optional[int] = None
+    aired_date: Optional[str] = None
+    cast: Optional[list[str]] = None
 
     def __post_init__(self) -> None:
         """Initialize posters and subtitles dicts if not provided."""
@@ -197,6 +200,8 @@ class MediaMatch:
             self.posters = {}
         if self.subtitles is None:
             self.subtitles = {}
+        if self.cast is None:
+            self.cast = []
 
     def is_matched(self) -> bool:
         """Return True if the item has been matched (automatically or manually)."""
@@ -223,6 +228,9 @@ class MediaMatch:
             "user_selected": self.user_selected,
             "posters": {ptype.value: info.as_dict() for ptype, info in self.posters.items()},
             "subtitles": {lang.value: info.as_dict() for lang, info in self.subtitles.items()},
+            "runtime": self.runtime,
+            "aired_date": self.aired_date,
+            "cast": self.cast,
         })
         return result
 
