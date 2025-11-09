@@ -2,6 +2,8 @@
 
 A modern PySide6-based media management application built with Python.
 
+> **📚 New to the project?** Start with [QUICK_START.md](QUICK_START.md) (5 minutes) or check the [DOCUMENTATION.md](DOCUMENTATION.md) index for complete guides.
+
 ## Features
 
 - **Cross-platform GUI** built with PySide6 (Qt6)
