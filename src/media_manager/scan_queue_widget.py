@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
+    QComboBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -19,6 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .library_postprocessor import ConflictResolution, PostProcessingOptions
 from .logging import get_logger
 from .models import MatchStatus, MediaMatch, VideoMetadata
 from .workers import MatchWorker
@@ -31,12 +35,14 @@ class ScanQueueWidget(QWidget):
     match_selected = Signal(object)  # MediaMatch
     start_matching = Signal()  # Request to start matching process
     clear_queue = Signal()  # Request to clear the queue
+    finalize_requested = Signal(object)  # PostProcessingOptions
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
         self._matches: List[MediaMatch] = []
         self._current_worker: Optional[MatchWorker] = None
+        self._finalize_worker = None
 
         self._setup_ui()
 
@@ -64,6 +70,10 @@ class ScanQueueWidget(QWidget):
         self.status_label.setStyleSheet("color: gray; font-style: italic;")
         layout.addWidget(self.status_label)
 
+        # Finalization controls
+        self.finalize_group = self._create_finalize_group()
+        layout.addWidget(self.finalize_group)
+
     def _create_header_group(self) -> QGroupBox:
         """Create the header control group."""
         group = QGroupBox("Scan Queue")
@@ -89,6 +99,51 @@ class ScanQueueWidget(QWidget):
         self.clear_button = QPushButton("Clear")
         self.clear_button.clicked.connect(self._on_clear_clicked)
         layout.addWidget(self.clear_button)
+
+        return group
+
+    def _create_finalize_group(self) -> QGroupBox:
+        """Create the library finalization controls."""
+        group = QGroupBox("Library Finalization")
+        layout = QVBoxLayout(group)
+
+        options_layout = QHBoxLayout()
+        self.dry_run_checkbox = QCheckBox("Dry run")
+        self.dry_run_checkbox.setToolTip("Simulate the operation without moving files")
+        options_layout.addWidget(self.dry_run_checkbox)
+
+        self.copy_checkbox = QCheckBox("Copy instead of move")
+        self.copy_checkbox.setToolTip("Copy files and keep originals in place")
+        options_layout.addWidget(self.copy_checkbox)
+
+        self.cleanup_checkbox = QCheckBox("Cleanup empty folders")
+        self.cleanup_checkbox.setChecked(True)
+        self.cleanup_checkbox.setToolTip("Remove empty directories after moving files")
+        options_layout.addWidget(self.cleanup_checkbox)
+
+        layout.addLayout(options_layout)
+
+        conflict_layout = QHBoxLayout()
+        conflict_layout.addWidget(QLabel("On conflict:"))
+        self.conflict_combo = QComboBox()
+        self.conflict_combo.addItem("Skip", ConflictResolution.SKIP)
+        self.conflict_combo.addItem("Overwrite", ConflictResolution.OVERWRITE)
+        self.conflict_combo.addItem("Rename", ConflictResolution.RENAME)
+        self.conflict_combo.setCurrentIndex(2)
+        conflict_layout.addWidget(self.conflict_combo)
+        layout.addLayout(conflict_layout)
+
+        self.finalize_button = QPushButton("Finalize Library")
+        self.finalize_button.clicked.connect(self._on_finalize_clicked)
+        layout.addWidget(self.finalize_button)
+
+        self.finalize_progress_bar = QProgressBar()
+        self.finalize_progress_bar.setVisible(False)
+        layout.addWidget(self.finalize_progress_bar)
+
+        self.finalize_status_label = QLabel("Ready to finalize")
+        self.finalize_status_label.setStyleSheet("color: gray; font-style: italic;")
+        layout.addWidget(self.finalize_status_label)
 
         return group
 
@@ -171,6 +226,28 @@ class ScanQueueWidget(QWidget):
         self.start_matching.emit()
 
     @Slot()
+    def _on_finalize_clicked(self) -> None:
+        """Handle finalize library button click."""
+        matched = [m for m in self._matches if m.is_matched()]
+        if not matched:
+            self.finalize_status_label.setText("No matched items to finalize")
+            return
+
+        options = PostProcessingOptions(
+            dry_run=self.dry_run_checkbox.isChecked(),
+            copy_mode=self.copy_checkbox.isChecked(),
+            conflict_resolution=self._get_selected_conflict_resolution(),
+            cleanup_empty_dirs=self.cleanup_checkbox.isChecked(),
+        )
+
+        self.finalize_button.setEnabled(False)
+        self.finalize_progress_bar.setRange(0, len(matched))
+        self.finalize_progress_bar.setValue(0)
+        self.finalize_progress_bar.setVisible(True)
+        self.finalize_status_label.setText("Preparing library finalization...")
+        self.finalize_requested.emit(options)
+
+    @Slot()
     def _on_stop_clicked(self) -> None:
         """Handle stop button click."""
         if self._current_worker:
@@ -195,6 +272,12 @@ class ScanQueueWidget(QWidget):
                 should_show = not filter_text or filter_text in title
                 item.setHidden(not should_show)
 
+    def _get_selected_conflict_resolution(self) -> ConflictResolution:
+        data = self.conflict_combo.currentData()
+        if isinstance(data, ConflictResolution):
+            return data
+        return ConflictResolution.RENAME
+
     def set_worker(self, worker: MatchWorker) -> None:
         """Set the active match worker."""
         self._current_worker = worker
@@ -212,6 +295,23 @@ class ScanQueueWidget(QWidget):
         self.progress_bar.setRange(0, len(self._matches))
         self.progress_bar.setValue(0)
         self.status_label.setText("Matching...")
+
+    def set_post_processing_worker(self, worker) -> None:
+        """Set the active library post-processing worker."""
+        self._finalize_worker = worker
+
+        worker.signals.progress.connect(self._on_finalize_progress)
+        worker.signals.item_processed.connect(self._on_finalize_item_processed)
+        worker.signals.item_skipped.connect(self._on_finalize_item_skipped)
+        worker.signals.item_failed.connect(self._on_finalize_item_failed)
+        worker.signals.finished.connect(self._on_finalize_finished)
+        worker.signals.error.connect(self._on_finalize_error)
+
+        matched_total = len([m for m in self._matches if m.is_matched()])
+        self.finalize_progress_bar.setRange(0, max(1, matched_total))
+        self.finalize_progress_bar.setValue(0)
+        self.finalize_progress_bar.setVisible(True)
+        self.finalize_status_label.setText("Finalizing library...")
 
     @Slot(object)
     def _on_match_found(self, match: MediaMatch) -> None:
@@ -245,6 +345,65 @@ class ScanQueueWidget(QWidget):
         self.stop_button.setEnabled(False)
         self.progress_bar.setVisible(False)
         self._update_status()
+
+    @Slot(int, int)
+    def _on_finalize_progress(self, current: int, total: int) -> None:
+        """Handle progress updates from the finalization worker."""
+        total = max(1, total)
+        self.finalize_progress_bar.setRange(0, total)
+        self.finalize_progress_bar.setValue(min(current, total))
+        self.finalize_status_label.setText(f"Finalizing {current}/{total} items")
+
+    @Slot(object, object, object)
+    def _on_finalize_item_processed(self, match: MediaMatch, source, target) -> None:
+        """Update UI when an item has been processed."""
+        target_name = ""
+        if target:
+            try:
+                target_name = Path(target).name
+            except TypeError:
+                target_name = str(target)
+        message = f"Finalized {match.metadata.title}"
+        if target_name:
+            message += f" → {target_name}"
+        self.finalize_status_label.setText(message)
+
+    @Slot(object, object, str)
+    def _on_finalize_item_skipped(self, match: MediaMatch, target, reason: str) -> None:
+        """Update UI when an item is skipped."""
+        self.finalize_status_label.setText(f"Skipped {match.metadata.title}: {reason}")
+
+    @Slot(object, str)
+    def _on_finalize_item_failed(self, match: MediaMatch, message: str) -> None:
+        """Update UI when an item fails to finalize."""
+        self.finalize_status_label.setText(f"Failed to finalize {match.metadata.title}: {message}")
+
+    @Slot(object)
+    def _on_finalize_finished(self, summary) -> None:
+        """Handle completion of the finalization worker."""
+        self._reset_finalize_ui()
+        processed = len(getattr(summary, "processed", []))
+        skipped = len(getattr(summary, "skipped", []))
+        failed = len(getattr(summary, "failed", []))
+        message = f"Finalization complete: {processed} processed"
+        if skipped:
+            message += f", {skipped} skipped"
+        if failed:
+            message += f", {failed} failed"
+        self.finalize_status_label.setText(message)
+
+    @Slot(str)
+    def _on_finalize_error(self, message: str) -> None:
+        """Handle finalization errors."""
+        self._reset_finalize_ui()
+        self.finalize_status_label.setText(f"Finalization error: {message}")
+
+    def _reset_finalize_ui(self) -> None:
+        """Reset finalization widgets to idle state."""
+        self._finalize_worker = None
+        self.finalize_button.setEnabled(True)
+        self.finalize_progress_bar.setVisible(False)
+        self.finalize_progress_bar.setValue(0)
 
     def _update_list_item(self, match: MediaMatch) -> None:
         """Update the list item for a match."""

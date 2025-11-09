@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .library_postprocessor import PostProcessingOptions
 from .logging import get_logger
 from .match_manager import MatchManager
 from .match_resolution_widget import MatchResolutionWidget
@@ -160,6 +161,7 @@ class MainWindow(QMainWindow):
         self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
         self.scan_queue_widget.start_matching.connect(self._on_start_matching)
         self.scan_queue_widget.clear_queue.connect(self._on_clear_queue)
+        self.scan_queue_widget.finalize_requested.connect(self._on_finalize_requested)
 
         # Match resolution signals
         self.match_resolution_widget.match_updated.connect(self.match_manager.update_match)
@@ -192,6 +194,16 @@ class MainWindow(QMainWindow):
     def _on_poster_download_requested(self, match, poster_types) -> None:
         """Handle poster download request."""
         self.match_manager.download_posters(match, poster_types)
+
+    def _on_finalize_requested(self, options: PostProcessingOptions) -> None:
+        """Handle library finalization requests."""
+        worker = self.match_manager.finalize_library(options)
+        if worker is not None:
+            self.scan_queue_widget.set_post_processing_worker(worker)
+        else:
+            # Reset UI state when finalization cannot start
+            self.scan_queue_widget.finalize_button.setEnabled(True)
+            self.scan_queue_widget.finalize_progress_bar.setVisible(False)
 
     def add_scan_results(self, metadata_list) -> None:
         """Add scan results to the queue."""
