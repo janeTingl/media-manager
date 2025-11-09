@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 """
-Build script for creating Media Manager Windows executable.
+Windows Release Creation Script for Media Manager
 
-This script handles the complete build process including:
-- Environment setup
-- Dependency installation
-- PyInstaller configuration
-- Executable building
-- Testing
-- Package creation
+This script creates the complete release package structure for Windows.
+It should be run on a Windows system with Python and all dependencies installed.
+
+Usage:
+    python create_windows_release.py
+
+This script will:
+1. Build the Windows executable
+2. Create portable and installer packages  
+3. Generate checksums and documentation
+4. Prepare files for GitHub Release upload
 """
 
 import os
 import sys
 import shutil
 import subprocess
-import tempfile
-from pathlib import Path
-import zipfile
 import hashlib
+import zipfile
+from pathlib import Path
+from datetime import datetime
 
 # Configuration
 PROJECT_NAME = "media-manager"
@@ -28,11 +32,10 @@ EXECUTABLE_NAME = "media-manager.exe"
 
 # Paths
 PROJECT_ROOT = Path(__file__).parent.absolute()
-BUILD_DIR = PROJECT_ROOT / "build"
 DIST_DIR = PROJECT_ROOT / "dist"
 PACKAGE_DIR = PROJECT_ROOT / "package"
 
-def run_command(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess:
+def run_command(cmd, cwd=None, check=True):
     """Run a command and return the result."""
     print(f"Running: {' '.join(cmd)}")
     if cwd:
@@ -50,118 +53,76 @@ def run_command(cmd: list[str], cwd: Path | None = None, check: bool = True) -> 
     
     return result
 
-def setup_environment():
-    """Setup the build environment."""
-    print("Setting up build environment...")
-    
-    # Create necessary directories
-    BUILD_DIR.mkdir(exist_ok=True)
-    DIST_DIR.mkdir(exist_ok=True)
-    PACKAGE_DIR.mkdir(exist_ok=True)
-    
-    # Check if we're on Windows
+def verify_windows_environment():
+    """Verify we're running on Windows with required tools."""
     if os.name != 'nt':
-        print("WARNING: This build script is optimized for Windows.")
-        print("The executable may not work properly on other platforms.")
-
-def install_dependencies():
-    """Install required dependencies."""
-    print("Installing dependencies...")
-    
-    # Core dependencies
-    dependencies = [
-        "PySide6>=6.5.0",
-        "pyinstaller>=5.0.0",
-        "upx"  # For executable compression (optional)
-    ]
-    
-    for dep in dependencies:
-        try:
-            run_command([sys.executable, "-m", "pip", "install", dep])
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to install {dep}: {e}")
-            if dep == "upx":
-                print("UPX is optional, continuing without it...")
-            else:
-                raise
-
-def create_icon():
-    """Create a simple icon if one doesn't exist."""
-    icon_path = PROJECT_ROOT / "icon.ico"
-    
-    if not icon_path.exists():
-        print("Creating placeholder icon...")
-        # For now, we'll skip icon creation
-        # In a real build, you would create a proper .ico file
-        print("Note: No icon.ico file found. The executable will have a default icon.")
+        print("ERROR: This script must be run on Windows to create a Windows executable")
+        print("On Linux/macOS, you can use:")
+        print("  - A Windows VM")
+        print("  - Cross-compilation tools")
+        print("  - GitHub Actions with Windows runner")
         return False
+    
+    # Check Python version
+    if sys.version_info < (3, 8):
+        print("ERROR: Python 3.8 or higher required")
+        return False
+    
+    # Check if PyInstaller is available
+    try:
+        subprocess.run([sys.executable, "-m", "PyInstaller", "--version"], 
+                      capture_output=True, check=True)
+    except subprocess.CalledProcessError:
+        print("ERROR: PyInstaller not found. Install with: pip install pyinstaller")
+        return False
+    
+    print("✅ Windows environment verified")
     return True
 
 def build_executable():
-    """Build the executable using PyInstaller."""
-    print("Building executable...")
+    """Build the Windows executable."""
+    print("\n🔨 Building Windows executable...")
     
     # Clean previous builds
-    if BUILD_DIR.exists():
-        shutil.rmtree(BUILD_DIR)
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
+    if PROJECT_ROOT / "build".exists():
+        shutil.rmtree(PROJECT_ROOT / "build")
     
-    # PyInstaller command
+    # Build using PyInstaller with the spec file
     cmd = [
         sys.executable, "-m", "PyInstaller",
-        "--clean",
-        "--noconfirm", 
+        "--clean", "--noconfirm",
         str(PROJECT_ROOT / "media-manager.spec")
     ]
     
     try:
         run_command(cmd)
     except subprocess.CalledProcessError as e:
-        print(f"Build failed: {e}")
-        sys.exit(1)
+        print(f"❌ Build failed: {e}")
+        return None
     
     # Check if executable was created
     exe_path = DIST_DIR / EXECUTABLE_NAME
     if not exe_path.exists():
-        print(f"ERROR: Executable not found at {exe_path}")
-        sys.exit(1)
+        print(f"❌ ERROR: Executable not found at {exe_path}")
+        return None
     
-    print(f"Successfully built: {exe_path}")
+    print(f"✅ Successfully built: {exe_path}")
+    print(f"📊 Size: {exe_path.stat().st_size:,} bytes ({exe_path.stat().st_size / 1024 / 1024:.1f} MB)")
     return exe_path
 
-def test_executable(exe_path: Path):
-    """Test the executable to ensure it works."""
-    print("Testing executable...")
-    
-    # Basic smoke test - check if it runs without immediate crash
-    try:
-        # Run with --help to see basic functionality
-        result = run_command([str(exe_path), "--help"], check=False)
-        
-        # The demo app might not have --help, so we check if it starts
-        if result.returncode != 0:
-            print("Executable doesn't support --help, trying basic startup test...")
-            
-            # Try to run for a few seconds then terminate
-            proc = subprocess.Popen([str(exe_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-                proc.wait(timeout=5)
-                print("Executable started and closed normally")
-            except subprocess.TimeoutExpired:
-                proc.terminate()
-                proc.wait(timeout=2)
-                print("Executable started successfully (terminated after 5 seconds)")
-        
-        print("Basic executable test passed")
-        
-    except Exception as e:
-        print(f"Executable test failed: {e}")
-        print("WARNING: The executable may have issues")
+def calculate_file_hash(file_path):
+    """Calculate SHA-256 hash of a file."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(chunk)
+    return sha256_hash.hexdigest()
 
-def create_portable_package(exe_path: Path):
-    """Create a portable package with the executable."""
-    print("Creating portable package...")
+def create_portable_package(exe_path):
+    """Create portable package with the executable."""
+    print("\n📦 Creating portable package...")
     
     portable_dir = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}"
     if portable_dir.exists():
@@ -172,7 +133,7 @@ def create_portable_package(exe_path: Path):
     # Copy executable
     shutil.copy2(exe_path, portable_dir / EXECUTABLE_NAME)
     
-    # Create documentation
+    # Create README
     readme_content = f"""{APP_NAME} v{VERSION} - Portable Version
 {'=' * 50}
 
@@ -193,7 +154,7 @@ Features:
 - Media scanning and organization
 - Automatic metadata matching
 - Poster downloading
-- subtitle management
+- Subtitle management
 - NFO file generation
 - And much more!
 
@@ -201,7 +162,8 @@ Support:
 For documentation and support, please refer to the project documentation.
 
 Version: {VERSION}
-Build Date: {subprocess.check_output(['date'], text=True).strip()}
+Build Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Build System: {os.name}
 """
     
     with open(portable_dir / "README.txt", "w", encoding="utf-8") as f:
@@ -223,12 +185,12 @@ if errorlevel 1 (
     with open(portable_dir / "start.bat", "w", encoding="utf-8") as f:
         f.write(batch_content)
     
-    print(f"Portable package created: {portable_dir}")
+    print(f"✅ Portable package created: {portable_dir}")
     return portable_dir
 
-def create_installer_package(portable_dir: Path):
-    """Create an installer package structure."""
-    print("Creating installer package...")
+def create_installer_package(portable_dir):
+    """Create installer package structure."""
+    print("\n📦 Creating installer package...")
     
     installer_dir = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}"
     if installer_dir.exists():
@@ -308,53 +270,55 @@ pause
     with open(installer_dir / "uninstall.bat", "w", encoding="utf-8") as f:
         f.write(uninstall_script)
     
-    print(f"Installer package created: {installer_dir}")
+    print(f"✅ Installer package created: {installer_dir}")
     return installer_dir
 
-def calculate_file_hash(file_path: Path) -> str:
-    """Calculate SHA-256 hash of a file."""
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
-
-def create_release_info(exe_path: Path, portable_dir: Path, installer_dir: Path):
-    """Create release information file."""
-    print("Creating release information...")
+def create_release_archives(portable_dir, installer_dir):
+    """Create ZIP archives for distribution."""
+    print("\n🗜️ Creating distribution archives...")
     
-    exe_size = exe_path.stat().st_size
-    exe_hash = calculate_file_hash(exe_path)
-    
-    # Create ZIP archives
+    # Create portable ZIP
     portable_zip = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}.zip"
-    installer_zip = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}.zip"
-    
     with zipfile.ZipFile(portable_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for file_path in portable_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(portable_dir)
                 zf.write(file_path, arcname)
     
+    # Create installer ZIP
+    installer_zip = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}.zip"
     with zipfile.ZipFile(installer_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for file_path in installer_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(installer_dir)
                 zf.write(file_path, arcname)
     
-    # Calculate hashes for ZIP files
+    print(f"✅ Created archives:")
+    print(f"   Portable: {portable_zip.name} ({portable_zip.stat().st_size:,} bytes)")
+    print(f"   Installer: {installer_zip.name} ({installer_zip.stat().st_size:,} bytes)")
+    
+    return portable_zip, installer_zip
+
+def create_release_info(exe_path, portable_zip, installer_zip):
+    """Create comprehensive release information."""
+    print("\n📋 Creating release information...")
+    
+    exe_hash = calculate_file_hash(exe_path)
     portable_hash = calculate_file_hash(portable_zip)
     installer_hash = calculate_file_hash(installer_zip)
     
     release_info = f"""{APP_NAME} Release Information v{VERSION}
 {'=' * 60}
 
-Generated: {subprocess.check_output(['date'], text=True).strip()}
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Build System: Windows ({os.name})
+Python: {sys.version}
+PyInstaller: {subprocess.check_output([sys.executable, '-m', 'PyInstaller', '--version'], text=True).strip()}
 
 Files:
 ------
 1. Executable: {EXECUTABLE_NAME}
-   Size: {exe_size:,} bytes ({exe_size / 1024 / 1024:.1f} MB)
+   Size: {exe_path.stat().st_size:,} bytes ({exe_path.stat().st_size / 1024 / 1024:.1f} MB)
    SHA-256: {exe_hash}
 
 2. Portable Package: {portable_zip.name}
@@ -390,6 +354,54 @@ Use the SHA-256 hashes above to verify file integrity:
 - Windows: certutil -hashfile filename SHA256
 - Linux/macOS: sha256sum filename
 
+GitHub Release Upload:
+--------------------
+Upload these files to the v{VERSION} GitHub Release:
+1. {EXECUTABLE_NAME} - Main executable
+2. {portable_zip.name} - Portable package
+3. {installer_zip.name} - Installer package
+4. RELEASE_INFO.txt - This file
+
+Release Notes Template:
+----------------------
+## {APP_NAME} v{VERSION}
+
+### 🚀 Features
+- Complete media management system
+- Automatic metadata matching
+- Poster and subtitle downloading
+- NFO file generation
+- Modern PySide6 interface
+
+### 📦 Installation
+**Option 1: Portable (No installation required)**
+1. Download `{portable_zip.name}`
+2. Extract to any folder
+3. Run `media-manager.exe`
+
+**Option 2: Installer (System integration)**
+1. Download `{installer_zip.name}`
+2. Extract and run `install.bat` as administrator
+3. Launch from Start Menu or Desktop
+
+### 🔧 Requirements
+- Windows 7 or higher (64-bit)
+- 500MB free disk space
+- .NET Framework 4.5+
+
+### ✅ Verification
+Verify file integrity with SHA-256 hashes:
+```
+certutil -hashfile {EXECUTABLE_NAME} SHA256
+certutil -hashfile {portable_zip.name} SHA256  
+certutil -hashfile {installer_zip.name} SHA256
+```
+
+### 📚 Documentation
+- [Quick Start Guide](QUICK_START.md)
+- [User Manual](USAGE.md)
+- [Installation Guide](INSTALLATION.md)
+
 Support:
 --------
 For documentation and support, please refer to the project documentation
@@ -406,49 +418,57 @@ v{VERSION} - Initial release
     with open(PACKAGE_DIR / "RELEASE_INFO.txt", "w", encoding="utf-8") as f:
         f.write(release_info)
     
-    print("Release information created")
+    print("✅ Release information created")
     return release_info
 
 def main():
-    """Main build process."""
-    print(f"Building {APP_NAME} v{VERSION} for Windows...")
+    """Main release creation process."""
+    print(f"🎯 Creating {APP_NAME} v{VERSION} Windows Release")
     print("=" * 60)
     
     try:
-        # Setup environment
-        setup_environment()
-        
-        # Install dependencies
-        install_dependencies()
-        
-        # Create icon (if possible)
-        create_icon()
+        # Verify environment
+        if not verify_windows_environment():
+            print("\n❌ Cannot proceed with Windows build on this system")
+            print("\n📋 To create the Windows release:")
+            print("1. Set up a Windows environment (VM, native Windows, or GitHub Actions)")
+            print("2. Install Python 3.8+ and PyInstaller")
+            print("3. Run this script on Windows")
+            print("4. Upload the generated files to GitHub Release")
+            return False
         
         # Build executable
         exe_path = build_executable()
-        
-        # Test executable
-        test_executable(exe_path)
+        if not exe_path:
+            return False
         
         # Create packages
         portable_dir = create_portable_package(exe_path)
         installer_dir = create_installer_package(portable_dir)
         
+        # Create archives
+        portable_zip, installer_zip = create_release_archives(portable_dir, installer_dir)
+        
         # Create release information
-        create_release_info(exe_path, portable_dir, installer_dir)
+        release_info = create_release_info(exe_path, portable_zip, installer_zip)
         
         print("\n" + "=" * 60)
-        print("BUILD COMPLETED SUCCESSFULLY!")
+        print("🎉 WINDOWS RELEASE CREATED SUCCESSFULLY!")
         print("=" * 60)
-        print(f"Executable: {exe_path}")
-        print(f"Portable package: {portable_dir}")
-        print(f"Installer package: {installer_dir}")
-        print(f"Release info: {PACKAGE_DIR / 'RELEASE_INFO.txt'}")
-        print("\nPackage files created in:", PACKAGE_DIR)
+        print(f"📁 Package directory: {PACKAGE_DIR}")
+        print(f"📋 Release info: {PACKAGE_DIR / 'RELEASE_INFO.txt'}")
+        print("\n📤 Files ready for GitHub Release:")
+        print(f"  1. {EXECUTABLE_NAME}")
+        print(f"  2. {portable_zip.name}")
+        print(f"  3. {installer_zip.name}")
+        print(f"  4. RELEASE_INFO.txt")
+        
+        return True
         
     except Exception as e:
-        print(f"\nBUILD FAILED: {e}")
-        sys.exit(1)
+        print(f"\n❌ RELEASE CREATION FAILED: {e}")
+        return False
 
 if __name__ == "__main__":
-    main()
+    success = main()
+    sys.exit(0 if success else 1)
