@@ -3,12 +3,12 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 from PySide6.QtCore import QObject
 
 if TYPE_CHECKING:
-    from typing import TextIO
+    pass
 
 
 class Logger(QObject):

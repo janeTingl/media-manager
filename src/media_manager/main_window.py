@@ -18,6 +18,9 @@ from PySide6.QtWidgets import (
 )
 
 from .logging import get_logger
+from .match_manager import MatchManager
+from .match_resolution_widget import MatchResolutionWidget
+from .scan_queue_widget import ScanQueueWidget
 from .settings import SettingsManager
 
 
@@ -34,7 +37,10 @@ class MainWindow(QMainWindow):
         self._logger = get_logger().get_logger(__name__)
 
         self.setWindowTitle("Media Manager")
-        self.setMinimumSize(1000, 700)
+        self.setMinimumSize(1200, 800)
+
+        # Initialize components
+        self._setup_components()
 
         # Setup UI
         self._setup_ui()
@@ -45,6 +51,18 @@ class MainWindow(QMainWindow):
         self._load_window_state()
 
         self._logger.info("Main window initialized")
+
+    def _setup_components(self) -> None:
+        """Initialize application components."""
+        # Create match manager
+        self.match_manager = MatchManager(self)
+
+        # Create UI widgets
+        self.scan_queue_widget = ScanQueueWidget(self)
+        self.match_resolution_widget = MatchResolutionWidget(self)
+
+        # Connect signals
+        self._connect_signals()
 
     def _setup_ui(self) -> None:
         """Setup the main UI layout."""
@@ -71,8 +89,8 @@ class MainWindow(QMainWindow):
         right_widget = self._create_properties_pane()
         splitter.addWidget(right_widget)
 
-        # Set splitter sizes (30% left, 50% center, 20% right)
-        splitter.setSizes([300, 500, 200])
+        # Set splitter sizes (25% left, 50% center, 25% right)
+        splitter.setSizes([300, 600, 300])
 
     def _create_navigation_pane(self) -> QWidget:
         """Create the left navigation pane with file tree."""
@@ -95,13 +113,29 @@ class MainWindow(QMainWindow):
         # Tab widget for different views
         self.tab_widget = QTabWidget()
 
-        # Add placeholder tabs
+        # Add tabs
         self.tab_widget.addTab(QListWidget(), "Library")
         self.tab_widget.addTab(QListWidget(), "Recent")
         self.tab_widget.addTab(QListWidget(), "Favorites")
         self.tab_widget.addTab(QListWidget(), "Search")
 
+        # Add matching tab
+        self.tab_widget.addTab(self._create_matching_tab(), "Matching")
+
         layout.addWidget(self.tab_widget)
+
+        return widget
+
+    def _create_matching_tab(self) -> QWidget:
+        """Create the matching workflow tab."""
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+
+        # Left side - scan queue
+        layout.addWidget(self.scan_queue_widget, 1)
+
+        # Right side - match resolution
+        layout.addWidget(self.match_resolution_widget, 1)
 
         return widget
 
@@ -119,6 +153,50 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.properties_list)
 
         return widget
+
+    def _connect_signals(self) -> None:
+        """Connect signals between components."""
+        # Scan queue signals
+        self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
+        self.scan_queue_widget.start_matching.connect(self._on_start_matching)
+        self.scan_queue_widget.clear_queue.connect(self._on_clear_queue)
+
+        # Match resolution signals
+        self.match_resolution_widget.match_updated.connect(self.match_manager.update_match)
+        self.match_resolution_widget.search_requested.connect(self.match_manager.search_matches)
+
+        # Match manager signals
+        self.match_manager.match_selected.connect(self.match_resolution_widget.set_match)
+        self.match_manager.status_changed.connect(self.update_status)
+
+    def _on_start_matching(self) -> None:
+        """Handle start matching request."""
+        # Get pending matches from scan queue
+        pending_matches = self.scan_queue_widget.get_matches()
+        if pending_matches:
+            # Extract metadata for matching
+            metadata_list = [match.metadata for match in pending_matches]
+
+            # Add to match manager and start matching
+            self.match_manager.add_metadata(metadata_list)
+            self.match_manager.start_matching()
+
+    def _on_clear_queue(self) -> None:
+        """Handle clear queue request."""
+        self.match_manager.clear_all()
+        self.scan_queue_widget.clear_queue()
+        self.match_resolution_widget.clear_match()
+        self.update_status("Queue cleared")
+
+    def add_scan_results(self, metadata_list) -> None:
+        """Add scan results to the queue."""
+        # Add to scan queue widget
+        self.scan_queue_widget.add_metadata(metadata_list)
+
+        # Switch to matching tab
+        self.tab_widget.setCurrentIndex(4)  # Matching tab index
+
+        self.update_status(f"Added {len(metadata_list)} items to scan queue")
 
     def _setup_menu_bar(self) -> None:
         """Setup the application menu bar."""
