@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from typing import Dict, List, Optional
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
@@ -42,7 +41,7 @@ class MatchWorkerSignals(QObject):
 class MatchWorker(QRunnable):
     """Worker for finding matches in background threads."""
 
-    def __init__(self, metadata_list: List[VideoMetadata]) -> None:
+    def __init__(self, metadata_list: list[VideoMetadata]) -> None:
         super().__init__()
         self.metadata_list = metadata_list
         self.signals = MatchWorkerSignals()
@@ -136,14 +135,14 @@ class MatchWorker(QRunnable):
 
         return match
 
-    def _create_mock_subtitles(self, metadata: VideoMetadata) -> Dict[SubtitleLanguage, SubtitleInfo]:
+    def _create_mock_subtitles(self, metadata: VideoMetadata) -> dict[SubtitleLanguage, SubtitleInfo]:
         """Create mock subtitles for demonstration."""
         subtitles = {}
         base_hash = hash(str(metadata.path)) % 10000
-        
+
         # Add mock subtitles in common languages
         languages = [SubtitleLanguage.ENGLISH, SubtitleLanguage.SPANISH, SubtitleLanguage.FRENCH]
-        
+
         for idx, language in enumerate(languages):
             subtitle_info = SubtitleInfo(
                 language=language,
@@ -153,7 +152,7 @@ class MatchWorker(QRunnable):
                 subtitle_id=f"mock_sub_{base_hash}_{idx}",
             )
             subtitles[language] = subtitle_info
-        
+
         return subtitles
 
 
@@ -190,7 +189,7 @@ class SearchWorker(QRunnable):
             self._logger.error(error_msg)
             self.signals.search_failed.emit(error_msg)
 
-    def _create_mock_results(self) -> List[SearchResult]:
+    def _create_mock_results(self) -> list[SearchResult]:
         """Create mock search results."""
         results = []
 
@@ -226,13 +225,13 @@ class SearchWorker(QRunnable):
 class WorkerManager(QObject):
     """Manages background workers and thread pools."""
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._thread_pool = QThreadPool()
         self._logger = get_logger().get_logger(__name__)
-        self._active_workers: List[QRunnable] = []
+        self._active_workers: list[QRunnable] = []
 
-    def start_match_worker(self, metadata_list: List[VideoMetadata]) -> MatchWorker:
+    def start_match_worker(self, metadata_list: list[VideoMetadata]) -> MatchWorker:
         """Start a match worker and return it."""
         worker = MatchWorker(metadata_list)
         self._active_workers.append(worker)

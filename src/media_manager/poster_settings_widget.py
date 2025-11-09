@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -19,7 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from .logging import get_logger
-from .models import PosterType, PosterSize
+from .models import PosterSize, PosterType
 from .settings import get_settings
 
 
@@ -29,7 +27,7 @@ class PosterSettingsWidget(QWidget):
     # Signals
     settings_changed = Signal()
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
         self._settings = get_settings()
@@ -144,7 +142,7 @@ class PosterSettingsWidget(QWidget):
         self.cache_dir_edit = QLineEdit()
         self.cache_dir_edit.textChanged.connect(self._on_setting_changed)
         cache_dir_layout.addWidget(self.cache_dir_edit)
-        
+
         self.browse_cache_button = QPushButton("Browse...")
         self.browse_cache_button.clicked.connect(self._on_browse_cache)
         cache_dir_layout.addWidget(self.browse_cache_button)
@@ -255,10 +253,10 @@ class PosterSettingsWidget(QWidget):
                     downloader = PosterDownloader(cache_dir=cache_dir)
                 else:
                     downloader = PosterDownloader()
-                
+
                 downloader.clear_cache()
                 self._logger.info("Poster cache cleared")
-                
+
                 QMessageBox.information(self, "Cache Cleared", "Poster cache has been cleared.")
             except Exception as exc:
                 self._logger.error(f"Failed to clear cache: {exc}")

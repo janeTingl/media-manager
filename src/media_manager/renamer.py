@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from .models import MediaMatch, MediaType
 from .settings import SettingsManager, get_settings
@@ -19,15 +18,15 @@ class RenameContext:
     """Context information used when rendering rename templates."""
 
     title: str
-    year: Optional[int]
-    season: Optional[int]
-    episode: Optional[int]
+    year: int | None
+    season: int | None
+    episode: int | None
 
 
 class RenamingEngine:
     """Generate deterministic target paths for media items."""
 
-    def __init__(self, settings: Optional[SettingsManager] = None) -> None:
+    def __init__(self, settings: SettingsManager | None = None) -> None:
         self._settings = settings or get_settings()
 
     def build_relative_path(self, match: MediaMatch) -> Path:
@@ -51,7 +50,6 @@ class RenamingEngine:
         if metadata.media_type is MediaType.TV:
             show_name = self._sanitize_name(context.title)
             season_number = context.season or 0
-            episode_number = context.episode or 0
             season_dir = f"Season {season_number:02d}"
             filename = self._render_tv_filename(context) + extension
             return Path(show_name) / season_dir / self._sanitize_name(filename)

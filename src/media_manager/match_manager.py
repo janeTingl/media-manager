@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 from PySide6.QtCore import QObject, Signal, Slot
 
 from .library_postprocessor import PostProcessingOptions, PostProcessingSummary
@@ -21,7 +19,7 @@ class MatchManager(QObject):
     match_selected = Signal(object)  # MediaMatch
     status_changed = Signal(str)  # status message
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
 
@@ -32,10 +30,10 @@ class MatchManager(QObject):
 
         self._worker_manager = service_registry.get(WorkerManager)
 
-        self._matches: List[MediaMatch] = []
-        self._current_match: Optional[MediaMatch] = None
+        self._matches: list[MediaMatch] = []
+        self._current_match: MediaMatch | None = None
 
-    def add_metadata(self, metadata_list: List[VideoMetadata]) -> None:
+    def add_metadata(self, metadata_list: list[VideoMetadata]) -> None:
         """Add metadata items to be matched."""
         for metadata in metadata_list:
             match = MediaMatch(metadata=metadata)
@@ -101,7 +99,7 @@ class MatchManager(QObject):
         self._current_match = match
         self.match_selected.emit(match)
 
-    def get_matches(self) -> List[MediaMatch]:
+    def get_matches(self) -> list[MediaMatch]:
         """Get all matches."""
         return list(self._matches)
 
@@ -113,19 +111,19 @@ class MatchManager(QObject):
         """Get the count of matched items."""
         return len([m for m in self._matches if m.is_matched()])
 
-    def download_posters(self, match: MediaMatch, poster_types: List[PosterType]) -> None:
+    def download_posters(self, match: MediaMatch, poster_types: list[PosterType]) -> None:
         """Download posters for a specific match."""
         worker = self._worker_manager.start_poster_download_worker([match], poster_types)
-        
+
         # Connect signals
         worker.signals.poster_downloaded.connect(self._on_poster_downloaded)
         worker.signals.poster_failed.connect(self._on_poster_failed)
         worker.signals.progress.connect(self._on_poster_progress)
         worker.signals.finished.connect(self._on_poster_download_finished)
-        
+
         self.status_changed.emit(f"Downloading posters for {match.metadata.title}...")
 
-    def download_all_posters(self, poster_types: List[PosterType]) -> None:
+    def download_all_posters(self, poster_types: list[PosterType]) -> None:
         """Download posters for all matched items."""
         matched_matches = [m for m in self._matches if m.is_matched()]
         if not matched_matches:
@@ -133,13 +131,13 @@ class MatchManager(QObject):
             return
 
         worker = self._worker_manager.start_poster_download_worker(matched_matches, poster_types)
-        
+
         # Connect signals
         worker.signals.poster_downloaded.connect(self._on_poster_downloaded)
         worker.signals.poster_failed.connect(self._on_poster_failed)
         worker.signals.progress.connect(self._on_poster_progress)
         worker.signals.finished.connect(self._on_poster_download_finished)
-        
+
         self.status_changed.emit(f"Downloading posters for {len(matched_matches)} items...")
 
     def finalize_library(self, options: PostProcessingOptions):
@@ -190,7 +188,7 @@ class MatchManager(QObject):
             self.status_changed.emit(f"Matching complete: {matched} matched, {pending} need review")
 
     @Slot(list)
-    def _on_search_completed(self, results: List[SearchResult]) -> None:
+    def _on_search_completed(self, results: list[SearchResult]) -> None:
         """Handle search completion."""
         # This would be emitted as a signal for the UI to handle
         # For now, we'll just log it

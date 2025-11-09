@@ -6,7 +6,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, List, Optional, Sequence, Set
+from typing import Iterator, Sequence
 
 from .logging import get_logger
 from .models import MediaType, VideoMetadata
@@ -79,9 +79,9 @@ class ScanConfig:
     ignored_directories: Sequence[str] = DEFAULT_IGNORED_DIRECTORIES
     ignored_extensions: Sequence[str] = ()
     video_extensions: Sequence[str] = DEFAULT_VIDEO_EXTENSIONS
-    _ignored_directory_set: Set[str] = field(init=False, repr=False)
-    _ignored_extension_set: Set[str] = field(init=False, repr=False)
-    _video_extension_set: Set[str] = field(init=False, repr=False)
+    _ignored_directory_set: set[str] = field(init=False, repr=False)
+    _ignored_extension_set: set[str] = field(init=False, repr=False)
+    _video_extension_set: set[str] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         normalized_roots = []
@@ -117,7 +117,7 @@ class Scanner:
     def __init__(self) -> None:
         self._logger = get_logger().get_logger(__name__)
 
-    def scan(self, config: ScanConfig) -> List[VideoMetadata]:
+    def scan(self, config: ScanConfig) -> list[VideoMetadata]:
         """Scan all configured paths and return video metadata instances."""
         return [self.parse_video(path) for path in self.iter_video_files(config)]
 
@@ -192,7 +192,7 @@ class Scanner:
             return False
         return extension in config._video_extension_set
 
-    def _extract_year(self, name: str) -> Optional[int]:
+    def _extract_year(self, name: str) -> int | None:
         match = YEAR_PATTERN.search(name)
         if match:
             try:

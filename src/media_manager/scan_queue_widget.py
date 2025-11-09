@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
@@ -37,11 +36,11 @@ class ScanQueueWidget(QWidget):
     clear_queue = Signal()  # Request to clear the queue
     finalize_requested = Signal(object)  # PostProcessingOptions
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
-        self._matches: List[MediaMatch] = []
-        self._current_worker: Optional[MatchWorker] = None
+        self._matches: list[MediaMatch] = []
+        self._current_worker: MatchWorker | None = None
         self._finalize_worker = None
 
         self._setup_ui()
@@ -147,7 +146,7 @@ class ScanQueueWidget(QWidget):
 
         return group
 
-    def add_metadata(self, metadata_list: List[VideoMetadata]) -> None:
+    def add_metadata(self, metadata_list: list[VideoMetadata]) -> None:
         """Add metadata items to the queue."""
         for metadata in metadata_list:
             match = MediaMatch(metadata=metadata)
@@ -439,18 +438,18 @@ class ScanQueueWidget(QWidget):
         else:
             self.status_label.setText(f"{total} items ({matched} matched, {pending} pending)")
 
-    def clear_queue(self) -> None:
+    def clear_queue_items(self) -> None:
         """Clear all items from the queue."""
         self._matches.clear()
         self.queue_list.clear()
         self._update_status()
         self._logger.info("Scan queue cleared")
 
-    def get_matches(self) -> List[MediaMatch]:
+    def get_matches(self) -> list[MediaMatch]:
         """Get all matches in the queue."""
         return list(self._matches)
 
-    def get_selected_match(self) -> Optional[MediaMatch]:
+    def get_selected_match(self) -> MediaMatch | None:
         """Get the currently selected match."""
         current_item = self.queue_list.currentItem()
         if current_item:
