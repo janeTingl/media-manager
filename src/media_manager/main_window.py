@@ -164,6 +164,7 @@ class MainWindow(QMainWindow):
         # Match resolution signals
         self.match_resolution_widget.match_updated.connect(self.match_manager.update_match)
         self.match_resolution_widget.search_requested.connect(self.match_manager.search_matches)
+        self.match_resolution_widget.poster_download_requested.connect(self._on_poster_download_requested)
 
         # Match manager signals
         self.match_manager.match_selected.connect(self.match_resolution_widget.set_match)
@@ -187,6 +188,10 @@ class MainWindow(QMainWindow):
         self.scan_queue_widget.clear_queue()
         self.match_resolution_widget.clear_match()
         self.update_status("Queue cleared")
+
+    def _on_poster_download_requested(self, match, poster_types) -> None:
+        """Handle poster download request."""
+        self.match_manager.download_posters(match, poster_types)
 
     def add_scan_results(self, metadata_list) -> None:
         """Add scan results to the queue."""
@@ -291,7 +296,33 @@ class MainWindow(QMainWindow):
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
-        self.status_label.setText("Preferences dialog not yet implemented")
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QDialogButtonBox, QTabWidget
+        from .poster_settings_widget import PosterSettingsWidget
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Preferences")
+        dialog.setMinimumSize(600, 500)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # Create tab widget for different preference categories
+        tab_widget = QTabWidget()
+        
+        # Poster settings tab
+        poster_settings = PosterSettingsWidget()
+        poster_settings.settings_changed.connect(self.settings_changed.emit)
+        tab_widget.addTab(poster_settings, "Posters")
+        
+        layout.addWidget(tab_widget)
+        
+        # Dialog buttons
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        button_box.accepted.connect(dialog.accept)
+        layout.addWidget(button_box)
+        
+        # Show dialog
+        dialog.exec()
+        self.status_label.setText("Preferences updated")
 
     def _on_about(self) -> None:
         """Handle about action."""

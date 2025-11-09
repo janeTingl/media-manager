@@ -24,6 +24,34 @@ class MatchStatus(str, Enum):
     SKIPPED = "skipped"
 
 
+class PosterType(str, Enum):
+    """Types of poster artwork."""
+
+    POSTER = "poster"
+    FANART = "fanart"
+    BANNER = "banner"
+    THUMBNAIL = "thumbnail"
+
+
+class PosterSize(str, Enum):
+    """Standard poster sizes."""
+
+    SMALL = "small"  # ~w154
+    MEDIUM = "medium"  # ~w342
+    LARGE = "large"  # ~w500
+    ORIGINAL = "original"  # ~w1280
+
+
+class DownloadStatus(str, Enum):
+    """Status of poster download."""
+
+    PENDING = "pending"
+    DOWNLOADING = "downloading"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
 @dataclass
 class VideoMetadata:
     """Metadata extracted from a video file name."""
@@ -56,6 +84,37 @@ class VideoMetadata:
 
 
 @dataclass
+class PosterInfo:
+    """Information about a poster download."""
+
+    poster_type: PosterType
+    url: Optional[str] = None
+    local_path: Optional[Path] = None
+    size: PosterSize = PosterSize.MEDIUM
+    download_status: DownloadStatus = DownloadStatus.PENDING
+    file_size: Optional[int] = None
+    error_message: Optional[str] = None
+    retry_count: int = 0
+
+    def is_downloaded(self) -> bool:
+        """Return True if the poster has been successfully downloaded."""
+        return self.download_status == DownloadStatus.COMPLETED and self.local_path and self.local_path.exists()
+
+    def as_dict(self) -> Dict[str, Any]:
+        """Return a dictionary representation of the poster info."""
+        return {
+            "poster_type": self.poster_type.value,
+            "url": self.url,
+            "local_path": str(self.local_path) if self.local_path else None,
+            "size": self.size.value,
+            "download_status": self.download_status.value,
+            "file_size": self.file_size,
+            "error_message": self.error_message,
+            "retry_count": self.retry_count,
+        }
+
+
+@dataclass
 class MediaMatch:
     """Match information for a media item."""
 
@@ -69,6 +128,12 @@ class MediaMatch:
     poster_url: Optional[str] = None
     overview: Optional[str] = None
     user_selected: bool = False
+    posters: Dict[PosterType, PosterInfo] = None
+
+    def __post_init__(self) -> None:
+        """Initialize posters dict if not provided."""
+        if self.posters is None:
+            self.posters = {}
 
     def is_matched(self) -> bool:
         """Return True if the item has been matched (automatically or manually)."""
@@ -93,6 +158,7 @@ class MediaMatch:
             "poster_url": self.poster_url,
             "overview": self.overview,
             "user_selected": self.user_selected,
+            "posters": {ptype.value: info.as_dict() for ptype, info in self.posters.items()},
         })
         return result
 
@@ -119,3 +185,12 @@ class SearchResult:
     poster_url: Optional[str] = None
     overview: Optional[str] = None
     confidence: float = 0.0
+    poster_urls: Dict[PosterType, str] = None
+
+    def __post_init__(self) -> None:
+        """Initialize poster_urls dict if not provided."""
+        if self.poster_urls is None:
+            self.poster_urls = {}
+        # For backward compatibility, populate poster_urls if poster_url is set
+        if self.poster_url and PosterType.POSTER not in self.poster_urls:
+            self.poster_urls[PosterType.POSTER] = self.poster_url
