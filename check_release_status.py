@@ -38,7 +38,6 @@ def main():
     
     # Check essential files
     print("\n📁 Essential Files:")
-    print(check_file_exists(project_root / "media-manager.spec", "PyInstaller spec"))
     print(check_file_exists(project_root / "build_windows.py", "Build script"))
     print(check_file_exists(project_root / "create_windows_release.py", "Release creator"))
     print(check_file_exists(project_root / "build-requirements.txt", "Build requirements"))
@@ -107,9 +106,11 @@ def main():
         print("")
         print("2. 🔨 Build Windows executable:")
         if os.name == 'nt':
-            print("   python create_windows_release.py")
+            print("   python build_windows.py --backend nuitka --only-install-deps")
+            print("   python create_windows_release.py --backend nuitka")
         else:
-            print("   Run on Windows: python create_windows_release.py")
+            print("   Run on Windows: python build_windows.py --backend nuitka --only-install-deps")
+            print("   Run on Windows: python create_windows_release.py --backend nuitka")
         print("")
         print("3. 📤 Upload to GitHub Release")
         print("4. 🐍 Publish to PyPI")

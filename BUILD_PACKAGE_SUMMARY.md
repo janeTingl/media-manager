@@ -2,12 +2,12 @@
 
 ## 📦 Deliverables Overview
 
-This build package provides everything needed to create a Windows executable (.exe) for the Media Manager application using PyInstaller.
+This build package provides everything needed to create a Windows executable (.exe) for the Media Manager application using Nuitka (default) or the legacy PyInstaller backend.
 
 ## 🎯 Package Contents
 
 ### 1. Core Build Configuration
-- **`media-manager.spec`** - PyInstaller specification file with complete configuration
+- **`build_windows.py`** (includes Nuitka and PyInstaller build logic)
 - **`version_info.txt`** - Windows version information for the executable
 - **`build-requirements.txt`** - Python dependencies required for building
 
@@ -27,10 +27,10 @@ This build package provides everything needed to create a Windows executable (.e
 
 ## 🚀 Quick Build Instructions
 
-### Option 1: Automated Build (Recommended)
+### Option 1: Automated Nuitka Build (Recommended)
 ```bash
 # On Windows with Python installed
-python build_windows.py
+python build_windows.py --backend nuitka
 ```
 
 ### Option 2: Interactive Menu
@@ -42,24 +42,28 @@ build.bat
 .\build.ps1
 ```
 
-### Option 3: Manual Build
+### Option 3: Legacy PyInstaller Build
 ```bash
-# Install dependencies
-pip install -r build-requirements.txt
+# Install optional PyInstaller dependencies
+python build_windows.py --backend pyinstaller --only-install-deps
 
-# Build with PyInstaller
-pyinstaller media-manager.spec
+# Build with legacy backend (includes packaging)
+python build_windows.py --backend pyinstaller --skip-dependency-install
 ```
 
 ## 📋 Build Features
 
-### PyInstaller Configuration
-- **Single executable**: `--onefile` for easy distribution
-- **GUI mode**: `--windowed` for professional appearance
-- **Compression**: UPX support for smaller files
-- **Version info**: Embedded Windows version details
-- **Icon support**: Custom application icon
-- **Hidden imports**: All PySide6 and application modules
+### Nuitka Configuration (Default)
+- **Standalone executable**: `--onefile` + `--standalone` for portability
+- **Qt integration**: PySide6 plugin enabled with essential Qt plugins bundled
+- **Data inclusion**: Application resources, assets, and translations copied automatically
+- **Windows metadata**: Company, product, and version info embedded via Nuitka flags
+- **Icon support**: Automatically uses `icon.ico` when present
+
+### PyInstaller (Legacy) Configuration
+- One-file, windowed build mirroring the historic spec file
+- Optional UPX compression when installed
+- Automatic PySide6 module collection and resource inclusion
 
 ### Application Features in Executable
 - **Complete UI**: Full Qt-based interface
@@ -139,29 +143,29 @@ The `verify_build.py` script checks:
 - ✅ Directory structure
 - ✅ Source file presence
 - ✅ Build file completeness
-- ✅ Spec file syntax
 - ✅ Entry point validity
 - ✅ Icon file status
 - ⚠️ PySide6 availability
-- ⚠️ PyInstaller availability
+- ⚠️ Nuitka availability
+- ⚠️ PyInstaller availability (legacy)
 
 ### Build Validation
-- Spec file syntax verified
+- Nuitka command configuration verified
 - All required files present
 - Documentation complete
-- Multiple build options tested
+- Multiple build options tested (Nuitka + PyInstaller)
 - Cross-platform compatibility checked
 
 ## 🎯 Build Targets
 
 ### Development Build
 - **Command**: `make -f Makefile.windows dev`
-- **Features**: Debug mode, console output, directory-based
-- **Use**: Development and testing
+- **Features**: Legacy PyInstaller backend without packaging (quick iteration)
+- **Use**: Development and troubleshooting
 
 ### Production Build
-- **Command**: `python build_windows.py`
-- **Features**: Optimized, single file, compressed
+- **Command**: `python build_windows.py --backend nuitka`
+- **Features**: Optimized, single file, fully packaged
 - **Use**: End-user distribution
 
 ### Package Build
@@ -258,4 +262,4 @@ The build system is designed to be:
 
 **Ready to build!** 🚀
 
-Run `python build_windows.py` to create the Windows executable.
+Run `python build_windows.py --backend nuitka` to create the Windows executable.

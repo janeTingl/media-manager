@@ -7,7 +7,7 @@ The Media Manager v0.1.0 Windows release is **fully prepared** but requires a Wi
 ### ✅ What's Complete (100%)
 
 #### Build Infrastructure
-- **PyInstaller Configuration**: `media-manager.spec` configured for Windows builds
+- **Nuitka Configuration**: handled by `build_windows.py` (default backend)
 - **Build Scripts**: `build_windows.py` and `create_windows_release.py` ready
 - **Package Templates**: Complete portable and installer package structures
 - **GitHub Actions**: Automated Windows build workflow (`.github/workflows/build-windows-release.yml`)
@@ -67,8 +67,8 @@ git push origin v0.1.0
 # On Windows system:
 git clone <repository>
 cd media-manager
-pip install -r build-requirements.txt
-python create_windows_release.py
+python build_windows.py --backend nuitka --only-install-deps
+python create_windows_release.py --backend nuitka
 # Upload files from package/ to GitHub Release
 ```
 
@@ -98,11 +98,12 @@ After Windows build, these files will be generated:
 ## 🔧 Technical Details
 
 ### Build Configuration
-- **PyInstaller**: v6.16.0 with Windows optimizations
+- **Nuitka**: default compiler with PySide6 plugin and Qt plugin bundling
+- **PyInstaller**: optional legacy backend for compatibility
 - **Python**: 3.8+ support (targeting 3.11 for builds)
 - **GUI**: PySide6/Qt6 with Windows-specific optimizations
-- **Compression**: UPX enabled (if available)
-- **Mode**: `--onefile` for single executable distribution
+- **Compression**: UPX optional for PyInstaller builds
+- **Mode**: `--onefile` distribution for both backends
 
 ### Package Features
 - **Portable**: No installation, runs from any folder

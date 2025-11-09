@@ -5,7 +5,7 @@
 This project is **ready for Windows release** but requires a Windows environment to build the actual `.exe` file.
 
 ### ✅ What's Complete
-- **Build Configuration**: PyInstaller spec file configured for Windows
+- **Build Configuration**: Nuitka configuration embedded in `build_windows.py`
 - **Build Scripts**: Automated build scripts (`build_windows.py`, `create_windows_release.py`)
 - **Package Structure**: Complete portable and installer package templates
 - **Documentation**: Comprehensive build and deployment guides
@@ -23,7 +23,8 @@ This project is **ready for Windows release** but requires a Windows environment
 # - Windows 10/11
 # - Python 3.8+ from python.org
 # - Git
-# - Run: python create_windows_release.py
+# - Run: python build_windows.py --backend nuitka --only-install-deps
+# - Run: python create_windows_release.py --backend nuitka
 ```
 
 ### Option 2: GitHub Actions (Automated)
@@ -42,7 +43,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r build-requirements.txt
-      - run: python create_windows_release.py
+      - run: python create_windows_release.py --backend nuitka
       - uses: actions/upload-release-asset@v1
 ```
 
@@ -94,21 +95,23 @@ git clone <repository-url>
 cd media-manager
 
 # 2. Install dependencies
-pip install -r build-requirements.txt
+python build_windows.py --backend nuitka --only-install-deps
 
 # 3. Build release package
-python create_windows_release.py
+python create_windows_release.py --backend nuitka
 
 # 4. Upload to GitHub Release
 # Upload files from package/ directory
 ```
 
-### Alternative: Simple PyInstaller Build
+### Alternative: Quick Build Only
 ```bash
-# Quick build (no packaging)
-pip install pyinstaller
-pyinstaller --clean --noconfirm --onefile --windowed media-manager.spec
+# Quick Nuitka build without packaging
+python build_windows.py --backend nuitka --skip-dependency-install --skip-packages --skip-tests
 # Output: dist/media-manager.exe
+
+# Legacy PyInstaller build (optional)
+python build_windows.py --backend pyinstaller --skip-dependency-install --skip-packages --skip-tests
 ```
 
 ## 📋 GitHub Release Preparation

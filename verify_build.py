@@ -42,21 +42,23 @@ def check_module_installed(module_name: str) -> bool:
         print(f"✗ {module_name} is NOT installed")
         return False
 
-def check_spec_file() -> bool:
-    """Check PyInstaller spec file."""
-    spec_file = Path("media-manager.spec")
-    if not spec_file.exists():
-        return False
-    
-    # Try to compile the spec file
+def check_nuitka_availability() -> bool:
+    """Check if Nuitka is available."""
     try:
-        with open(spec_file, 'r') as f:
-            spec_content = f.read()
-        compile(spec_content, str(spec_file), 'exec')
-        print("✓ Spec file syntax is valid")
-        return True
-    except SyntaxError as e:
-        print(f"✗ Spec file has syntax error: {e}")
+        result = subprocess.run(
+            [sys.executable, "-m", "nuitka", "--version"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            version = result.stdout.strip()
+            print(f"✓ Nuitka is installed: {version}")
+            return True
+        else:
+            print("✗ Nuitka is not working properly")
+            return False
+    except FileNotFoundError:
+        print("✗ Nuitka is not installed")
         return False
 
 def check_source_files() -> bool:
@@ -82,7 +84,6 @@ def check_source_files() -> bool:
 def check_build_files() -> bool:
     """Check build-related files."""
     build_files = [
-        ("media-manager.spec", "PyInstaller spec file"),
         ("build-requirements.txt", "Build requirements"),
         ("build_windows.py", "Build script"),
         ("version_info.txt", "Version info"),
@@ -199,10 +200,10 @@ def main():
         ("Directory Structure", check_directory_structure),
         ("Source Files", check_source_files),
         ("Build Files", check_build_files),
-        ("Spec File", check_spec_file),
         ("Entry Points", verify_entry_points),
         ("Icon File", check_icon_file),
         ("PySide6", check_pyside6_availability),
+        ("Nuitka", check_nuitka_availability),
         ("PyInstaller", check_pyinstaller_availability),
     ]
     
@@ -233,7 +234,7 @@ def main():
     if passed == total:
         print("\n🎉 All checks passed! Ready to build.")
         print("\nNext steps:")
-        print("1. Run: python build_windows.py")
+        print("1. Run: python build_windows.py --backend nuitka")
         print("2. Or run: build.bat (Windows)")
         print("3. Or run: .\\build.ps1 (PowerShell)")
         return 0
