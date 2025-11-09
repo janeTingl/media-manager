@@ -5,14 +5,13 @@ from __future__ import annotations
 import hashlib
 import time
 from pathlib import Path
-from typing import Dict, Optional, Set
 from urllib.parse import urlparse
 
 from PySide6.QtCore import QObject, Signal
 
 from .logging import get_logger
 from .models import DownloadStatus, SubtitleInfo, SubtitleLanguage
-from .subtitle_provider import SubtitleProvider, SubtitleResult, MockSubtitleProvider
+from .subtitle_provider import MockSubtitleProvider, SubtitleProvider, SubtitleResult
 
 
 class SubtitleDownloader(QObject):
@@ -28,12 +27,12 @@ class SubtitleDownloader(QObject):
 
     def __init__(
         self,
-        provider: Optional[SubtitleProvider] = None,
-        cache_dir: Optional[Path] = None,
+        provider: SubtitleProvider | None = None,
+        cache_dir: Path | None = None,
         max_retries: int = 3,
         retry_delay: float = 1.0,
         timeout: float = 30.0,
-        parent: Optional[QObject] = None,
+        parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
@@ -42,7 +41,7 @@ class SubtitleDownloader(QObject):
         self._max_retries = max_retries
         self._retry_delay = retry_delay
         self._timeout = timeout
-        self._downloading: Set[str] = set()
+        self._downloading: set[str] = set()
 
         # Ensure cache directory exists
         self._cache_dir.mkdir(parents=True, exist_ok=True)
@@ -56,9 +55,9 @@ class SubtitleDownloader(QObject):
         title: str,
         media_type,
         language: SubtitleLanguage,
-        year: Optional[int] = None,
-        season: Optional[int] = None,
-        episode: Optional[int] = None,
+        year: int | None = None,
+        season: int | None = None,
+        episode: int | None = None,
     ) -> list[SubtitleResult]:
         """Search for available subtitles."""
         try:
@@ -96,7 +95,7 @@ class SubtitleDownloader(QObject):
         self,
         subtitle_info: SubtitleInfo,
         media_path: Path,
-        subtitle_result: Optional[SubtitleResult] = None,
+        subtitle_result: SubtitleResult | None = None,
         force_download: bool = False,
     ) -> bool:
         """Download a subtitle and update the SubtitleInfo object."""
@@ -159,7 +158,7 @@ class SubtitleDownloader(QObject):
         self,
         subtitle_info: SubtitleInfo,
         media_path: Path,
-        subtitle_result: Optional[SubtitleResult] = None,
+        subtitle_result: SubtitleResult | None = None,
     ) -> bool:
         """Download subtitle with retry logic."""
         # If we have a subtitle_result, use the provider's download method

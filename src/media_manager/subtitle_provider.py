@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
 
-from .models import SubtitleLanguage, SubtitleFormat, MediaType
+from .models import MediaType, SubtitleFormat, SubtitleLanguage
 
 
 @dataclass
@@ -18,10 +17,10 @@ class SubtitleResult:
     language: SubtitleLanguage
     format: SubtitleFormat
     download_url: str
-    file_size: Optional[int] = None
-    fps: Optional[float] = None
-    release_name: Optional[str] = None
-    upload_date: Optional[str] = None
+    file_size: int | None = None
+    fps: float | None = None
+    release_name: str | None = None
+    upload_date: str | None = None
     downloads: int = 0
     rating: float = 0.0
 
@@ -35,12 +34,12 @@ class SubtitleProvider(ABC):
         title: str,
         media_type: MediaType,
         language: SubtitleLanguage,
-        year: Optional[int] = None,
-        season: Optional[int] = None,
-        episode: Optional[int] = None,
-    ) -> List[SubtitleResult]:
+        year: int | None = None,
+        season: int | None = None,
+        episode: int | None = None,
+    ) -> list[SubtitleResult]:
         """Search for subtitles.
-        
+
         Args:
             title: The title to search for
             media_type: The type of media (MOVIE or TV)
@@ -48,7 +47,7 @@ class SubtitleProvider(ABC):
             year: Release year (for movies)
             season: Season number (for TV episodes)
             episode: Episode number (for TV episodes)
-            
+
         Returns:
             List of subtitle search results
         """
@@ -57,11 +56,11 @@ class SubtitleProvider(ABC):
     @abstractmethod
     def download(self, subtitle_result: SubtitleResult, output_path: str) -> bool:
         """Download a subtitle file.
-        
+
         Args:
             subtitle_result: The subtitle result to download
             output_path: The path to save the subtitle file
-            
+
         Returns:
             True if download successful, False otherwise
         """
@@ -76,21 +75,21 @@ class MockSubtitleProvider(SubtitleProvider):
         title: str,
         media_type: MediaType,
         language: SubtitleLanguage,
-        year: Optional[int] = None,
-        season: Optional[int] = None,
-        episode: Optional[int] = None,
-    ) -> List[SubtitleResult]:
+        year: int | None = None,
+        season: int | None = None,
+        episode: int | None = None,
+    ) -> list[SubtitleResult]:
         """Search for subtitles using mock data."""
         results = []
 
         # Create mock results based on title
         base_hash = hash(title) % 10000
-        
+
         for i in range(2):
             # Vary format and other details
             format_options = [SubtitleFormat.SRT, SubtitleFormat.ASS, SubtitleFormat.VTT]
             subtitle_format = format_options[i % len(format_options)]
-            
+
             result = SubtitleResult(
                 subtitle_id=f"mock_{base_hash}_{i}",
                 provider="MockProvider",
@@ -111,15 +110,15 @@ class MockSubtitleProvider(SubtitleProvider):
         """Download a subtitle file."""
         import time
         from pathlib import Path
-        
+
         try:
             # Simulate download delay
             time.sleep(0.5)
-            
+
             # Create a dummy subtitle file
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Write mock subtitle content
             mock_content = f"""1
 00:00:00,000 --> 00:00:05,000
@@ -139,9 +138,9 @@ For testing purposes only
 class OpenSubtitlesProvider(SubtitleProvider):
     """Provider for OpenSubtitles API."""
 
-    def __init__(self, api_key: Optional[str] = None) -> None:
+    def __init__(self, api_key: str | None = None) -> None:
         """Initialize OpenSubtitles provider.
-        
+
         Args:
             api_key: Optional API key for OpenSubtitles
         """
@@ -153,18 +152,17 @@ class OpenSubtitlesProvider(SubtitleProvider):
         title: str,
         media_type: MediaType,
         language: SubtitleLanguage,
-        year: Optional[int] = None,
-        season: Optional[int] = None,
-        episode: Optional[int] = None,
-    ) -> List[SubtitleResult]:
+        year: int | None = None,
+        season: int | None = None,
+        episode: int | None = None,
+    ) -> list[SubtitleResult]:
         """Search for subtitles on OpenSubtitles."""
         # In a real implementation, this would call the OpenSubtitles API
         # For now, return mock results to demonstrate the interface
-        import time
-        
+
         results = []
         base_hash = hash(title) % 10000
-        
+
         for i in range(3):
             result = SubtitleResult(
                 subtitle_id=f"os_{base_hash}_{i}",
@@ -188,12 +186,12 @@ class OpenSubtitlesProvider(SubtitleProvider):
         # For testing, use mock download
         import time
         from pathlib import Path
-        
+
         try:
             time.sleep(0.3)
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             mock_content = f"""1
 00:00:00,000 --> 00:00:05,000
 OpenSubtitles: {subtitle_result.release_name}

@@ -308,30 +308,36 @@ class MainWindow(QMainWindow):
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
-        from PySide6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QDialogButtonBox, QTabWidget
+        from PySide6.QtWidgets import (
+            QDialog,
+            QDialogButtonBox,
+            QTabWidget,
+            QVBoxLayout,
+        )
+
         from .poster_settings_widget import PosterSettingsWidget
 
         dialog = QDialog(self)
         dialog.setWindowTitle("Preferences")
         dialog.setMinimumSize(600, 500)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         # Create tab widget for different preference categories
         tab_widget = QTabWidget()
-        
+
         # Poster settings tab
         poster_settings = PosterSettingsWidget()
         poster_settings.settings_changed.connect(self.settings_changed.emit)
         tab_widget.addTab(poster_settings, "Posters")
-        
+
         layout.addWidget(tab_widget)
-        
+
         # Dialog buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         button_box.accepted.connect(dialog.accept)
         layout.addWidget(button_box)
-        
+
         # Show dialog
         dialog.exec()
         self.status_label.setText("Preferences updated")

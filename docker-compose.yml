@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  media-manager:
+    build: .
+    container_name: media-manager
+    restart: unless-stopped
+    environment:
+      - DISPLAY=:99
+      - MEDIA_MANAGER_MEDIA_DIR=/media
+      - MEDIA_MANAGER_CONFIG_DIR=/config
+    volumes:
+      # Mount your media library directory
+      - ./media:/media:ro
+      # Mount configuration directory for persistent settings
+      - ./config:/config
+      # Mount X11 socket for GUI display (optional, for local display)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    ports:
+      # Port for potential future web interface
+      - "8080:8080"
+    networks:
+      - media-network
+
+  # Optional: Add a database service for future versions
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: media-manager-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: media_manager
+  #     POSTGRES_USER: media_manager
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mediamananger}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - media-network
+
+networks:
+  media-network:
+    driver: bridge
+
+volumes:
+  # Uncomment for database service
+  # postgres_data:

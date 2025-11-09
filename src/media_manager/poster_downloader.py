@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import time
 from pathlib import Path
-from typing import Dict, Optional, Set
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -25,11 +24,11 @@ class PosterDownloader(QObject):
 
     def __init__(
         self,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
         max_retries: int = 3,
         retry_delay: float = 1.0,
         timeout: float = 30.0,
-        parent: Optional[QObject] = None,
+        parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
@@ -37,7 +36,7 @@ class PosterDownloader(QObject):
         self._max_retries = max_retries
         self._retry_delay = retry_delay
         self._timeout = timeout
-        self._downloading: Set[str] = set()
+        self._downloading: set[str] = set()
 
         # Ensure cache directory exists
         self._cache_dir.mkdir(parents=True, exist_ok=True)
@@ -76,7 +75,7 @@ class PosterDownloader(QObject):
             return False
 
         poster_id = self._get_poster_id(poster_info)
-        
+
         # Check if already downloading
         if poster_id in self._downloading and not force_download:
             self._logger.info(f"Poster already downloading: {poster_id}")
@@ -124,7 +123,7 @@ class PosterDownloader(QObject):
     def _download_with_retries(self, poster_info: PosterInfo, media_path: Path) -> bool:
         """Download poster with retry logic."""
         url = poster_info.url
-        
+
         for attempt in range(self._max_retries + 1):
             if attempt > 0:
                 self._logger.info(f"Retrying poster download (attempt {attempt + 1}): {url}")
@@ -133,7 +132,7 @@ class PosterDownloader(QObject):
             try:
                 # Create request with user agent
                 req = Request(url, headers={"User-Agent": "MediaManager/1.0"})
-                
+
                 with urlopen(req, timeout=self._timeout) as response:
                     content_type = response.headers.get("content-type", "")
                     if not content_type.startswith("image/"):
@@ -147,17 +146,17 @@ class PosterDownloader(QObject):
                     with open(cached_path, "wb") as f:
                         downloaded = 0
                         chunk_size = 8192
-                        
+
                         while True:
                             chunk = response.read(chunk_size)
                             if not chunk:
                                 break
-                            
+
                             f.write(chunk)
                             downloaded += len(chunk)
-                            
+
                             if total_size > 0:
-                                progress = int((downloaded / total_size) * 100)
+                                int((downloaded / total_size) * 100)
                                 poster_id = self._get_poster_id(poster_info)
                                 self.download_progress.emit(poster_id, downloaded, total_size)
 
@@ -178,7 +177,7 @@ class PosterDownloader(QObject):
             except Exception as exc:
                 poster_info.error_message = str(exc)
                 self._logger.warning(f"Download attempt {attempt + 1} failed: {exc}")
-                
+
                 if attempt == self._max_retries:
                     poster_info.download_status = DownloadStatus.FAILED
                     return False
@@ -202,7 +201,7 @@ class PosterDownloader(QObject):
             ext = "." + parsed.path.split(".")[-1].lower()
             if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
                 ext = ".jpg"  # Default to jpg
-        
+
         return self._cache_dir / f"{url_hash}{ext}"
 
     def clear_cache(self) -> None:

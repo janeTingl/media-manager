@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class MediaType(str, Enum):
@@ -84,9 +84,9 @@ class VideoMetadata:
     path: Path
     title: str
     media_type: MediaType
-    year: Optional[int] = None
-    season: Optional[int] = None
-    episode: Optional[int] = None
+    year: int | None = None
+    season: int | None = None
+    episode: int | None = None
 
     def is_movie(self) -> bool:
         """Return True if the metadata represents a movie."""
@@ -96,7 +96,7 @@ class VideoMetadata:
         """Return True if the metadata represents a TV episode."""
         return self.media_type is MediaType.TV
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the metadata."""
         return {
             "path": str(self.path),
@@ -113,19 +113,19 @@ class PosterInfo:
     """Information about a poster download."""
 
     poster_type: PosterType
-    url: Optional[str] = None
-    local_path: Optional[Path] = None
+    url: str | None = None
+    local_path: Path | None = None
     size: PosterSize = PosterSize.MEDIUM
     download_status: DownloadStatus = DownloadStatus.PENDING
-    file_size: Optional[int] = None
-    error_message: Optional[str] = None
+    file_size: int | None = None
+    error_message: str | None = None
     retry_count: int = 0
 
     def is_downloaded(self) -> bool:
         """Return True if the poster has been successfully downloaded."""
         return self.download_status == DownloadStatus.COMPLETED and self.local_path and self.local_path.exists()
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the poster info."""
         return {
             "poster_type": self.poster_type.value,
@@ -145,20 +145,20 @@ class SubtitleInfo:
 
     language: SubtitleLanguage
     format: SubtitleFormat = SubtitleFormat.SRT
-    url: Optional[str] = None
-    local_path: Optional[Path] = None
+    url: str | None = None
+    local_path: Path | None = None
     download_status: DownloadStatus = DownloadStatus.PENDING
-    file_size: Optional[int] = None
-    error_message: Optional[str] = None
+    file_size: int | None = None
+    error_message: str | None = None
     retry_count: int = 0
-    provider: Optional[str] = None
-    subtitle_id: Optional[str] = None
+    provider: str | None = None
+    subtitle_id: str | None = None
 
     def is_downloaded(self) -> bool:
         """Return True if the subtitle has been successfully downloaded."""
         return self.download_status == DownloadStatus.COMPLETED and self.local_path and self.local_path.exists()
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the subtitle info."""
         return {
             "language": self.language.value,
@@ -180,19 +180,19 @@ class MediaMatch:
 
     metadata: VideoMetadata
     status: MatchStatus = MatchStatus.PENDING
-    confidence: Optional[float] = None
-    matched_title: Optional[str] = None
-    matched_year: Optional[int] = None
-    external_id: Optional[str] = None
-    source: Optional[str] = None
-    poster_url: Optional[str] = None
-    overview: Optional[str] = None
+    confidence: float | None = None
+    matched_title: str | None = None
+    matched_year: int | None = None
+    external_id: str | None = None
+    source: str | None = None
+    poster_url: str | None = None
+    overview: str | None = None
     user_selected: bool = False
-    posters: Dict[PosterType, PosterInfo] = None
-    subtitles: Dict[SubtitleLanguage, SubtitleInfo] = None
-    runtime: Optional[int] = None
-    aired_date: Optional[str] = None
-    cast: Optional[list[str]] = None
+    posters: dict[PosterType, PosterInfo] = None
+    subtitles: dict[SubtitleLanguage, SubtitleInfo] = None
+    runtime: int | None = None
+    aired_date: str | None = None
+    cast: list[str] | None = None
 
     def __post_init__(self) -> None:
         """Initialize posters and subtitles dicts if not provided."""
@@ -213,7 +213,7 @@ class MediaMatch:
             self.status == MatchStatus.MATCHED and (self.confidence or 0) < 0.8
         )
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the match."""
         result = self.metadata.as_dict()
         result.update({
@@ -241,9 +241,9 @@ class SearchRequest:
 
     query: str
     media_type: MediaType
-    year: Optional[int] = None
-    season: Optional[int] = None
-    episode: Optional[int] = None
+    year: int | None = None
+    season: int | None = None
+    episode: int | None = None
 
 
 @dataclass
@@ -251,13 +251,13 @@ class SearchResult:
     """Result from a media search."""
 
     title: str
-    year: Optional[int] = None
-    external_id: Optional[str] = None
-    source: Optional[str] = None
-    poster_url: Optional[str] = None
-    overview: Optional[str] = None
+    year: int | None = None
+    external_id: str | None = None
+    source: str | None = None
+    poster_url: str | None = None
+    overview: str | None = None
     confidence: float = 0.0
-    poster_urls: Dict[PosterType, str] = None
+    poster_urls: dict[PosterType, str] = None
 
     def __post_init__(self) -> None:
         """Initialize poster_urls dict if not provided."""

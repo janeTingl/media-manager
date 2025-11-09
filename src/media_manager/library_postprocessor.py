@@ -6,7 +6,7 @@ import shutil
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional
+from typing import Callable, Iterable
 from uuid import uuid4
 
 from .logging import get_logger
@@ -48,18 +48,18 @@ class PostProcessingItemResult:
 
     match: MediaMatch
     source: Path
-    target: Optional[Path]
+    target: Path | None
     action: str
-    message: Optional[str] = None
+    message: str | None = None
 
 
 @dataclass
 class PostProcessingSummary:
     """Aggregate summary for a post-processing session."""
 
-    processed: List[PostProcessingItemResult] = field(default_factory=list)
-    skipped: List[PostProcessingItemResult] = field(default_factory=list)
-    failed: List[PostProcessingItemResult] = field(default_factory=list)
+    processed: list[PostProcessingItemResult] = field(default_factory=list)
+    skipped: list[PostProcessingItemResult] = field(default_factory=list)
+    failed: list[PostProcessingItemResult] = field(default_factory=list)
 
 
 class ProcessingEventType(str, Enum):
@@ -77,15 +77,15 @@ class ProcessingEvent:
     type: ProcessingEventType
     match: MediaMatch
     source: Path
-    target: Optional[Path]
-    message: Optional[str] = None
+    target: Path | None
+    message: str | None = None
 
 
 class PostProcessingError(Exception):
     """Raised when post processing fails and the operation is rolled back."""
 
     def __init__(
-        self, message: str, match: Optional[MediaMatch], summary: PostProcessingSummary
+        self, message: str, match: MediaMatch | None, summary: PostProcessingSummary
     ) -> None:
         super().__init__(message)
         self.match = match
@@ -114,8 +114,8 @@ class LibraryPostProcessor:
 
     def __init__(
         self,
-        settings: Optional[SettingsManager] = None,
-        renamer: Optional[RenamingEngine] = None,
+        settings: SettingsManager | None = None,
+        renamer: RenamingEngine | None = None,
     ) -> None:
         self._settings = settings or get_settings()
         self._renamer = renamer or RenamingEngine(self._settings)
@@ -129,8 +129,8 @@ class LibraryPostProcessor:
         self,
         matches: Iterable[MediaMatch],
         options: PostProcessingOptions,
-        progress_callback: Optional[Callable[[int, int], None]] = None,
-        event_callback: Optional[Callable[[ProcessingEvent], None]] = None,
+        progress_callback: Callable[[int, int], None] | None = None,
+        event_callback: Callable[[ProcessingEvent], None] | None = None,
     ) -> PostProcessingSummary:
         """Process matched items and move/copy them into the library."""
 
@@ -141,8 +141,8 @@ class LibraryPostProcessor:
         if total == 0:
             return summary
 
-        operations: List[_OperationRecord] = []
-        backups: List[_OverwriteBackup] = []
+        operations: list[_OperationRecord] = []
+        backups: list[_OverwriteBackup] = []
         cleanup_dirs: set[Path] = set()
 
         try:
@@ -391,7 +391,7 @@ class LibraryPostProcessor:
 
     def _handle_conflict(
         self, target_path: Path, resolution: ConflictResolution
-    ) -> "_ConflictResult":
+    ) -> _ConflictResult:
         if not target_path.exists():
             return _ConflictResult(target_path)
 
@@ -417,8 +417,8 @@ class LibraryPostProcessor:
 
     def _rollback_operations(
         self,
-        operations: List[_OperationRecord],
-        backups: List[_OverwriteBackup],
+        operations: list[_OperationRecord],
+        backups: list[_OverwriteBackup],
     ) -> None:
         for record in reversed(operations):
             try:
@@ -443,7 +443,7 @@ class LibraryPostProcessor:
                     exc,
                 )
 
-    def _remove_backups(self, backups: List[_OverwriteBackup]) -> None:
+    def _remove_backups(self, backups: list[_OverwriteBackup]) -> None:
         for backup in backups:
             try:
                 if backup.backup_path.exists():
@@ -481,9 +481,9 @@ class LibraryPostProcessor:
 
 @dataclass
 class _ConflictResult:
-    target_path: Optional[Path]
-    backup_path: Optional[Path] = None
-    reason: Optional[str] = None
+    target_path: Path | None
+    backup_path: Path | None = None
+    reason: str | None = None
 
 
 __all__ = [

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional, Sequence
+from typing import Callable, Sequence
 
 from PySide6.QtCore import QObject, Signal
 
@@ -22,16 +22,16 @@ class ScanEngine(QObject):
 
     def __init__(
         self,
-        scanner: Optional[Scanner] = None,
-        parent: Optional[QObject] = None,
+        scanner: Scanner | None = None,
+        parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
         self._scanner = scanner or Scanner()
         self._logger = get_logger().get_logger(__name__)
-        self._results: List[VideoMetadata] = []
-        self._callbacks: List[Callable[[VideoMetadata], None]] = []
+        self._results: list[VideoMetadata] = []
+        self._callbacks: list[Callable[[VideoMetadata], None]] = []
 
-    def scan(self, config: ScanConfig) -> List[VideoMetadata]:
+    def scan(self, config: ScanConfig) -> list[VideoMetadata]:
         """Perform a scan with the provided configuration."""
         self._results = []
 
@@ -80,11 +80,11 @@ class ScanEngine(QObject):
         """Clear cached scan results."""
         self._results = []
 
-    def get_results(self) -> List[VideoMetadata]:
+    def get_results(self) -> list[VideoMetadata]:
         """Return the cached scan results."""
         return list(self._results)
 
-    def get_results_by_paths(self, paths: Sequence[str]) -> List[VideoMetadata]:
+    def get_results_by_paths(self, paths: Sequence[str]) -> list[VideoMetadata]:
         """Return cached results filtered by file path."""
         lookup = {metadata.path.as_posix(): metadata for metadata in self._results}
         return [lookup[path] for path in paths if path in lookup]

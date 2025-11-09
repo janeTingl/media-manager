@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
@@ -20,10 +20,8 @@ from PySide6.QtWidgets import (
 
 from .logging import get_logger
 from .models import (
-    DownloadStatus,
     MatchStatus,
     MediaMatch,
-    PosterInfo,
     PosterType,
     SearchRequest,
     SearchResult,
@@ -39,11 +37,11 @@ class MatchResolutionWidget(QWidget):
     search_requested = Signal(object)  # SearchRequest
     poster_download_requested = Signal(object, list)  # MediaMatch, list[PosterType]
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
-        self._current_match: Optional[MediaMatch] = None
-        self._search_worker: Optional[SearchWorker] = None
+        self._current_match: MediaMatch | None = None
+        self._search_worker: SearchWorker | None = None
 
         self._setup_ui()
 
@@ -113,15 +111,15 @@ class MatchResolutionWidget(QWidget):
 
         # Poster download buttons
         poster_buttons_layout = QHBoxLayout()
-        
+
         self.download_poster_button = QPushButton("Download Poster")
         self.download_poster_button.clicked.connect(self._on_download_poster_clicked)
         poster_buttons_layout.addWidget(self.download_poster_button)
-        
+
         self.download_fanart_button = QPushButton("Download Fanart")
         self.download_fanart_button.clicked.connect(self._on_download_fanart_clicked)
         poster_buttons_layout.addWidget(self.download_fanart_button)
-        
+
         poster_layout.addLayout(poster_buttons_layout)
 
         layout.addWidget(info_group)
@@ -247,6 +245,8 @@ class MatchResolutionWidget(QWidget):
 
     def _update_poster_display(self) -> None:
         """Update the poster display and status."""
+        from PySide6.QtGui import QPixmap
+
         if not self._current_match:
             self.poster_label.setText("No poster available")
             self.poster_label.setPixmap(QPixmap())
@@ -272,19 +272,19 @@ class MatchResolutionWidget(QWidget):
 
         # Update download buttons
         self.download_poster_button.setEnabled(
-            poster_info is not None and 
-            poster_info.url is not None and 
+            poster_info is not None and
+            poster_info.url is not None and
             not poster_info.is_downloaded()
         )
 
         fanart_info = posters.get(PosterType.FANART)
         self.download_fanart_button.setEnabled(
-            fanart_info is not None and 
-            fanart_info.url is not None and 
+            fanart_info is not None and
+            fanart_info.url is not None and
             not fanart_info.is_downloaded()
         )
 
-    def _load_poster_image(self, image_path: Optional[Path]) -> None:
+    def _load_poster_image(self, image_path: Path | None) -> None:
         """Load and display a poster image."""
         from PySide6.QtGui import QPixmap
 
@@ -431,7 +431,7 @@ class MatchResolutionWidget(QWidget):
 
         self._logger.info(f"Searching for '{query}'")
 
-    def set_search_results(self, results: List[SearchResult]) -> None:
+    def set_search_results(self, results: list[SearchResult]) -> None:
         """Set search results from a search operation."""
         self.results_list.clear()
 
@@ -478,7 +478,7 @@ class MatchResolutionWidget(QWidget):
         self.results_list.clear()
         self.apply_button.setEnabled(False)
 
-    def get_current_match(self) -> Optional[MediaMatch]:
+    def get_current_match(self) -> MediaMatch | None:
         """Get the currently displayed match."""
         return self._current_match
 
@@ -487,7 +487,7 @@ class MatchResolutionWidget(QWidget):
         """Handle download poster button click."""
         if not self._current_match:
             return
-        
+
         self.poster_download_requested.emit(self._current_match, [PosterType.POSTER])
         self._logger.info(f"Requested poster download for {self._current_match.metadata.title}")
 
@@ -496,7 +496,7 @@ class MatchResolutionWidget(QWidget):
         """Handle download fanart button click."""
         if not self._current_match:
             return
-        
+
         self.poster_download_requested.emit(self._current_match, [PosterType.FANART])
         self._logger.info(f"Requested fanart download for {self._current_match.metadata.title}")
 
