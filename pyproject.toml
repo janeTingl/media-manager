@@ -9,7 +9,7 @@ description = "A media management application built with PySide6"
 authors = [{name = "Media Manager Team"}]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -38,6 +38,15 @@ dev = [
 [project.scripts]
 media-manager = "media_manager.main:main"
 media-manager-demo = "media_manager.demo_integration:main"
+
+[tool.setuptools]
+include-package-data = true
+license-files = [
+    "LICENSE",
+    "README.md",
+    "INSTALL_GUIDE.md",
+    "CHANGELOG.md",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
