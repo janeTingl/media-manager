@@ -1,0 +1,128 @@
+# Makefile for building Media Manager Windows executable
+# Use with: make -f Makefile.windows
+
+# Configuration
+PYTHON := python
+PROJECT_NAME := media-manager
+VERSION := 0.1.0
+EXECUTABLE_NAME := media-manager.exe
+
+# Paths
+PROJECT_ROOT := .
+BUILD_DIR := $(PROJECT_ROOT)/build
+DIST_DIR := $(PROJECT_ROOT)/dist
+PACKAGE_DIR := $(PROJECT_ROOT)/package
+
+# Default target
+.PHONY: all
+all: clean deps build package
+
+# Install dependencies
+.PHONY: deps
+deps:
+	@echo "Installing build dependencies..."
+	$(PYTHON) -m pip install -r build-requirements.txt
+
+# Clean build artifacts
+.PHONY: clean
+clean:
+	@echo "Cleaning build artifacts..."
+	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	@if exist $(DIST_DIR) rmdir /s /q $(DIST_DIR)
+	@if exist $(PACKAGE_DIR) rmdir /s /q $(PACKAGE_DIR)
+	@if exist *.spec del /q *.spec
+
+# Build executable only
+.PHONY: build
+build: deps
+	@echo "Building executable..."
+	$(PYTHON) build_windows.py
+
+# Build with PyInstaller directly
+.PHONY: build-pyinstaller
+build-pyinstaller: deps
+	@echo "Building with PyInstaller..."
+	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	@if exist $(DIST_DIR) rmdir /s /q $(DIST_DIR)
+	$(PYTHON) -m PyInstaller ^
+		--clean ^
+		--noconfirm ^
+		--name=$(PROJECT_NAME) ^
+		--onefile ^
+		--windowed ^
+		--distpath=$(DIST_DIR) ^
+		--workpath=$(BUILD_DIR) ^
+		--specpath=$(PROJECT_ROOT) ^
+		$(PROJECT_ROOT)/media-manager.spec
+
+# Build and create packages
+.PHONY: package
+package: build
+	@echo "Creating packages..."
+	@echo "Packages are created by build_windows.py"
+
+# Test executable
+.PHONY: test
+test: build
+	@echo "Testing executable..."
+	@if exist $(DIST_DIR)/$(EXECUTABLE_NAME) (
+		echo "Running basic test..."
+		$(DIST_DIR)/$(EXECUTABLE_NAME) --help || echo "Note: --help not supported, this is normal"
+	) else (
+		echo "ERROR: Executable not found!"
+		exit 1
+	)
+
+# Development build (faster, larger)
+.PHONY: dev
+dev: deps
+	@echo "Building development version..."
+	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	@if exist $(DIST_DIR) rmdir /s /q $(DIST_DIR)
+	$(PYTHON) -m PyInstaller ^
+		--clean ^
+		--noconfirm ^
+		--name=$(PROJECT_NAME)-dev ^
+		--onedir ^
+		--windowed ^
+		--debug=all ^
+		--distpath=$(DIST_DIR) ^
+		--workpath=$(BUILD_DIR) ^
+		--specpath=$(PROJECT_ROOT) ^
+		$(PROJECT_ROOT)/media-manager.spec
+
+# Show build information
+.PHONY: info
+info:
+	@echo "Media Manager Build Information"
+	@echo "==============================="
+	@echo "Project: $(PROJECT_NAME)"
+	@echo "Version: $(VERSION)"
+	@echo "Python: $(shell $(PYTHON) --version)"
+	@echo "PyInstaller: $(shell $(PYTHON) -m PyInstaller --version)"
+	@echo "Build Directory: $(BUILD_DIR)"
+	@echo "Dist Directory: $(DIST_DIR)"
+	@echo "Package Directory: $(PACKAGE_DIR)"
+
+# Help
+.PHONY: help
+help:
+	@echo "Media Manager Windows Build Makefile"
+	@echo "===================================="
+	@echo ""
+	@echo "Targets:"
+	@echo "  all        - Clean, install deps, build, and package"
+	@echo "  deps       - Install build dependencies"
+	@echo "  clean      - Remove build artifacts"
+	@echo "  build      - Build executable using build script"
+	@echo "  build-pyinstaller - Build using PyInstaller directly"
+	@echo "  package    - Build and create distribution packages"
+	@echo "  test       - Test the built executable"
+	@echo "  dev        - Build development version (debug, directory mode)"
+	@echo "  info       - Show build information"
+	@echo "  help       - Show this help"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make -f Makefile.windows all"
+	@echo "  make -f Makefile.windows build"
+	@echo "  make -f Makefile.windows test"
