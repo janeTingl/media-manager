@@ -37,6 +37,7 @@ dev = [
 
 [project.scripts]
 media-manager = "media_manager.main:main"
+media-manager-demo = "media_manager.demo_integration:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -101,7 +101,7 @@ class ScanConfig:
         self.video_extensions = tuple(sorted(set(input_video_exts)))
         self._video_extension_set = set(self.video_extensions)
 
-    def with_roots(self, roots: Sequence[Path]) -> "ScanConfig":
+    def with_roots(self, roots: Sequence[Path]) -> ScanConfig:
         """Return a new ScanConfig with the provided roots."""
         return ScanConfig(
             root_paths=tuple(roots),
