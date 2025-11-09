@@ -168,6 +168,57 @@ class SettingsManager(QObject):
         """Set the poster cache directory."""
         self.set_poster_setting("cache_dir", cache_dir)
 
+    def get_subtitle_setting(self, key: str, default: Any = None) -> Any:
+        """Get a subtitle-related setting."""
+        subtitle_settings = self.get("subtitle_settings", {})
+        return subtitle_settings.get(key, default)
+
+    def set_subtitle_setting(self, key: str, value: Any) -> None:
+        """Set a subtitle-related setting."""
+        subtitle_settings = self.get("subtitle_settings", {})
+        subtitle_settings[key] = value
+        self.set("subtitle_settings", subtitle_settings)
+
+    def get_enabled_subtitle_languages(self) -> list[str]:
+        """Get the list of enabled subtitle languages."""
+        return self.get_subtitle_setting("enabled_languages", ["en"])
+
+    def set_enabled_subtitle_languages(self, languages: list[str]) -> None:
+        """Set the list of enabled subtitle languages."""
+        self.set_subtitle_setting("enabled_languages", languages)
+
+    def get_auto_download_subtitles(self) -> bool:
+        """Get whether to automatically download subtitles."""
+        return self.get_subtitle_setting("auto_download", False)
+
+    def set_auto_download_subtitles(self, auto_download: bool) -> None:
+        """Set whether to automatically download subtitles."""
+        self.set_subtitle_setting("auto_download", auto_download)
+
+    def get_subtitle_format(self) -> str:
+        """Get the preferred subtitle format."""
+        return self.get_subtitle_setting("format", "srt")
+
+    def set_subtitle_format(self, format: str) -> None:
+        """Set the preferred subtitle format."""
+        self.set_subtitle_setting("format", format)
+
+    def get_subtitle_provider(self) -> str:
+        """Get the subtitle provider to use."""
+        return self.get_subtitle_setting("provider", "OpenSubtitles")
+
+    def set_subtitle_provider(self, provider: str) -> None:
+        """Set the subtitle provider."""
+        self.set_subtitle_setting("provider", provider)
+
+    def get_subtitle_cache_dir(self) -> Optional[str]:
+        """Get the subtitle cache directory."""
+        return self.get_subtitle_setting("cache_dir")
+
+    def set_subtitle_cache_dir(self, cache_dir: str) -> None:
+        """Set the subtitle cache directory."""
+        self.set_subtitle_setting("cache_dir", cache_dir)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None

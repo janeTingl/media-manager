@@ -43,13 +43,38 @@ class PosterSize(str, Enum):
 
 
 class DownloadStatus(str, Enum):
-    """Status of poster download."""
+    """Status of poster/subtitle download."""
 
     PENDING = "pending"
     DOWNLOADING = "downloading"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
+
+
+class SubtitleLanguage(str, Enum):
+    """Supported subtitle languages."""
+
+    ENGLISH = "en"
+    SPANISH = "es"
+    FRENCH = "fr"
+    GERMAN = "de"
+    ITALIAN = "it"
+    PORTUGUESE = "pt"
+    RUSSIAN = "ru"
+    CHINESE = "zh"
+    JAPANESE = "ja"
+    KOREAN = "ko"
+
+
+class SubtitleFormat(str, Enum):
+    """Supported subtitle formats."""
+
+    SRT = "srt"
+    ASS = "ass"
+    SUB = "sub"
+    VTT = "vtt"
+    SSA = "ssa"
 
 
 @dataclass
@@ -115,6 +140,41 @@ class PosterInfo:
 
 
 @dataclass
+class SubtitleInfo:
+    """Information about a subtitle download."""
+
+    language: SubtitleLanguage
+    format: SubtitleFormat = SubtitleFormat.SRT
+    url: Optional[str] = None
+    local_path: Optional[Path] = None
+    download_status: DownloadStatus = DownloadStatus.PENDING
+    file_size: Optional[int] = None
+    error_message: Optional[str] = None
+    retry_count: int = 0
+    provider: Optional[str] = None
+    subtitle_id: Optional[str] = None
+
+    def is_downloaded(self) -> bool:
+        """Return True if the subtitle has been successfully downloaded."""
+        return self.download_status == DownloadStatus.COMPLETED and self.local_path and self.local_path.exists()
+
+    def as_dict(self) -> Dict[str, Any]:
+        """Return a dictionary representation of the subtitle info."""
+        return {
+            "language": self.language.value,
+            "format": self.format.value,
+            "url": self.url,
+            "local_path": str(self.local_path) if self.local_path else None,
+            "download_status": self.download_status.value,
+            "file_size": self.file_size,
+            "error_message": self.error_message,
+            "retry_count": self.retry_count,
+            "provider": self.provider,
+            "subtitle_id": self.subtitle_id,
+        }
+
+
+@dataclass
 class MediaMatch:
     """Match information for a media item."""
 
@@ -129,11 +189,14 @@ class MediaMatch:
     overview: Optional[str] = None
     user_selected: bool = False
     posters: Dict[PosterType, PosterInfo] = None
+    subtitles: Dict[SubtitleLanguage, SubtitleInfo] = None
 
     def __post_init__(self) -> None:
-        """Initialize posters dict if not provided."""
+        """Initialize posters and subtitles dicts if not provided."""
         if self.posters is None:
             self.posters = {}
+        if self.subtitles is None:
+            self.subtitles = {}
 
     def is_matched(self) -> bool:
         """Return True if the item has been matched (automatically or manually)."""
@@ -159,6 +222,7 @@ class MediaMatch:
             "overview": self.overview,
             "user_selected": self.user_selected,
             "posters": {ptype.value: info.as_dict() for ptype, info in self.posters.items()},
+            "subtitles": {lang.value: info.as_dict() for lang, info in self.subtitles.items()},
         })
         return result
 

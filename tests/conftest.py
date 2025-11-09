@@ -1,10 +1,21 @@
 """Configuration for pytest and test fixtures."""
 
+import os
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import pytest
-from PySide6.QtWidgets import QApplication
+
+# Set up headless display for Qt before importing PySide6
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+try:
+    from PySide6.QtWidgets import QApplication
+    HAS_QT = True
+except ImportError:
+    HAS_QT = False
+    QApplication = None  # type: ignore
 
 from src.media_manager.logging import setup_logging
 from src.media_manager.services import get_service_registry
@@ -12,8 +23,10 @@ from src.media_manager.settings import SettingsManager
 
 
 @pytest.fixture(scope="session")
-def qapp():
+def qapp() -> Optional[object]:
     """Create QApplication instance for tests."""
+    if not HAS_QT or QApplication is None:
+        return None
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
