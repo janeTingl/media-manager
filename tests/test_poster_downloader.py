@@ -7,8 +7,8 @@ from unittest.mock import Mock, patch, mock_open
 import pytest
 from requests import Response
 
-from src.media_manager.models import DownloadStatus, PosterInfo, PosterType, PosterSize
-from src.media_manager.poster_downloader import PosterDownloader
+from media_manager.models import DownloadStatus, PosterInfo, PosterType, PosterSize
+from media_manager.poster_downloader import PosterDownloader
 
 
 class TestPosterDownloader:
@@ -100,7 +100,7 @@ class TestPosterDownloader:
             assert poster_info.local_path == poster_path
             assert poster_info.file_size == len(b"fake image data")
 
-    @patch('src.media_manager.poster_downloader.urlopen')
+    @patch('media_manager.poster_downloader.urlopen')
     def test_download_poster_success(self, mock_urlopen) -> None:
         """Test successful poster download."""
         # Mock HTTP response
@@ -130,7 +130,7 @@ class TestPosterDownloader:
             assert poster_info.local_path.exists()
             assert poster_info.file_size == 1024
 
-    @patch('src.media_manager.poster_downloader.urlopen')
+    @patch('media_manager.poster_downloader.urlopen')
     def test_download_poster_invalid_content_type(self, mock_urlopen) -> None:
         """Test downloading poster with invalid content type."""
         # Mock HTTP response with HTML content
@@ -156,7 +156,7 @@ class TestPosterDownloader:
             assert poster_info.download_status == DownloadStatus.FAILED
             assert "Invalid content type" in poster_info.error_message
 
-    @patch('src.media_manager.poster_downloader.urlopen')
+    @patch('media_manager.poster_downloader.urlopen')
     def test_download_poster_with_retries(self, mock_urlopen) -> None:
         """Test poster download with retries."""
         # Mock HTTP response that fails first two times, succeeds on third
@@ -195,7 +195,7 @@ class TestPosterDownloader:
             assert poster_info.download_status == DownloadStatus.COMPLETED
             assert poster_info.retry_count == 2  # Should have retried twice
 
-    @patch('src.media_manager.poster_downloader.urlopen')
+    @patch('media_manager.poster_downloader.urlopen')
     def test_download_poster_max_retries_exceeded(self, mock_urlopen) -> None:
         """Test poster download when max retries are exceeded."""
         # Mock HTTP response that always fails

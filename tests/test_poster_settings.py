@@ -9,8 +9,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtTest import QTest
 
-from src.media_manager.models import PosterType, PosterSize
-from src.media_manager.poster_settings_widget import PosterSettingsWidget
+from media_manager.models import PosterType, PosterSize
+from media_manager.poster_settings_widget import PosterSettingsWidget
 
 
 class TestPosterSettingsWidget:
@@ -20,10 +20,10 @@ class TestPosterSettingsWidget:
         """Test widget initialization."""
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Check that all UI elements exist
@@ -43,7 +43,7 @@ class TestPosterSettingsWidget:
         """Test loading settings from storage."""
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
             # Set some test settings
@@ -54,7 +54,7 @@ class TestPosterSettingsWidget:
             settings.set_cache_dir("/test/cache")
             settings.save_settings()
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Check that settings were loaded
@@ -70,10 +70,10 @@ class TestPosterSettingsWidget:
         """Test saving settings to storage."""
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Change some settings
@@ -107,10 +107,10 @@ class TestPosterSettingsWidget:
         """Test that settings_changed signal is emitted."""
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 signal_received = False
@@ -130,10 +130,10 @@ class TestPosterSettingsWidget:
         """Test getting enabled poster types."""
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Enable some types
@@ -147,17 +147,17 @@ class TestPosterSettingsWidget:
                 assert PosterType.FANART in enabled_types
                 assert PosterType.BANNER not in enabled_types
 
-    @patch('src.media_manager.poster_settings_widget.QFileDialog.getExistingDirectory')
+    @patch('media_manager.poster_settings_widget.QFileDialog.getExistingDirectory')
     def test_browse_cache(self, mock_get_directory, qapp) -> None:
         """Test browsing for cache directory."""
         mock_get_directory.return_value = "/selected/directory"
         
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Click browse button
@@ -165,71 +165,71 @@ class TestPosterSettingsWidget:
                 
                 assert widget.cache_dir_edit.text() == "/selected/directory"
 
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.question')
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.information')
+    @patch('media_manager.poster_settings_widget.QMessageBox.question')
+    @patch('media_manager.poster_settings_widget.QMessageBox.information')
     def test_clear_cache_success(self, mock_info, mock_question, qapp) -> None:
         """Test successful cache clearing."""
         mock_question.return_value = mock_question.Yes
         
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 # Create a mock downloader
                 mock_downloader = Mock()
                 
-                with patch('src.media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
+                with patch('media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
                     # Click clear cache button
                     QTest.mouseClick(widget.clear_cache_button, Qt.LeftButton)
                     
                     mock_downloader.clear_cache.assert_called_once()
                     mock_info.assert_called_once()
 
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.question')
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.warning')
+    @patch('media_manager.poster_settings_widget.QMessageBox.question')
+    @patch('media_manager.poster_settings_widget.QMessageBox.warning')
     def test_clear_cache_cancelled(self, mock_warning, mock_question, qapp) -> None:
         """Test cache clearing when user cancels."""
         mock_question.return_value = mock_question.No
         
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 mock_downloader = Mock()
                 
-                with patch('src.media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
+                with patch('media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
                     # Click clear cache button
                     QTest.mouseClick(widget.clear_cache_button, Qt.LeftButton)
                     
                     mock_downloader.clear_cache.assert_not_called()
                     mock_warning.assert_not_called()
 
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.question')
-    @patch('src.media_manager.poster_settings_widget.QMessageBox.warning')
+    @patch('media_manager.poster_settings_widget.QMessageBox.question')
+    @patch('media_manager.poster_settings_widget.QMessageBox.warning')
     def test_clear_cache_error(self, mock_warning, mock_question, qapp) -> None:
         """Test cache clearing with error."""
         mock_question.return_value = mock_question.Yes
         
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
-            from src.media_manager.settings import SettingsManager
+            from media_manager.settings import SettingsManager
             settings = SettingsManager(settings_file)
             
-            with patch('src.media_manager.poster_settings_widget.get_settings', return_value=settings):
+            with patch('media_manager.poster_settings_widget.get_settings', return_value=settings):
                 widget = PosterSettingsWidget()
                 
                 mock_downloader = Mock()
                 mock_downloader.clear_cache.side_effect = Exception("Cache error")
                 
-                with patch('src.media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
+                with patch('media_manager.poster_settings_widget.PosterDownloader', return_value=mock_downloader):
                     # Click clear cache button
                     QTest.mouseClick(widget.clear_cache_button, Qt.LeftButton)
                     

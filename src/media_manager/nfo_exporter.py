@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from src.media_manager.models import MediaMatch
+from media_manager.models import MediaMatch
 
 
 class NFOExporter:

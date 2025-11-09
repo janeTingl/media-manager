@@ -8,7 +8,7 @@ import pytest
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 
-from src.media_manager.models import (
+from media_manager.models import (
     DownloadStatus,
     MediaMatch,
     PosterInfo,
@@ -16,8 +16,8 @@ from src.media_manager.models import (
     PosterSize,
     VideoMetadata,
 )
-from src.media_manager.poster_downloader import PosterDownloader
-from src.media_manager.workers import PosterDownloadWorker
+from media_manager.poster_downloader import PosterDownloader
+from media_manager.workers import PosterDownloadWorker
 
 
 class TestPosterIntegration:
@@ -69,7 +69,7 @@ class TestPosterIntegration:
             image_data = b"fake image data for testing"
             mock_response.read.side_effect = [image_data, b""]
             
-            with patch('src.media_manager.poster_downloader.urlopen') as mock_urlopen:
+            with patch('media_manager.poster_downloader.urlopen') as mock_urlopen:
                 mock_urlopen.return_value.__enter__.return_value = mock_response
                 
                 # Create downloader and worker
@@ -167,7 +167,7 @@ class TestPosterIntegration:
                     mock_response.read.side_effect = [b"fanart data", b""]
                 return mock_response.__enter__.return_value
             
-            with patch('src.media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
+            with patch('media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
                 # Create downloader and worker
                 cache_dir = Path(temp_dir) / "cache"
                 downloader = PosterDownloader(cache_dir=cache_dir)
@@ -236,7 +236,7 @@ class TestPosterIntegration:
             image_data = b"cached image data"
             mock_response.read.side_effect = [image_data, b""]
             
-            with patch('src.media_manager.poster_downloader.urlopen') as mock_urlopen:
+            with patch('media_manager.poster_downloader.urlopen') as mock_urlopen:
                 mock_urlopen.return_value.__enter__.return_value = mock_response
                 
                 # Create downloader
@@ -306,7 +306,7 @@ class TestPosterIntegration:
                 mock_response.read.side_effect = [b"retry image data", b""]
                 return mock_response.__enter__.return_value
             
-            with patch('src.media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
+            with patch('media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
                 # Create downloader with retries
                 cache_dir = Path(temp_dir) / "cache"
                 downloader = PosterDownloader(cache_dir=cache_dir, max_retries=3)
@@ -350,7 +350,7 @@ class TestPosterIntegration:
             def mock_urlopen_side_effect(request):
                 raise Exception("Persistent network error")
             
-            with patch('src.media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
+            with patch('media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
                 # Create downloader with limited retries
                 cache_dir = Path(temp_dir) / "cache"
                 downloader = PosterDownloader(cache_dir=cache_dir, max_retries=2)
@@ -397,7 +397,7 @@ class TestPosterIntegration:
                 mock_response.read.side_effect = [b"image data", b""]
                 return mock_response.__enter__.return_value
             
-            with patch('src.media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
+            with patch('media_manager.poster_downloader.urlopen', side_effect=mock_urlopen_side_effect):
                 # Create worker
                 cache_dir = Path(temp_dir) / "cache"
                 downloader = PosterDownloader(cache_dir=cache_dir)

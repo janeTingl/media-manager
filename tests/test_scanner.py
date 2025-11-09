@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.media_manager.models import MediaType
-from src.media_manager.scanner import ScanConfig, Scanner
+from media_manager.models import MediaType
+from media_manager.scanner import ScanConfig, Scanner
 
 
 def _touch_file(path: Path) -> None:

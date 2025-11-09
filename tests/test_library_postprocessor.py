@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from src.media_manager.library_postprocessor import (
+from media_manager.library_postprocessor import (
     ConflictResolution,
     LibraryPostProcessor,
     PostProcessingError,
     PostProcessingOptions,
 )
-from src.media_manager.models import MatchStatus, MediaMatch, MediaType, VideoMetadata
+from media_manager.models import MatchStatus, MediaMatch, MediaType, VideoMetadata
 
 
 def _create_movie_match(path: Path, title: str = "Example Movie", year: int = 2021) -> MediaMatch:
@@ -236,7 +236,7 @@ def test_library_postprocessor_rollback_on_error(tmp_path: Path, temp_settings, 
 
     processor = LibraryPostProcessor(settings=temp_settings)
 
-    from src.media_manager import library_postprocessor as lp_module
+    from media_manager import library_postprocessor as lp_module
 
     original_move = lp_module.shutil.move
 

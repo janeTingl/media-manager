@@ -7,9 +7,9 @@ from typing import List
 
 from PySide6.QtTest import QSignalSpy
 
-from src.media_manager.models import MediaType, VideoMetadata
-from src.media_manager.scan_engine import ScanEngine
-from src.media_manager.scanner import ScanConfig
+from media_manager.models import MediaType, VideoMetadata
+from media_manager.scan_engine import ScanEngine
+from media_manager.scanner import ScanConfig
 
 
 def _touch_file(path: Path) -> None:

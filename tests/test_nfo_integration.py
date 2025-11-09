@@ -6,14 +6,14 @@ from xml.etree import ElementTree as ET
 
 import pytest
 
-from src.media_manager.models import (
+from media_manager.models import (
     MatchStatus,
     MediaMatch,
     MediaType,
     VideoMetadata,
 )
-from src.media_manager.nfo_exporter import NFOExporter
-from src.media_manager.settings import SettingsManager
+from media_manager.nfo_exporter import NFOExporter
+from media_manager.settings import SettingsManager
 
 
 class TestNFOExporterIntegration:

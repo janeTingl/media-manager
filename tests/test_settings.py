@@ -4,7 +4,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from src.media_manager.settings import SettingsManager
+from media_manager.settings import SettingsManager
 
 
 class TestSettingsManager:

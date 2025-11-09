@@ -17,9 +17,9 @@ except ImportError:
     HAS_QT = False
     QApplication = None  # type: ignore
 
-from src.media_manager.logging import setup_logging
-from src.media_manager.services import get_service_registry
-from src.media_manager.settings import SettingsManager
+from media_manager.logging import setup_logging
+from media_manager.services import get_service_registry
+from media_manager.settings import SettingsManager
 
 
 @pytest.fixture(scope="session")
@@ -30,6 +30,9 @@ def qapp() -> Optional[object]:
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
+    # Set application properties
+    app.setApplicationName("Media Manager")
+    app.setApplicationVersion("0.1.0")
     yield app
     # Don't quit app here as it might be used by other tests
 

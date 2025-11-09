@@ -6,8 +6,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.media_manager.models import MediaType, SubtitleFormat, SubtitleLanguage
-from src.media_manager.subtitle_provider import (
+from media_manager.models import MediaType, SubtitleFormat, SubtitleLanguage
+from media_manager.subtitle_provider import (
     MockSubtitleProvider,
     OpenSubtitlesProvider,
     SubtitleProvider,

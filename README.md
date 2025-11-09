@@ -36,8 +36,16 @@ media-manager/
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip or poetry package manager
+- **Python:** 3.8 or higher (tested with 3.12.3)
+- **Package manager:** pip or poetry
+- **System libraries (optional, for GUI display):**
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libxkbcommon0 xvfb
+
+  # For headless testing with virtual display (optional)
+  sudo apt-get install -y xvfb
+  ```
 
 ### Development Setup
 
@@ -58,9 +66,21 @@ media-manager/
    pip install -e ".[dev]"
    ```
 
-   Or using poetry:
+   This installs:
+   - PySide6 for GUI
+   - pytest and pytest-qt for testing
+   - ruff for linting
+   - black for code formatting
+   - mypy for type checking
+
+4. **Install additional test dependencies:**
    ```bash
-   poetry install --with dev
+   pip install requests
+   ```
+
+5. **Verify installation:**
+   ```bash
+   python -m src.media_manager.main --help
    ```
 
 ### Production Installation
@@ -76,11 +96,27 @@ pip install media-manager
 #### Development Mode
 
 ```bash
+# Activate virtual environment
+source venv/bin/activate
+
 # Using the installed command
 media-manager
 
 # Or directly with Python
 python -m src.media_manager.main
+
+# Demo mode (comprehensive workflow demo)
+media-manager-demo
+```
+
+#### Headless / Testing Environment
+
+```bash
+# With virtual X server (for CI/testing)
+xvfb-run -a media-manager
+
+# With offscreen rendering
+QT_QPA_PLATFORM=offscreen media-manager
 ```
 
 #### From Source
@@ -166,19 +202,40 @@ The project uses modern Python tooling:
 
 ### Running Tests
 
-```bash
-# Run all tests
-pytest
+#### Test Environments
 
-# Run with coverage
-pytest --cov=src/media_manager
+**Option 1: Virtual X Server (Recommended)**
+```bash
+# Run all tests with xvfb
+xvfb-run -a pytest tests/ -v
 
 # Run specific test file
-pytest tests/test_smoke.py
+xvfb-run -a pytest tests/test_smoke.py -v
 
-# Run with verbose output
-pytest -v
+# Run with coverage
+xvfb-run -a pytest tests/ --cov=src/media_manager
 ```
+
+**Option 2: Headless Mode**
+```bash
+# Run with offscreen rendering
+QT_QPA_PLATFORM=offscreen pytest tests/ -v
+```
+
+**Option 3: Non-GUI Tests Only**
+```bash
+# Skip GUI tests entirely (fast)
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest tests/test_scanner.py tests/test_settings.py tests/test_nfo_exporter.py tests/test_subtitle_*.py -v
+```
+
+#### Test Results
+
+Current test status:
+- **Total:** 149 tests
+- **Passing:** 128 (86%)
+- **Failing:** 21 (mostly test infrastructure issues)
+
+See [TEST_REPORT.md](TEST_REPORT.md) for detailed test results and known issues.
 
 ### Code Formatting
 
