@@ -48,9 +48,9 @@ function Show-Menu {
     Write-Host ""
     
     Write-Host "Select build option:"
-    Write-Host "1. Full build (clean + deps + build + package)"
-    Write-Host "2. Quick build (build only)"
-    Write-Host "3. Development build (debug mode)"
+    Write-Host "1. Full build (Nuitka: clean + deps + build + package)"
+    Write-Host "2. Quick build (Nuitka: executable only)"
+    Write-Host "3. Development build (PyInstaller legacy backend)"
     Write-Host "4. Install dependencies only"
     Write-Host "5. Clean build artifacts"
     Write-Host "6. Test executable"
@@ -86,7 +86,7 @@ function Invoke-FullBuild {
     Write-Host ""
     
     try {
-        python build_windows.py
+        python build_windows.py --backend nuitka
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
             Write-ColorOutput "Build completed successfully!" "Green"
@@ -110,12 +110,8 @@ function Invoke-QuickBuild {
     Write-ColorOutput "Starting quick build..." "Yellow"
     Write-Host ""
     
-    # Clean previous builds
-    if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
-    if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
-    
     try {
-        python -m PyInstaller --clean --noconfirm --name=media-manager --onefile --windowed --distpath=dist --workpath=build --specpath=. media-manager.spec
+        python build_windows.py --backend nuitka --skip-dependency-install --skip-tests --skip-packages --no-clean
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
             Write-ColorOutput "Quick build completed!" "Green"
@@ -139,16 +135,12 @@ function Invoke-DevBuild {
     Write-ColorOutput "Starting development build (debug mode)..." "Yellow"
     Write-Host ""
     
-    # Clean previous builds
-    if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
-    if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
-    
     try {
-        python -m PyInstaller --clean --noconfirm --name=media-manager-dev --onedir --windowed --debug=all --distpath=dist --workpath=build --specpath=. media-manager.spec
+        python build_windows.py --backend pyinstaller --skip-dependency-install --skip-packages --skip-tests --no-clean
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
             Write-ColorOutput "Development build completed!" "Green"
-            Write-ColorOutput "Executable directory: dist\media-manager-dev\" "Cyan"
+            Write-ColorOutput "Executable: dist\media-manager.exe (PyInstaller backend)" "Cyan"
         } else {
             Write-Host ""
             Write-ColorOutput "Development build failed! Check the error messages above." "Red"
@@ -169,16 +161,20 @@ function Install-Dependencies {
     Write-Host ""
     
     try {
-        python -m pip install -r build-requirements.txt
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host ""
-            Write-ColorOutput "Dependencies installed successfully!" "Green"
-        } else {
-            Write-Host ""
-            Write-ColorOutput "Dependency installation failed!" "Red"
+        python build_windows.py --backend nuitka --only-install-deps
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to install Nuitka dependencies"
         }
+
+        python build_windows.py --backend pyinstaller --only-install-deps
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to install PyInstaller dependencies"
+        }
+
+        Write-Host ""
+        Write-ColorOutput "Dependencies installed successfully!" "Green"
     } catch {
-        Write-ColorOutput "Dependency installation failed with exception: $($_.Exception.Message)" "Red"
+        Write-ColorOutput "Dependency installation failed: $($_.Exception.Message)" "Red"
     }
     
     Write-Host ""
@@ -264,6 +260,14 @@ function Show-Info {
         python --version
         Write-Host ""
         
+        Write-Host "Nuitka:"
+        try {
+            python -m nuitka --version
+        } catch {
+            Write-Host "Nuitka not found" "Red"
+        }
+        Write-Host ""
+        
         Write-Host "PyInstaller:"
         try {
             python -m PyInstaller --version
@@ -322,10 +326,10 @@ function Show-Help {
     Write-Host ""
     Write-Host "Build Options:"
     Write-Host "--------------"
-    Write-Host "1. Full build - Complete build process including dependencies and packaging"
-    Write-Host "2. Quick build - Build executable only (faster for testing)"
-    Write-Host "3. Development build - Debug version with console output"
-    Write-Host "4. Install dependencies - Install required Python packages"
+    Write-Host "1. Full build - Nuitka build with dependency installation and packaging"
+    Write-Host "2. Quick build - Nuitka build without dependency install or packaging"
+    Write-Host "3. Development build - Legacy PyInstaller build without packaging"
+    Write-Host "4. Install dependencies - Install Nuitka (and optional PyInstaller) requirements"
     Write-Host "5. Clean - Remove all build artifacts"
     Write-Host "6. Test - Test the built executable"
     Write-Host "7. Information - Show build information and file sizes"

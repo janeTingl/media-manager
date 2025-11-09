@@ -196,10 +196,10 @@ No installation required! The application creates all necessary files in your us
 
 ### Debug Mode
 
-For advanced troubleshooting, you can run the development version:
+For advanced troubleshooting, you can run the development build:
 1. Download the source code
 2. Install Python dependencies
-3. Run `python build_windows.py --dev`
+3. Run `python build_windows.py --backend pyinstaller --skip-dependency-install --skip-packages --skip-tests`
 
 ### Log Files
 

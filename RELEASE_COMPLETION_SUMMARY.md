@@ -38,8 +38,7 @@
 #### 1. 构建基础设施 (Build Infrastructure)
 ```
 📁 Build Configuration:
-├── media-manager.spec              (1,842 bytes) - PyInstaller configuration
-├── build_windows.py               (13,950 bytes) - Build automation
+├── build_windows.py               (13,950 bytes) - Build automation (Nuitka & legacy PyInstaller)
 ├── create_windows_release.py     (14,889 bytes) - Complete release creator
 ├── build-requirements.txt          (788 bytes) - Dependencies
 └── check_release_status.py        (3,200 bytes) - Status checker
@@ -116,8 +115,8 @@ git push origin v0.1.0
 # 在 Windows 系统上：
 git clone <repository>
 cd media-manager
-pip install -r build-requirements.txt
-python create_windows_release.py
+python build_windows.py --backend nuitka --only-install-deps
+python create_windows_release.py --backend nuitka
 # 上传 package/ 中的文件到 GitHub Release
 ```
 

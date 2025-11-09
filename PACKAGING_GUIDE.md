@@ -1,6 +1,6 @@
 # Media Manager Windows Executable Packaging Guide
 
-This document provides comprehensive instructions for packaging the Media Manager application as a Windows executable (.exe) file using PyInstaller.
+This document provides comprehensive instructions for packaging the Media Manager application as a Windows executable (.exe) file using Nuitka (recommended) or the legacy PyInstaller flow.
 
 ## Overview
 
@@ -28,7 +28,7 @@ UPX reduces the executable size significantly:
 
 ## Build Process
 
-### Option 1: Automated Build (Recommended)
+### Option 1: Automated Nuitka Build (Recommended)
 
 1. **Clone or download the project:**
    ```bash
@@ -36,14 +36,14 @@ UPX reduces the executable size significantly:
    cd media-manager
    ```
 
-2. **Run the automated build script:**
+2. **Run the automated build script (Nuitka backend):**
    ```bash
-   python build_windows.py
+   python build_windows.py --backend nuitka
    ```
 
-This script will:
-- Install all dependencies
-- Build the executable
+This command will:
+- Install Nuitka and supporting dependencies
+- Build the standalone executable with Nuitka
 - Test the executable
 - Create portable and installer packages
 - Generate release information
@@ -65,43 +65,43 @@ This script will:
    make -f Makefile.windows package
    ```
 
-### Option 3: Direct PyInstaller Build
+### Option 3: Legacy PyInstaller Build
 
-1. **Install dependencies:**
+1. **Install dependencies (optional if you've run option 1/2):**
    ```bash
-   pip install -r build-requirements.txt
+   python build_windows.py --backend pyinstaller --only-install-deps
    ```
 
-2. **Build using spec file:**
+2. **Build using the legacy backend:**
    ```bash
-   pyinstaller --clean --noconfirm media-manager.spec
+   python build_windows.py --backend pyinstaller --skip-dependency-install
    ```
+
+This path produces the same packaging artifacts but uses PyInstaller instead of Nuitka.
 
 ## Build Configuration
 
-### Spec File Configuration
+### Nuitka Configuration Highlights
 
-The `media-manager.spec` file contains the PyInstaller configuration:
+The automated Nuitka build executed by `build_windows.py` enables the following key options:
 
-- **Entry Point**: `demo_integration.py` (demo version)
-- **Mode**: `--onefile` (single executable)
-- **GUI**: `--windowed` (no console window)
-- **Compression**: UPX enabled (if available)
-- **Hidden Imports**: All PySide6 modules and application modules
+- `--onefile` and `--standalone` for a fully self-contained executable
+- `--enable-plugin=pyside6` with explicit Qt plugin inclusion (`platforms`, `styles`, `imageformats`, `iconengines`)
+- Inclusion of application data folders (translations, resources, assets, etc.)
+- Windows metadata (`--windows-company-name`, `--windows-product-name`, version and description fields)
+- Automatic discovery of PySide6 modules via `--include-package=media_manager` and targeted hidden imports
 
-### Key Settings
+These defaults can be customised by editing `build_windows.py` if additional data folders or modules need to be bundled.
 
-```python
-# Main executable configuration
-exe = EXE(
-    name='media-manager',
-    console=False,        # GUI application
-    windowed=True,        # No console window
-    upx=True,            # Use UPX compression
-    icon='icon.ico',     # Application icon
-    version='version_info.txt',  # Version info
-)
-```
+### Legacy PyInstaller Notes
+
+The PyInstaller backend is still available for compatibility. The build script uses command-line options equivalent to the previous `media-manager.spec` file (now deprecated):
+
+- One-file, windowed build with PySide6 collection
+- Automatic inclusion of required data directories
+- Optional UPX compression if the tool is installed
+
+If you require a bespoke PyInstaller configuration, use `python build_windows.py --backend pyinstaller --skip-dependency-install` and extend the script as needed.
 
 ## Output Files
 
