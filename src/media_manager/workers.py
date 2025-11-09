@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
@@ -16,6 +16,8 @@ from .models import (
     PosterType,
     SearchRequest,
     SearchResult,
+    SubtitleInfo,
+    SubtitleLanguage,
     VideoMetadata,
 )
 
@@ -105,6 +107,9 @@ class MatchWorker(QRunnable):
             ),
         }
 
+        # Create mock subtitles
+        subtitles = self._create_mock_subtitles(metadata)
+
         # Create mock match data
         match = MediaMatch(
             metadata=metadata,
@@ -118,9 +123,30 @@ class MatchWorker(QRunnable):
             overview=f"This is a mock overview for {metadata.title}. "
                     f"A great {metadata.media_type.value} from {metadata.year or 'unknown'}.",
             posters=posters,
+            subtitles=subtitles,
         )
 
         return match
+
+    def _create_mock_subtitles(self, metadata: VideoMetadata) -> Dict[SubtitleLanguage, SubtitleInfo]:
+        """Create mock subtitles for demonstration."""
+        subtitles = {}
+        base_hash = hash(str(metadata.path)) % 10000
+        
+        # Add mock subtitles in common languages
+        languages = [SubtitleLanguage.ENGLISH, SubtitleLanguage.SPANISH, SubtitleLanguage.FRENCH]
+        
+        for idx, language in enumerate(languages):
+            subtitle_info = SubtitleInfo(
+                language=language,
+                url=f"https://example.com/subtitle/{base_hash}_{idx}.srt",
+                download_status=DownloadStatus.PENDING,
+                provider="MockAPI",
+                subtitle_id=f"mock_sub_{base_hash}_{idx}",
+            )
+            subtitles[language] = subtitle_info
+        
+        return subtitles
 
 
 class SearchWorkerSignals(QObject):
@@ -243,6 +269,20 @@ class WorkerManager(QObject):
         self._logger.info(f"Started poster download worker for {len(matches)} matches")
         return worker
 
+    def start_subtitle_download_worker(self, matches: list[MediaMatch], languages: list[SubtitleLanguage]) -> SubtitleDownloadWorker:
+        """Start a subtitle download worker and return it."""
+        worker = SubtitleDownloadWorker(matches, languages)
+        self._active_workers.append(worker)
+        self._thread_pool.start(worker)
+
+        # Connect finished signal to cleanup
+        worker.signals.finished.connect(
+            lambda: self._cleanup_worker(worker)
+        )
+
+        self._logger.info(f"Started subtitle download worker for {len(matches)} matches")
+        return worker
+
     def stop_all_workers(self) -> None:
         """Stop all active workers."""
         for worker in self._active_workers:
@@ -329,6 +369,83 @@ class PosterDownloadWorker(QRunnable):
                     error_msg = f"Error downloading {poster_type.value} for {match.metadata.title}: {exc}"
                     self._logger.error(error_msg)
                     self.signals.poster_failed.emit(match, error_msg)
+
+        self.signals.finished.emit()
+
+    def stop(self) -> None:
+        """Stop the worker."""
+        self._should_stop = True
+
+
+class SubtitleDownloadWorkerSignals(QObject):
+    """Signals for the subtitle download worker."""
+
+    subtitle_downloaded = Signal(object, object)  # MediaMatch, SubtitleInfo
+    subtitle_failed = Signal(object, str)  # MediaMatch, error_message
+    progress = Signal(int, int)  # current, total
+    finished = Signal()
+
+
+class SubtitleDownloadWorker(QRunnable):
+    """Worker for downloading subtitles in background."""
+
+    def __init__(self, matches: list[MediaMatch], languages: list[SubtitleLanguage]) -> None:
+        super().__init__()
+        self.matches = matches
+        self.languages = languages
+        self.signals = SubtitleDownloadWorkerSignals()
+        self._logger = get_logger().get_logger(__name__)
+        self._should_stop = False
+
+        # Import here to avoid circular imports
+        from .subtitle_downloader import SubtitleDownloader
+        self.subtitle_downloader = SubtitleDownloader()
+
+    @Slot()
+    def run(self) -> None:
+        """Run the subtitle download process."""
+        total_subtitles = sum(
+            len([lang for lang in self.languages if lang in match.subtitles and match.subtitles[lang].url])
+            for match in self.matches
+        )
+        current = 0
+
+        for match in self.matches:
+            if self._should_stop:
+                break
+
+            for language in self.languages:
+                if self._should_stop:
+                    break
+
+                if language not in match.subtitles:
+                    continue
+
+                subtitle_info = match.subtitles[language]
+                if not subtitle_info.url or subtitle_info.is_downloaded():
+                    continue
+
+                current += 1
+                self.signals.progress.emit(current, total_subtitles)
+
+                try:
+                    success = self.subtitle_downloader.download_subtitle(
+                        subtitle_info, match.metadata.path
+                    )
+                    if success:
+                        self.signals.subtitle_downloaded.emit(match, subtitle_info)
+                        self._logger.info(
+                            f"Downloaded {language.value} subtitle for {match.metadata.title}"
+                        )
+                    else:
+                        self.signals.subtitle_failed.emit(
+                            match,
+                            f"Failed to download {language.value} subtitle: {subtitle_info.error_message}",
+                        )
+                except Exception as exc:
+                    error_msg = f"Error downloading {language.value} subtitle for {match.metadata.title}: {exc}"
+                    self._logger.error(error_msg)
+                    self.signals.subtitle_failed.emit(match, error_msg)
 
         self.signals.finished.emit()
 
