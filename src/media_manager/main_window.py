@@ -20,7 +20,9 @@ from PySide6.QtWidgets import (
 )
 
 from .detail_panel import DetailPanel
+from .library_manager_dialog import LibraryManagerDialog
 from .library_postprocessor import PostProcessingOptions
+from .library_tree_widget import LibraryTreeWidget
 from .library_view_model import LibraryViewModel
 from .logging import get_logger
 from .match_manager import MatchManager
@@ -28,6 +30,7 @@ from .match_resolution_widget import MatchResolutionWidget
 from .media_grid_view import MediaGridView
 from .media_table_view import MediaTableView
 from .metadata_editor_widget import MetadataEditorWidget
+from .persistence.repositories import LibraryRepository
 from .scan_queue_widget import ScanQueueWidget
 from .settings import SettingsManager
 
@@ -43,6 +46,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._settings = settings
         self._logger = get_logger().get_logger(__name__)
+        self._current_library = None
+        self._library_repository = LibraryRepository()
 
         self.setWindowTitle("Media Manager")
         self.setMinimumSize(1200, 800)
@@ -58,8 +63,8 @@ class MainWindow(QMainWindow):
         # Load saved geometry if available
         self._load_window_state()
         
-        # Load initial data
-        self.library_view_model.load_data()
+        # Restore last active library
+        self._restore_last_active_library()
 
         self._logger.info("Main window initialized")
 
@@ -117,17 +122,12 @@ class MainWindow(QMainWindow):
         splitter.setSizes([300, 600, 300])
 
     def _create_navigation_pane(self) -> QWidget:
-        """Create the left navigation pane with file tree."""
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
-
-        # File tree
-        self.file_tree = QTreeWidget()
-        self.file_tree.setHeaderLabel("File System")
-        self.file_tree.setColumnCount(1)
-        layout.addWidget(self.file_tree)
-
-        return widget
+        """Create the left navigation pane with library tree."""
+        # Create library tree widget
+        self.library_tree_widget = LibraryTreeWidget()
+        self.library_tree_widget.library_selected.connect(self._on_library_selected)
+        self.library_tree_widget.manage_libraries_requested.connect(self._on_manage_libraries)
+        return self.library_tree_widget
 
     def _create_content_area(self) -> QWidget:
         """Create the center content area with tabs."""
@@ -329,6 +329,13 @@ class MainWindow(QMainWindow):
         open_action.setShortcut("Ctrl+O")
         open_action.triggered.connect(self._on_open_file)
         file_menu.addAction(open_action)
+
+        file_menu.addSeparator()
+
+        manage_libraries_action = QAction("Manage &Libraries...", self)
+        manage_libraries_action.setShortcut("Ctrl+L")
+        manage_libraries_action.triggered.connect(self._on_manage_libraries)
+        file_menu.addAction(manage_libraries_action)
 
         file_menu.addSeparator()
 
@@ -573,3 +580,87 @@ class MainWindow(QMainWindow):
         # Find and select the item in both views
         # This is a simplified implementation - in practice you'd need to map items to indices
         pass
+
+    def _on_library_selected(self, library, media_type_filter: str) -> None:
+        """Handle library selection from tree widget."""
+        self._current_library = library
+        
+        # Save the last active library
+        self._settings.set_last_active_library_id(library.id)
+        self._settings.save_settings()
+        
+        # Update the view model to filter by library and media type
+        if media_type_filter == "all":
+            self.library_view_model.set_library_filter(library.id)
+            self.library_view_model.set_media_type_filter("all")
+        elif media_type_filter == "library":
+            # Just selected the library node itself
+            self.library_view_model.set_library_filter(library.id)
+            self.library_view_model.set_media_type_filter("all")
+        else:
+            # Selected a specific media type under the library
+            self.library_view_model.set_library_filter(library.id)
+            self.library_view_model.set_media_type_filter(media_type_filter)
+        
+        # Update scan queue widget with the current library
+        self.scan_queue_widget.set_target_library(library.id)
+        
+        # Update status
+        media_type_text = media_type_filter.title() if media_type_filter != "all" else "All"
+        self.update_status(f"Viewing {library.name} - {media_type_text}")
+
+    def _on_manage_libraries(self) -> None:
+        """Handle manage libraries request."""
+        dialog = LibraryManagerDialog(self)
+        dialog.library_created.connect(self._on_library_created)
+        dialog.library_updated.connect(self._on_library_updated)
+        dialog.library_deleted.connect(self._on_library_deleted)
+        dialog.exec()
+
+    def _on_library_created(self, library) -> None:
+        """Handle library created event."""
+        self.library_tree_widget.load_libraries()
+        self.update_status(f"Library '{library.name}' created")
+
+    def _on_library_updated(self, library) -> None:
+        """Handle library updated event."""
+        self.library_tree_widget.load_libraries()
+        
+        # Reload data if this is the current library
+        if self._current_library and self._current_library.id == library.id:
+            self._current_library = library
+            self.library_view_model.load_data()
+        
+        self.update_status(f"Library '{library.name}' updated")
+
+    def _on_library_deleted(self, library_id: int) -> None:
+        """Handle library deleted event."""
+        self.library_tree_widget.load_libraries()
+        
+        # Clear view if the deleted library was active
+        if self._current_library and self._current_library.id == library_id:
+            self._current_library = None
+            self.library_view_model.clear_filters()
+        
+        self.update_status("Library deleted")
+
+    def _restore_last_active_library(self) -> None:
+        """Restore the last active library from settings."""
+        library_id = self._settings.get_last_active_library_id()
+        if library_id:
+            library = self._library_repository.get_by_id(library_id)
+            if library and library.is_active:
+                self.library_tree_widget.select_library(library_id)
+                return
+        
+        # If no saved library or it's invalid, select the first active library
+        libraries = self._library_repository.get_active()
+        if libraries:
+            self.library_tree_widget.select_library(libraries[0].id)
+        else:
+            # No libraries exist, prompt to create one
+            self.update_status("No libraries found. Please create a library to get started.")
+
+    def get_current_library(self):
+        """Get the currently selected library."""
+        return self._current_library

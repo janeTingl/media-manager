@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from .library_postprocessor import ConflictResolution, PostProcessingOptions
 from .logging import get_logger
 from .models import MatchStatus, MediaMatch, VideoMetadata
+from .persistence.repositories import LibraryRepository
 from .workers import MatchWorker
 
 
@@ -42,8 +43,10 @@ class ScanQueueWidget(QWidget):
         self._matches: list[MediaMatch] = []
         self._current_worker: MatchWorker | None = None
         self._finalize_worker = None
+        self._library_repository = LibraryRepository()
 
         self._setup_ui()
+        self._load_libraries()
 
     def _setup_ui(self) -> None:
         """Setup the scan queue UI."""
@@ -76,28 +79,42 @@ class ScanQueueWidget(QWidget):
     def _create_header_group(self) -> QGroupBox:
         """Create the header control group."""
         group = QGroupBox("Scan Queue")
-        layout = QHBoxLayout(group)
+        layout = QVBoxLayout(group)
 
+        # First row - library selection
+        library_layout = QHBoxLayout()
+        library_layout.addWidget(QLabel("Target Library:"))
+        self.library_combo = QComboBox()
+        self.library_combo.setMinimumWidth(200)
+        library_layout.addWidget(self.library_combo)
+        library_layout.addStretch()
+        layout.addLayout(library_layout)
+
+        # Second row - filter and controls
+        control_layout = QHBoxLayout()
+        
         # Search/filter
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText("Filter by title...")
         self.filter_edit.textChanged.connect(self._on_filter_changed)
-        layout.addWidget(QLabel("Filter:"))
-        layout.addWidget(self.filter_edit)
+        control_layout.addWidget(QLabel("Filter:"))
+        control_layout.addWidget(self.filter_edit)
 
         # Control buttons
         self.start_button = QPushButton("Start Matching")
         self.start_button.clicked.connect(self._on_start_clicked)
-        layout.addWidget(self.start_button)
+        control_layout.addWidget(self.start_button)
 
         self.stop_button = QPushButton("Stop")
         self.stop_button.clicked.connect(self._on_stop_clicked)
         self.stop_button.setEnabled(False)
-        layout.addWidget(self.stop_button)
+        control_layout.addWidget(self.stop_button)
 
         self.clear_button = QPushButton("Clear")
         self.clear_button.clicked.connect(self._on_clear_clicked)
-        layout.addWidget(self.clear_button)
+        control_layout.addWidget(self.clear_button)
+        
+        layout.addLayout(control_layout)
 
         return group
 
@@ -455,3 +472,30 @@ class ScanQueueWidget(QWidget):
         if current_item:
             return current_item.data(Qt.UserRole)
         return None
+
+    def _load_libraries(self) -> None:
+        """Load libraries into the combo box."""
+        self.library_combo.clear()
+        libraries = self._library_repository.get_active()
+        
+        for library in libraries:
+            self.library_combo.addItem(
+                f"{library.name} ({library.media_type})",
+                library.id
+            )
+        
+        # If no libraries, show a placeholder
+        if not libraries:
+            self.library_combo.addItem("No libraries available", None)
+            self.library_combo.setEnabled(False)
+
+    def set_target_library(self, library_id: int) -> None:
+        """Set the target library by ID."""
+        for i in range(self.library_combo.count()):
+            if self.library_combo.itemData(i) == library_id:
+                self.library_combo.setCurrentIndex(i)
+                break
+
+    def get_target_library_id(self) -> int | None:
+        """Get the currently selected target library ID."""
+        return self.library_combo.currentData()
