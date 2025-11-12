@@ -8,6 +8,8 @@ from PySide6.QtWidgets import QApplication
 
 from .logging import get_logger, setup_logging
 from .main_window import MainWindow
+from .persistence.database import init_database_service
+from .services import get_service_registry
 from .settings import get_settings
 
 
@@ -42,8 +44,17 @@ def main() -> int:
         # Create Qt application
         app = create_application()
 
-        # Get settings and create main window
+        # Get settings
         settings = get_settings()
+
+        # Initialize database service
+        db_service = init_database_service(settings.get_database_url())
+
+        # Register database service in service registry
+        service_registry = get_service_registry()
+        service_registry.register("DatabaseService", db_service)
+
+        # Create main window
         main_window = MainWindow(settings)
 
         # Show the main window
