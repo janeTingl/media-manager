@@ -7,7 +7,9 @@ from typing import Callable, Sequence
 from PySide6.QtCore import QObject, Signal
 
 from .logging import get_logger
+from .media_library_service import get_media_library_service
 from .models import VideoMetadata
+from .persistence.models import MediaItem
 from .scanner import ScanConfig, Scanner
 
 
@@ -23,17 +25,22 @@ class ScanEngine(QObject):
     def __init__(
         self,
         scanner: Scanner | None = None,
+        library_id: int | None = None,
         parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
         self._scanner = scanner or Scanner()
         self._logger = get_logger().get_logger(__name__)
         self._results: list[VideoMetadata] = []
+        self._media_items: list[MediaItem] = []
+        self._library_id = library_id
+        self._media_library_service = get_media_library_service()
         self._callbacks: list[Callable[[VideoMetadata], None]] = []
 
-    def scan(self, config: ScanConfig) -> list[VideoMetadata]:
+    def scan(self, config: ScanConfig) -> list[MediaItem]:
         """Perform a scan with the provided configuration."""
         self._results = []
+        self._media_items = []
 
         valid_roots = [root for root in config.root_paths if root.exists()]
         for root in config.root_paths:
@@ -55,12 +62,25 @@ class ScanEngine(QObject):
         for index, path in enumerate(video_paths, start=1):
             metadata = self._scanner.parse_video(path)
             self._results.append(metadata)
+            
+            # Create media item in database if library_id is provided
+            if self._library_id is not None:
+                try:
+                    media_item = self._media_library_service.create_media_item_from_scan(
+                        self._library_id, metadata
+                    )
+                    self._media_items.append(media_item)
+                except Exception as exc:
+                    self._logger.error(f"Failed to create media item for {path}: {exc}")
+                    # Continue scanning even if database creation fails
+                    continue
+            
             self.scan_progress.emit(index, total, str(path))
             self.enrichment_task_created.emit(metadata)
             self._dispatch_enrichment_callbacks(metadata)
 
-        self.scan_completed.emit(list(self._results))
-        return list(self._results)
+        self.scan_completed.emit(list(self._media_items))
+        return list(self._media_items)
 
     def register_enrichment_callback(
         self, callback: Callable[[VideoMetadata], None]
@@ -79,10 +99,15 @@ class ScanEngine(QObject):
     def clear_results(self) -> None:
         """Clear cached scan results."""
         self._results = []
+        self._media_items = []
 
     def get_results(self) -> list[VideoMetadata]:
         """Return the cached scan results."""
         return list(self._results)
+
+    def get_media_items(self) -> list[MediaItem]:
+        """Return the cached media items with database IDs."""
+        return list(self._media_items)
 
     def get_results_by_paths(self, paths: Sequence[str]) -> list[VideoMetadata]:
         """Return cached results filtered by file path."""

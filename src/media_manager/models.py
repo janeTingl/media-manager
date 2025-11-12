@@ -193,6 +193,10 @@ class MediaMatch:
     runtime: int | None = None
     aired_date: str | None = None
     cast: list[str] | None = None
+    # Database persistence fields
+    media_item_id: int | None = None
+    library_id: int | None = None
+    sync_status: str = "pending"  # "pending", "synced", "error"
 
     def __post_init__(self) -> None:
         """Initialize posters and subtitles dicts if not provided."""
@@ -231,6 +235,9 @@ class MediaMatch:
             "runtime": self.runtime,
             "aired_date": self.aired_date,
             "cast": self.cast,
+            "media_item_id": self.media_item_id,
+            "library_id": self.library_id,
+            "sync_status": self.sync_status,
         })
         return result
 

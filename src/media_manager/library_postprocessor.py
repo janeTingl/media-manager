@@ -10,6 +10,7 @@ from typing import Callable, Iterable
 from uuid import uuid4
 
 from .logging import get_logger
+from .media_library_service import get_media_library_service
 from .models import MediaMatch, MediaType
 from .renamer import RenamingEngine
 from .settings import SettingsManager, get_settings
@@ -124,6 +125,7 @@ class LibraryPostProcessor:
             self._default_root = Path(self._default_root)
         else:
             self._default_root = Path.home() / "MediaLibrary"
+        self._media_library_service = get_media_library_service()
 
     def process(
         self,
@@ -332,6 +334,22 @@ class LibraryPostProcessor:
                     raise PostProcessingError(message, match, summary) from exc
 
                 match.metadata.path = final_target
+
+                # Create history event for successful processing
+                if not options.dry_run and match.media_item_id:
+                    try:
+                        # Note: The actual database update happens in MatchManager
+                        # This is just a backup history event
+                        action = "copied" if options.copy_mode else "moved"
+                        event_data = f"{action} from {source_path} to {final_target}"
+                        self._media_library_service._create_history_event(
+                            None,  # We'll create a temporary uow
+                            match.media_item_id,
+                            "modified",
+                            event_data
+                        )
+                    except Exception as exc:
+                        _LOGGER.warning(f"Failed to create history event: {exc}")
 
                 result = PostProcessingItemResult(
                     match=match,

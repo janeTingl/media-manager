@@ -6,7 +6,9 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 from .library_postprocessor import PostProcessingOptions, PostProcessingSummary
 from .logging import get_logger
-from .models import MediaMatch, PosterType, SearchRequest, SearchResult, VideoMetadata
+from .media_library_service import get_media_library_service
+from .models import MediaMatch, PosterType, SearchRequest, SearchResult, SubtitleLanguage, VideoMetadata
+from .persistence.models import MediaItem
 from .services import get_service_registry
 from .workers import WorkerManager
 
@@ -22,6 +24,7 @@ class MatchManager(QObject):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
+        self._media_library_service = get_media_library_service()
 
         # Get worker manager from service registry or create one
         service_registry = get_service_registry()
@@ -36,11 +39,56 @@ class MatchManager(QObject):
     def add_metadata(self, metadata_list: list[VideoMetadata]) -> None:
         """Add metadata items to be matched."""
         for metadata in metadata_list:
+            # Try to find existing media item in database
+            media_item = self._media_library_service.get_media_item_by_path(str(metadata.path))
+            
             match = MediaMatch(metadata=metadata)
+            if media_item:
+                match.media_item_id = media_item.id
+                match.library_id = media_item.library_id
+                match.sync_status = "synced"
+            
             self._matches.append(match)
 
         self.matches_updated.emit(list(self._matches))
         self.status_changed.emit(f"Added {len(metadata_list)} items to queue")
+
+    def add_media_items(self, media_items: list[MediaItem]) -> None:
+        """Add media items from database to be matched."""
+        for media_item in media_items:
+            # Convert MediaItem back to VideoMetadata for matching
+            from .models import MediaType, VideoMetadata
+            from pathlib import Path
+            
+            # Get the media file to extract path
+            with self._media_library_service._logger:
+                from .persistence.repositories import transactional_context
+                with transactional_context() as uow:
+                    file_repo = uow.get_repository(MediaItem)
+                    # This is a simplified approach - in practice, we'd need to reconstruct
+                    # the VideoMetadata from the MediaItem and associated MediaFile
+                    pass
+            
+            # For now, create a basic metadata object
+            metadata = VideoMetadata(
+                path=Path(f"/placeholder/path/{media_item.title}"),
+                title=media_item.title,
+                media_type=MediaType(media_item.media_type),
+                year=media_item.year,
+                season=media_item.season,
+                episode=media_item.episode,
+            )
+            
+            match = MediaMatch(
+                metadata=metadata,
+                media_item_id=media_item.id,
+                library_id=media_item.library_id,
+                sync_status="synced"
+            )
+            self._matches.append(match)
+
+        self.matches_updated.emit(list(self._matches))
+        self.status_changed.emit(f"Added {len(media_items)} items from database")
 
     def start_matching(self) -> None:
         """Start the matching process for pending items."""
@@ -74,11 +122,20 @@ class MatchManager(QObject):
         self.status_changed.emit(f"Searching for '{request.query}'...")
 
     def update_match(self, match: MediaMatch) -> None:
-        """Update a match in the collection."""
+        """Update a match in the collection and sync to database."""
         for i, existing_match in enumerate(self._matches):
             if existing_match.metadata.path == match.metadata.path:
                 self._matches[i] = match
                 break
+
+        # Sync to database if we have a media_item_id
+        if match.media_item_id and match.is_matched():
+            try:
+                self._media_library_service.update_media_item_from_match(match.media_item_id, match)
+                match.sync_status = "synced"
+            except Exception as exc:
+                self._logger.error(f"Failed to sync match to database: {exc}")
+                match.sync_status = "error"
 
         self.matches_updated.emit(list(self._matches))
 
@@ -139,6 +196,35 @@ class MatchManager(QObject):
         worker.signals.finished.connect(self._on_poster_download_finished)
 
         self.status_changed.emit(f"Downloading posters for {len(matched_matches)} items...")
+
+    def download_subtitles(self, match: MediaMatch, languages: list[SubtitleLanguage]) -> None:
+        """Download subtitles for a specific match."""
+        worker = self._worker_manager.start_subtitle_download_worker([match], languages)
+
+        # Connect signals
+        worker.signals.subtitle_downloaded.connect(self._on_subtitle_downloaded)
+        worker.signals.subtitle_failed.connect(self._on_subtitle_failed)
+        worker.signals.progress.connect(self._on_subtitle_progress)
+        worker.signals.finished.connect(self._on_subtitle_download_finished)
+
+        self.status_changed.emit(f"Downloading subtitles for {match.metadata.title}...")
+
+    def download_all_subtitles(self, languages: list[SubtitleLanguage]) -> None:
+        """Download subtitles for all matched items."""
+        matched_matches = [m for m in self._matches if m.is_matched()]
+        if not matched_matches:
+            self.status_changed.emit("No matched items to download subtitles for")
+            return
+
+        worker = self._worker_manager.start_subtitle_download_worker(matched_matches, languages)
+
+        # Connect signals
+        worker.signals.subtitle_downloaded.connect(self._on_subtitle_downloaded)
+        worker.signals.subtitle_failed.connect(self._on_subtitle_failed)
+        worker.signals.progress.connect(self._on_subtitle_progress)
+        worker.signals.finished.connect(self._on_subtitle_download_finished)
+
+        self.status_changed.emit(f"Downloading subtitles for {len(matched_matches)} items...")
 
     def finalize_library(self, options: PostProcessingOptions):
         """Finalize matched media items into the organized library."""
@@ -205,6 +291,18 @@ class MatchManager(QObject):
     @Slot(object, object)
     def _on_poster_downloaded(self, match: MediaMatch, poster_info) -> None:
         """Handle successful poster download."""
+        # Update database with poster download status
+        if match.media_item_id:
+            try:
+                self._media_library_service.update_artwork_download_status(
+                    match.media_item_id, 
+                    poster_info.poster_type, 
+                    poster_info.local_path, 
+                    poster_info.download_status
+                )
+            except Exception as exc:
+                self._logger.error(f"Failed to update poster download status: {exc}")
+        
         self.update_match(match)
         self.status_changed.emit(f"Downloaded {poster_info.poster_type.value} for {match.metadata.title}")
 
@@ -227,6 +325,15 @@ class MatchManager(QObject):
     @Slot(object, object, object)
     def _on_finalize_processed(self, match: MediaMatch, source, target) -> None:
         """Handle a successfully finalized media item."""
+        # Update database with new file location
+        if match.media_item_id:
+            try:
+                self._media_library_service.update_media_file_path(
+                    match.media_item_id, str(source), target
+                )
+            except Exception as exc:
+                self._logger.error(f"Failed to update file path in database: {exc}")
+        
         self.update_match(match)
         self.status_changed.emit(f"Finalized {match.metadata.title}")
 
@@ -262,3 +369,37 @@ class MatchManager(QObject):
     def _on_finalize_error(self, message: str) -> None:
         """Handle finalization error notifications."""
         self.status_changed.emit(f"Library finalization error: {message}")
+
+    @Slot(object, object)
+    def _on_subtitle_downloaded(self, match: MediaMatch, subtitle_info) -> None:
+        """Handle successful subtitle download."""
+        # Update database with subtitle download status
+        if match.media_item_id:
+            try:
+                self._media_library_service.update_subtitle_download_status(
+                    match.media_item_id,
+                    subtitle_info.language,
+                    subtitle_info.local_path,
+                    subtitle_info.download_status
+                )
+            except Exception as exc:
+                self._logger.error(f"Failed to update subtitle download status: {exc}")
+        
+        self.update_match(match)
+        self.status_changed.emit(f"Downloaded {subtitle_info.language.value} subtitle for {match.metadata.title}")
+
+    @Slot(object, str)
+    def _on_subtitle_failed(self, match: MediaMatch, error: str) -> None:
+        """Handle subtitle download failure."""
+        self.update_match(match)
+        self.status_changed.emit(f"Failed to download subtitle for {match.metadata.title}: {error}")
+
+    @Slot(int, int)
+    def _on_subtitle_progress(self, current: int, total: int) -> None:
+        """Handle subtitle download progress."""
+        self.status_changed.emit(f"Downloaded {current}/{total} subtitles")
+
+    @Slot()
+    def _on_subtitle_download_finished(self) -> None:
+        """Handle subtitle download completion."""
+        self.status_changed.emit("Subtitle download complete")

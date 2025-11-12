@@ -133,6 +133,19 @@ class MatchWorker(QRunnable):
             subtitles=subtitles,
         )
 
+        # Try to sync with database if service is available
+        try:
+            from .media_library_service import get_media_library_service
+            media_service = get_media_library_service()
+            media_item = media_service.get_media_item_by_path(str(metadata.path))
+            if media_item:
+                match.media_item_id = media_item.id
+                match.library_id = media_item.library_id
+                match.sync_status = "synced"
+        except Exception:
+            # Database service not available or sync failed - continue without it
+            pass
+
         return match
 
     def _create_mock_subtitles(self, metadata: VideoMetadata) -> dict[SubtitleLanguage, SubtitleInfo]:
