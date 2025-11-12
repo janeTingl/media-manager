@@ -12,15 +12,21 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStatusBar,
     QTabWidget,
+    QToolBar,
+    QToolButton,
     QTreeWidget,
     QVBoxLayout,
     QWidget,
 )
 
+from .detail_panel import DetailPanel
 from .library_postprocessor import PostProcessingOptions
+from .library_view_model import LibraryViewModel
 from .logging import get_logger
 from .match_manager import MatchManager
 from .match_resolution_widget import MatchResolutionWidget
+from .media_grid_view import MediaGridView
+from .media_table_view import MediaTableView
 from .metadata_editor_widget import MetadataEditorWidget
 from .scan_queue_widget import ScanQueueWidget
 from .settings import SettingsManager
@@ -51,6 +57,9 @@ class MainWindow(QMainWindow):
 
         # Load saved geometry if available
         self._load_window_state()
+        
+        # Load initial data
+        self.library_view_model.load_data()
 
         self._logger.info("Main window initialized")
 
@@ -59,6 +68,18 @@ class MainWindow(QMainWindow):
         # Create match manager
         self.match_manager = MatchManager(self)
 
+        # Create library view model
+        self.library_view_model = LibraryViewModel(self)
+        
+        # Create new media views
+        self.media_grid_view = MediaGridView(self)
+        self.media_table_view = MediaTableView(self)
+        self.detail_panel = DetailPanel(self)
+        
+        # Set up the view model with the views
+        self.media_grid_view.set_model(self.library_view_model)
+        self.media_table_view.set_model(self.library_view_model)
+        
         # Create UI widgets
         self.scan_queue_widget = ScanQueueWidget(self)
         self.match_resolution_widget = MatchResolutionWidget(self)
@@ -112,12 +133,70 @@ class MainWindow(QMainWindow):
         """Create the center content area with tabs."""
         widget = QWidget()
         layout = QVBoxLayout(widget)
+        
+        # Create toolbar for view switching
+        toolbar = QToolBar()
+        toolbar.setMovable(False)
+        
+        # View mode buttons
+        self.grid_action = QAction("Grid View", self)
+        self.grid_action.setCheckable(True)
+        self.grid_action.setChecked(True)
+        self.grid_action.triggered.connect(lambda: self._switch_view("grid"))
+        toolbar.addAction(self.grid_action)
+        
+        self.table_action = QAction("Table View", self)
+        self.table_action.setCheckable(True)
+        self.table_action.triggered.connect(lambda: self._switch_view("table"))
+        toolbar.addAction(self.table_action)
+        
+        toolbar.addSeparator()
+        
+        # Thumbnail size controls
+        toolbar.addWidget(QLabel("Thumbnail Size:"))
+        for size in ["small", "medium", "large", "extra_large"]:
+            action = QAction(size.capitalize(), self)
+            action.triggered.connect(lambda checked, s=size: self.media_grid_view.set_thumbnail_size(s))
+            toolbar.addAction(action)
+        
+        toolbar.addSeparator()
+        
+        # Filter controls
+        self.filter_all_action = QAction("All", self)
+        self.filter_all_action.setCheckable(True)
+        self.filter_all_action.setChecked(True)
+        self.filter_all_action.triggered.connect(lambda: self._set_media_filter("all"))
+        toolbar.addAction(self.filter_all_action)
+        
+        self.filter_movies_action = QAction("Movies", self)
+        self.filter_movies_action.setCheckable(True)
+        self.filter_movies_action.triggered.connect(lambda: self._set_media_filter("movie"))
+        toolbar.addAction(self.filter_movies_action)
+        
+        self.filter_tv_action = QAction("TV Shows", self)
+        self.filter_tv_action.setCheckable(True)
+        self.filter_tv_action.triggered.connect(lambda: self._set_media_filter("tv"))
+        toolbar.addAction(self.filter_tv_action)
+        
+        layout.addWidget(toolbar)
 
         # Tab widget for different views
         self.tab_widget = QTabWidget()
 
-        # Add tabs
-        self.tab_widget.addTab(QListWidget(), "Library")
+        # Library tab with media views
+        library_widget = QWidget()
+        library_layout = QVBoxLayout(library_widget)
+        
+        # Create stacked widget for view switching
+        from PySide6.QtWidgets import QStackedWidget
+        self.view_stack = QStackedWidget()
+        self.view_stack.addWidget(self.media_grid_view)
+        self.view_stack.addWidget(self.media_table_view)
+        library_layout.addWidget(self.view_stack)
+        
+        self.tab_widget.addTab(library_widget, "Library")
+        
+        # Add other tabs (keeping existing structure)
         self.tab_widget.addTab(QListWidget(), "Recent")
         self.tab_widget.addTab(QListWidget(), "Favorites")
         self.tab_widget.addTab(QListWidget(), "Search")
@@ -126,7 +205,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self._create_matching_tab(), "Matching")
 
         layout.addWidget(self.tab_widget)
-
+        
         return widget
 
     def _create_matching_tab(self) -> QWidget:
@@ -146,14 +225,37 @@ class MainWindow(QMainWindow):
         """Create the right properties/info pane."""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-
-        # Add metadata editor widget
+        
+        # Add the new detail panel
+        layout.addWidget(self.detail_panel)
+        
+        # Add metadata editor widget (keep existing functionality)
         layout.addWidget(self.metadata_editor_widget)
 
         return widget
 
     def _connect_signals(self) -> None:
         """Connect signals between components."""
+        # Library view model signals
+        self.library_view_model.data_loaded.connect(self._on_data_loaded)
+        self.library_view_model.error_occurred.connect(self.update_status)
+        
+        # Media grid view signals
+        self.media_grid_view.item_selected.connect(self._on_item_selected)
+        self.media_grid_view.item_activated.connect(self._on_item_activated)
+        self.media_grid_view.context_menu_requested.connect(self._on_context_menu_requested)
+        
+        # Media table view signals
+        self.media_table_view.item_selected.connect(self._on_item_selected)
+        self.media_table_view.item_activated.connect(self._on_item_activated)
+        self.media_table_view.context_menu_requested.connect(self._on_context_menu_requested)
+        self.media_table_view.selection_changed.connect(self._on_selection_changed)
+        
+        # Detail panel signals
+        self.detail_panel.edit_requested.connect(self._on_edit_requested)
+        self.detail_panel.play_requested.connect(self._on_play_requested)
+        self.detail_panel.poster_download_requested.connect(self._on_poster_download_requested)
+        
         # Scan queue signals
         self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
         self.scan_queue_widget.start_matching.connect(self._on_start_matching)
@@ -373,3 +475,101 @@ class MainWindow(QMainWindow):
         self._save_window_state()
         self._logger.info("Main window closing")
         super().closeEvent(event)
+
+    def _switch_view(self, view_type: str) -> None:
+        """Switch between grid and table views."""
+        if view_type == "grid":
+            self.view_stack.setCurrentWidget(self.media_grid_view)
+            self.grid_action.setChecked(True)
+            self.table_action.setChecked(False)
+        elif view_type == "table":
+            self.view_stack.setCurrentWidget(self.media_table_view)
+            self.table_action.setChecked(True)
+            self.grid_action.setChecked(False)
+
+    def _set_media_filter(self, media_type: str) -> None:
+        """Set media type filter."""
+        # Update action states
+        self.filter_all_action.setChecked(media_type == "all")
+        self.filter_movies_action.setChecked(media_type == "movie")
+        self.filter_tv_action.setChecked(media_type == "tv")
+        
+        # Apply filter to model
+        self.library_view_model.set_media_type_filter(media_type)
+
+    def _on_data_loaded(self, count: int) -> None:
+        """Handle data loaded from model."""
+        self.update_item_count(count)
+        self.update_status(f"Loaded {count} media items")
+
+    def _on_item_selected(self, item) -> None:
+        """Handle item selection in any view."""
+        self.detail_panel.set_media_item(item)
+        
+        # Synchronize selection between views
+        self._synchronize_selection(item)
+
+    def _on_item_activated(self, item) -> None:
+        """Handle item activation (double click)."""
+        if item:
+            # Could play media, open details, or trigger matching
+            self.update_status(f"Activated: {item.title}")
+
+    def _on_selection_changed(self, items: list) -> None:
+        """Handle selection change in table view."""
+        if items:
+            self.detail_panel.set_media_item(items[0])  # Show first selected item
+
+    def _on_context_menu_requested(self, item, global_pos) -> None:
+        """Handle context menu request."""
+        # Create context menu
+        from PySide6.QtWidgets import QMenu
+        
+        menu = QMenu(self)
+        
+        if item:
+            view_action = menu.addAction("View Details")
+            view_action.triggered.connect(lambda: self.detail_panel.set_media_item(item))
+            
+            edit_action = menu.addAction("Edit Metadata")
+            edit_action.triggered.connect(lambda: self._on_edit_requested(item))
+            
+            menu.addSeparator()
+            
+            play_action = menu.addAction("Play")
+            play_action.triggered.connect(lambda: self._on_play_requested(item))
+            
+            menu.addSeparator()
+        
+        refresh_action = menu.addAction("Refresh")
+        refresh_action.triggered.connect(lambda: self.library_view_model.refresh())
+        
+        menu.exec(global_pos)
+
+    def _on_edit_requested(self, item) -> None:
+        """Handle edit request from detail panel or context menu."""
+        if item:
+            # Load item into metadata editor
+            self.update_status(f"Editing: {item.title}")
+            # Could switch to metadata editor tab or open dialog
+
+    def _on_play_requested(self, item) -> None:
+        """Handle play request from detail panel."""
+        if item and item.files:
+            # Play the first file
+            file_path = item.files[0].path
+            self.update_status(f"Playing: {file_path}")
+            # Could use system default media player
+
+    def _synchronize_selection(self, item) -> None:
+        """Synchronize selection between grid and table views."""
+        if not item:
+            return
+        
+        # Clear selections in both views
+        self.media_grid_view.clearSelection()
+        self.media_table_view.clearSelection()
+        
+        # Find and select the item in both views
+        # This is a simplified implementation - in practice you'd need to map items to indices
+        pass

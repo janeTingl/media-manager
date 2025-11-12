@@ -7,9 +7,11 @@ from typing import Any, Generator, Generic, List, Optional, Type, TypeVar
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
 
 from ..logging import get_logger
 from .database import get_database_service
+from .models import Library, MediaItem, MediaFile, Artwork, Credit, Person
 
 logger_instance = get_logger()
 logger = logger_instance.get_logger(__name__)
@@ -252,6 +254,85 @@ class UnitOfWork:
                     raise
         finally:
             self.close()
+
+
+class MediaItemRepository:
+    """Repository for MediaItem operations."""
+    
+    def __init__(self) -> None:
+        """Initialize the media item repository."""
+        self._logger = logger
+        self._db_service = get_database_service()
+    
+    def get_all(self) -> List[MediaItem]:
+        """Get all media items with their relationships."""
+        with self._db_service.get_session() as session:
+            statement = (
+                select(MediaItem)
+                .options(
+                    selectinload(MediaItem.files),
+                    selectinload(MediaItem.artworks),
+                    selectinload(MediaItem.credits).selectinload(Credit.person),
+                    selectinload(MediaItem.library)
+                )
+                .order_by(MediaItem.title)
+            )
+            result = session.exec(statement)
+            return list(result.all())
+    
+    def get_by_library(self, library_id: int) -> List[MediaItem]:
+        """Get media items by library ID."""
+        with self._db_service.get_session() as session:
+            statement = (
+                select(MediaItem)
+                .where(MediaItem.library_id == library_id)
+                .options(
+                    selectinload(MediaItem.files),
+                    selectinload(MediaItem.artworks),
+                    selectinload(MediaItem.credits).selectinload(Credit.person),
+                    selectinload(MediaItem.library)
+                )
+                .order_by(MediaItem.title)
+            )
+            result = session.exec(statement)
+            return list(result.all())
+    
+    def get_by_id(self, item_id: int) -> Optional[MediaItem]:
+        """Get media item by ID."""
+        with self._db_service.get_session() as session:
+            statement = (
+                select(MediaItem)
+                .where(MediaItem.id == item_id)
+                .options(
+                    selectinload(MediaItem.files),
+                    selectinload(MediaItem.artworks),
+                    selectinload(MediaItem.credits).selectinload(Credit.person),
+                    selectinload(MediaItem.library)
+                )
+            )
+            result = session.exec(statement)
+            return result.first()
+    
+    def search(self, query: str, limit: int = 100) -> List[MediaItem]:
+        """Search media items by title or description."""
+        with self._db_service.get_session() as session:
+            statement = (
+                select(MediaItem)
+                .where(
+                    (MediaItem.title.ilike(f"%{query}%")) |
+                    (MediaItem.description.ilike(f"%{query}%"))
+                )
+                .options(
+                    selectinload(MediaItem.files),
+                    selectinload(MediaItem.artworks),
+                    selectinload(MediaItem.credits).selectinload(Credit.person),
+                    selectinload(MediaItem.library)
+                )
+                .order_by(MediaItem.title)
+                .limit(limit)
+            )
+            result = session.exec(statement)
+            return list(result.all())
 
 
 @contextmanager
