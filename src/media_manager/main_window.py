@@ -21,6 +21,7 @@ from .library_postprocessor import PostProcessingOptions
 from .logging import get_logger
 from .match_manager import MatchManager
 from .match_resolution_widget import MatchResolutionWidget
+from .metadata_editor_widget import MetadataEditorWidget
 from .scan_queue_widget import ScanQueueWidget
 from .settings import SettingsManager
 
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         # Create UI widgets
         self.scan_queue_widget = ScanQueueWidget(self)
         self.match_resolution_widget = MatchResolutionWidget(self)
+        self.metadata_editor_widget = MetadataEditorWidget(self)
 
         # Connect signals
         self._connect_signals()
@@ -145,13 +147,8 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
-        # Properties placeholder
-        properties_label = QLabel("Properties")
-        properties_label.setStyleSheet("font-weight: bold;")
-        layout.addWidget(properties_label)
-
-        self.properties_list = QListWidget()
-        layout.addWidget(self.properties_list)
+        # Add metadata editor widget
+        layout.addWidget(self.metadata_editor_widget)
 
         return widget
 
@@ -171,6 +168,10 @@ class MainWindow(QMainWindow):
         # Match manager signals
         self.match_manager.match_selected.connect(self.match_resolution_widget.set_match)
         self.match_manager.status_changed.connect(self.update_status)
+
+        # Metadata editor signals
+        self.metadata_editor_widget.match_updated.connect(self.match_manager.update_match)
+        self.metadata_editor_widget.validation_error.connect(self.update_status)
 
     def _on_start_matching(self) -> None:
         """Handle start matching request."""
