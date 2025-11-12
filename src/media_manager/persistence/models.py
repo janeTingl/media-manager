@@ -36,10 +36,14 @@ class Library(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     path: str = Field(unique=True, index=True)
-    media_type: str = Field(index=True)  # "movie" or "tv"
+    media_type: str = Field(index=True)  # "movie", "tv", or "mixed"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     description: Optional[str] = None
+    is_active: bool = Field(default=True, index=True)
+    scan_roots: Optional[str] = None  # JSON array of paths to scan
+    default_destination: Optional[str] = None  # Default path for processed files
+    color: Optional[str] = None  # UI color for library identification
 
     # Relationships
     media_items: list["MediaItem"] = Relationship(back_populates="library")

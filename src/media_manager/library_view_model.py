@@ -54,6 +54,7 @@ class LibraryViewModel(QAbstractItemModel):
         self._sort_column = 0  # Default to title
         self._sort_order = Qt.AscendingOrder
         self._media_type_filter = "all"  # "all", "movie", "tv"
+        self._library_filter: Optional[int] = None  # Filter by library ID
         
         # Lazy loading
         self._page_size = 50
@@ -170,9 +171,12 @@ class LibraryViewModel(QAbstractItemModel):
         self.loading_started.emit()
         
         try:
+            # Use library_filter if set, otherwise use the parameter
+            filter_library_id = library_id if library_id is not None else self._library_filter
+            
             # Fetch items from repository
-            if library_id:
-                self._items = self._repository.get_by_library(library_id)
+            if filter_library_id:
+                self._items = self._repository.get_by_library(filter_library_id)
             else:
                 self._items = self._repository.get_all()
             
@@ -201,6 +205,18 @@ class LibraryViewModel(QAbstractItemModel):
         """Set media type filter ('all', 'movie', 'tv')."""
         self._media_type_filter = media_type
         self._apply_filters()
+
+    def set_library_filter(self, library_id: Optional[int]) -> None:
+        """Set library filter and reload data."""
+        self._library_filter = library_id
+        self.load_data()
+
+    def clear_filters(self) -> None:
+        """Clear all filters and reload data."""
+        self._filter_text = ""
+        self._media_type_filter = "all"
+        self._library_filter = None
+        self.load_data()
 
     def _apply_filters(self) -> None:
         """Apply current filters to the items."""

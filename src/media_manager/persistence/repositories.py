@@ -256,6 +256,69 @@ class UnitOfWork:
             self.close()
 
 
+class LibraryRepository:
+    """Repository for Library operations."""
+    
+    def __init__(self) -> None:
+        """Initialize the library repository."""
+        self._logger = logger
+        self._db_service = get_database_service()
+    
+    def get_all(self) -> List[Library]:
+        """Get all libraries."""
+        with self._db_service.get_session() as session:
+            statement = select(Library).order_by(Library.name)
+            result = session.exec(statement)
+            return list(result.all())
+    
+    def get_active(self) -> List[Library]:
+        """Get all active libraries."""
+        with self._db_service.get_session() as session:
+            statement = select(Library).where(Library.is_active == True).order_by(Library.name)
+            result = session.exec(statement)
+            return list(result.all())
+    
+    def get_by_id(self, library_id: int) -> Optional[Library]:
+        """Get library by ID."""
+        with self._db_service.get_session() as session:
+            statement = select(Library).where(Library.id == library_id)
+            result = session.exec(statement)
+            return result.first()
+    
+    def create(self, library: Library) -> Library:
+        """Create a new library."""
+        with self._db_service.get_session() as session:
+            session.add(library)
+            session.commit()
+            session.refresh(library)
+            return library
+    
+    def update(self, library: Library) -> Library:
+        """Update an existing library."""
+        with self._db_service.get_session() as session:
+            session.add(library)
+            session.commit()
+            session.refresh(library)
+            return library
+    
+    def delete(self, library_id: int) -> bool:
+        """Delete a library by ID."""
+        with self._db_service.get_session() as session:
+            library = session.get(Library, library_id)
+            if library is None:
+                return False
+            session.delete(library)
+            session.commit()
+            return True
+    
+    def count_items(self, library_id: int) -> int:
+        """Count media items in a library."""
+        with self._db_service.get_session() as session:
+            statement = select(MediaItem).where(MediaItem.library_id == library_id)
+            result = session.exec(statement)
+            return len(list(result.all()))
+
+
 class MediaItemRepository:
     """Repository for MediaItem operations."""
     

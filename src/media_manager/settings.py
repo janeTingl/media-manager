@@ -311,6 +311,22 @@ class SettingsManager(QObject):
         """Set the timeout for provider API calls in seconds."""
         self.set_provider_setting("timeout", timeout)
 
+    def get_last_active_library_id(self) -> Optional[int]:
+        """Get the last active library ID."""
+        return self.get("last_active_library_id")
+
+    def set_last_active_library_id(self, library_id: int) -> None:
+        """Set the last active library ID."""
+        self.set("last_active_library_id", library_id)
+
+    def get_default_library_id(self) -> Optional[int]:
+        """Get the default library ID."""
+        return self.get("default_library_id")
+
+    def set_default_library_id(self, library_id: int) -> None:
+        """Set the default library ID."""
+        self.set("default_library_id", library_id)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None
