@@ -23,6 +23,9 @@ classifiers = [
 ]
 dependencies = [
     "PySide6>=6.5.0",
+    "sqlmodel>=0.0.14",
+    "alembic>=1.12.0",
+    "sqlalchemy>=2.0.0",
 ]
 
 [project.optional-dependencies]

@@ -246,6 +246,20 @@ class SettingsManager(QObject):
         """Set the target subfolder for NFO files."""
         self.set_nfo_setting("target_subfolder", subfolder)
 
+    def get_database_path(self) -> str:
+        """Get the database file path."""
+        default_path = str(Path.home() / ".media-manager" / "media_manager.db")
+        return self.get("database_path", default_path)
+
+    def set_database_path(self, path: str) -> None:
+        """Set the database file path."""
+        self.set("database_path", path)
+
+    def get_database_url(self) -> str:
+        """Get the SQLAlchemy database URL."""
+        db_path = self.get_database_path()
+        return f"sqlite:///{db_path}"
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None
