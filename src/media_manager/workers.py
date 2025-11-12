@@ -27,6 +27,10 @@ from .models import (
     SubtitleLanguage,
     VideoMetadata,
 )
+from .providers.adapter import ProviderAdapter
+from .providers.tmdb import TMDBProvider
+from .providers.tvdb import TVDBProvider
+from .settings import get_settings
 
 
 class MatchWorkerSignals(QObject):
@@ -52,18 +56,17 @@ class MatchWorker(QRunnable):
     def run(self) -> None:
         """Run the matching process."""
         total = len(self.metadata_list)
+        
+        # Initialize provider adapter
+        adapter = self._get_adapter()
 
         for index, metadata in enumerate(self.metadata_list, start=1):
             if self._should_stop:
                 break
 
             try:
-                # Simulate network/disk operation
-                time.sleep(0.1)  # Simulate processing time
-
-                # Mock matching logic - in real implementation this would call
-                # external APIs like TMDB, TVDB, etc.
-                match = self._create_mock_match(metadata)
+                # Use provider adapter for matching
+                match = adapter.search_and_match(metadata, fallback_to_mock=True)
 
                 self.signals.match_found.emit(match)
                 self.signals.progress.emit(index, total)
@@ -78,6 +81,35 @@ class MatchWorker(QRunnable):
     def stop(self) -> None:
         """Stop the worker."""
         self._should_stop = True
+
+    def _get_adapter(self) -> ProviderAdapter:
+        """Get or create provider adapter.
+
+        Returns:
+            ProviderAdapter with configured providers
+        """
+        settings = get_settings()
+        providers = []
+
+        # Initialize enabled providers
+        enabled_providers = settings.get_enabled_providers()
+
+        if "TMDB" in enabled_providers:
+            tmdb_key = settings.get_tmdb_api_key()
+            if tmdb_key:
+                providers.append(TMDBProvider(tmdb_key))
+            else:
+                self._logger.warning("TMDB provider enabled but API key not configured")
+
+        if "TVDB" in enabled_providers:
+            tvdb_key = settings.get_tvdb_api_key()
+            if tvdb_key:
+                providers.append(TVDBProvider(tvdb_key))
+            else:
+                self._logger.warning("TVDB provider enabled but API key not configured")
+
+        adapter = ProviderAdapter(providers if providers else None)
+        return adapter
 
     def _create_mock_match(self, metadata: VideoMetadata) -> MediaMatch:
         """Create a mock match for demonstration."""
@@ -176,11 +208,21 @@ class SearchWorker(QRunnable):
     def run(self) -> None:
         """Run the search process."""
         try:
-            # Simulate network operation
-            time.sleep(0.5)
+            # Use provider adapter for search
+            adapter = self._get_adapter()
+            provider_results = adapter.search_results(
+                self.request.query,
+                self.request.media_type,
+                self.request.year
+            )
 
-            # Mock search results
-            results = self._create_mock_results()
+            # Convert provider results to SearchResult
+            results = self._convert_to_search_results(provider_results)
+
+            # Fallback to mock if no results
+            if not results:
+                self._logger.debug("No provider results, using mock")
+                results = self._create_mock_results()
 
             self.signals.search_completed.emit(results)
 
@@ -188,6 +230,66 @@ class SearchWorker(QRunnable):
             error_msg = f"Search failed: {exc}"
             self._logger.error(error_msg)
             self.signals.search_failed.emit(error_msg)
+
+    def _get_adapter(self) -> ProviderAdapter:
+        """Get or create provider adapter.
+
+        Returns:
+            ProviderAdapter with configured providers
+        """
+        settings = get_settings()
+        providers = []
+
+        # Initialize enabled providers
+        enabled_providers = settings.get_enabled_providers()
+
+        if "TMDB" in enabled_providers:
+            tmdb_key = settings.get_tmdb_api_key()
+            if tmdb_key:
+                providers.append(TMDBProvider(tmdb_key))
+            else:
+                self._logger.debug("TMDB provider enabled but API key not configured")
+
+        if "TVDB" in enabled_providers:
+            tvdb_key = settings.get_tvdb_api_key()
+            if tvdb_key:
+                providers.append(TVDBProvider(tvdb_key))
+            else:
+                self._logger.debug("TVDB provider enabled but API key not configured")
+
+        adapter = ProviderAdapter(providers if providers else None)
+        return adapter
+
+    def _convert_to_search_results(self, provider_results: list) -> list[SearchResult]:
+        """Convert provider results to SearchResult objects.
+
+        Args:
+            provider_results: List of ProviderResult objects
+
+        Returns:
+            List of SearchResult objects
+        """
+        results = []
+        for result in provider_results[:10]:  # Limit to top 10
+            poster_urls = {}
+            if result.poster_url:
+                poster_urls[PosterType.POSTER] = result.poster_url
+            if result.fanart_url:
+                poster_urls[PosterType.FANART] = result.fanart_url
+
+            search_result = SearchResult(
+                title=result.title,
+                year=result.year,
+                external_id=result.external_id,
+                source=result.provider_name,
+                poster_url=result.poster_url,
+                poster_urls=poster_urls,
+                overview=result.overview,
+                confidence=result.confidence,
+            )
+            results.append(search_result)
+
+        return results
 
     def _create_mock_results(self) -> list[SearchResult]:
         """Create mock search results."""

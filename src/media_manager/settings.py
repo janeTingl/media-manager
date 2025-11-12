@@ -260,6 +260,57 @@ class SettingsManager(QObject):
         db_path = self.get_database_path()
         return f"sqlite:///{db_path}"
 
+    def get_tmdb_api_key(self) -> Optional[str]:
+        """Get TMDB API key."""
+        return self.get_api_key("tmdb")
+
+    def set_tmdb_api_key(self, api_key: str) -> None:
+        """Set TMDB API key."""
+        self.set_api_key("tmdb", api_key)
+
+    def get_tvdb_api_key(self) -> Optional[str]:
+        """Get TVDB API key."""
+        return self.get_api_key("tvdb")
+
+    def set_tvdb_api_key(self, api_key: str) -> None:
+        """Set TVDB API key."""
+        self.set_api_key("tvdb", api_key)
+
+    def get_provider_setting(self, key: str, default: Any = None) -> Any:
+        """Get a provider-related setting."""
+        provider_settings = self.get("provider_settings", {})
+        return provider_settings.get(key, default)
+
+    def set_provider_setting(self, key: str, value: Any) -> None:
+        """Set a provider-related setting."""
+        provider_settings = self.get("provider_settings", {})
+        provider_settings[key] = value
+        self.set("provider_settings", provider_settings)
+
+    def get_enabled_providers(self) -> list[str]:
+        """Get the list of enabled metadata providers."""
+        return self.get_provider_setting("enabled_providers", ["TMDB", "TVDB"])
+
+    def set_enabled_providers(self, providers: list[str]) -> None:
+        """Set the list of enabled metadata providers."""
+        self.set_provider_setting("enabled_providers", providers)
+
+    def get_provider_retry_count(self) -> int:
+        """Get the number of retries for provider calls."""
+        return self.get_provider_setting("retry_count", 3)
+
+    def set_provider_retry_count(self, count: int) -> None:
+        """Set the number of retries for provider calls."""
+        self.set_provider_setting("retry_count", count)
+
+    def get_provider_timeout(self) -> int:
+        """Get the timeout for provider API calls in seconds."""
+        return self.get_provider_setting("timeout", 10)
+
+    def set_provider_timeout(self, timeout: int) -> None:
+        """Set the timeout for provider API calls in seconds."""
+        self.set_provider_setting("timeout", timeout)
+
 
 # Global settings instance
 _settings_instance: Optional[SettingsManager] = None
