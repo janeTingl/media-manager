@@ -25,11 +25,14 @@ from PySide6.QtWidgets import (
     QWidget,
     QMessageBox,
     QComboBox,
+    QCheckBox,
+    QListWidget,
+    QListWidgetItem,
 )
 
 from .logging import get_logger
-from .persistence.models import MediaItem, Credit, Person, Tag, Collection
-from .persistence.repositories import UnitOfWork, transactional_context
+from .persistence.models import MediaItem, Credit, Person, Tag, Collection, Favorite
+from .persistence.repositories import UnitOfWork, transactional_context, Repository
 
 
 class MetadataEditorWidget(QWidget):
@@ -252,16 +255,23 @@ class MetadataEditorWidget(QWidget):
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
+        # Favorite checkbox
+        favorite_layout = QHBoxLayout()
+        self.favorite_checkbox = QCheckBox("Mark as Favorite")
+        self.favorite_checkbox.toggled.connect(self._on_field_changed)
+        favorite_layout.addWidget(self.favorite_checkbox)
+        favorite_layout.addStretch()
+        layout.addLayout(favorite_layout)
+
         # Collections
         collections_group = QGroupBox("Collections")
         collections_layout = QVBoxLayout(collections_group)
-        self.collections_table = QTableWidget()
-        self.collections_table.setColumnCount(2)
-        self.collections_table.setHorizontalHeaderLabels(["Name", ""])
-        self.collections_table.horizontalHeader().setStretchLastSection(False)
-        self.collections_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.collections_table.setMaximumHeight(150)
-        collections_layout.addWidget(self.collections_table)
+        
+        self.collections_list = QListWidget()
+        self.collections_list.setMaximumHeight(120)
+        self.collections_list.setSelectionMode(QListWidget.MultiSelection)
+        collections_layout.addWidget(QLabel("Select Collections:"))
+        collections_layout.addWidget(self.collections_list)
 
         collections_btn_layout = QHBoxLayout()
         add_collection_btn = QPushButton("Add Collection")
@@ -274,11 +284,23 @@ class MetadataEditorWidget(QWidget):
         # Tags
         tags_group = QGroupBox("Tags")
         tags_layout = QVBoxLayout(tags_group)
+        
+        self.tags_list = QListWidget()
+        self.tags_list.setMaximumHeight(120)
+        self.tags_list.setSelectionMode(QListWidget.MultiSelection)
+        tags_layout.addWidget(QLabel("Select Tags:"))
+        tags_layout.addWidget(self.tags_list)
+        
+        tag_input_layout = QHBoxLayout()
         self.tags_input = QLineEdit()
-        self.tags_input.setPlaceholderText("Comma-separated tags")
-        self.tags_input.textChanged.connect(self._on_field_changed)
-        tags_layout.addWidget(QLabel("Tags (comma-separated):"))
-        tags_layout.addWidget(self.tags_input)
+        self.tags_input.setPlaceholderText("Type new tag name...")
+        tag_input_layout.addWidget(self.tags_input)
+        
+        add_tag_btn = QPushButton("Add New Tag")
+        add_tag_btn.clicked.connect(self._on_add_new_tag)
+        tag_input_layout.addWidget(add_tag_btn)
+        
+        tags_layout.addLayout(tag_input_layout)
         layout.addWidget(tags_group)
 
         layout.addStretch()
@@ -397,17 +419,43 @@ class MetadataEditorWidget(QWidget):
 
         # Load cast and crew
         self._load_cast_crew(media_item)
+        
+        # Load favorite status
+        self.favorite_checkbox.setChecked(len(media_item.favorites) > 0)
 
     def _load_collections(self, media_item: MediaItem) -> None:
         """Load collections for the media item."""
-        self.collections_table.setRowCount(0)
-        for collection in media_item.collections:
-            self._add_collection_row(collection.name, collection.id)
+        from .search_service import SearchService
+        search_service = SearchService()
+        all_collections = search_service.get_available_collections()
+        
+        self.collections_list.clear()
+        selected_collection_ids = {c.id for c in media_item.collections}
+        
+        for collection in all_collections:
+            item = QListWidgetItem(collection.name)
+            item.setData(Qt.UserRole, collection.id)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Checked if collection.id in selected_collection_ids else Qt.Unchecked)
+            self.collections_list.addItem(item)
 
     def _load_tags(self, media_item: MediaItem) -> None:
         """Load tags for the media item."""
-        tag_names = [tag.name for tag in media_item.tags]
-        self.tags_input.setText(", ".join(tag_names))
+        from .search_service import SearchService
+        search_service = SearchService()
+        all_tags = search_service.get_available_tags()
+        
+        self.tags_list.clear()
+        selected_tag_ids = {t.id for t in media_item.tags}
+        
+        for tag in all_tags:
+            item = QListWidgetItem(tag.name)
+            item.setData(Qt.UserRole, tag.id)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Checked if tag.id in selected_tag_ids else Qt.Unchecked)
+            self.tags_list.addItem(item)
+        
+        self.tags_input.clear()
 
     def _load_cast_crew(self, media_item: MediaItem) -> None:
         """Load cast and crew for the media item."""
@@ -434,7 +482,9 @@ class MetadataEditorWidget(QWidget):
         self.genres_input.clear()
         self.keywords_input.clear()
         self.tags_input.clear()
-        self.collections_table.setRowCount(0)
+        self.tags_list.clear()
+        self.collections_list.clear()
+        self.favorite_checkbox.setChecked(False)
         self.cast_table.setRowCount(0)
         self.crew_table.setRowCount(0)
 
@@ -570,14 +620,19 @@ class MetadataEditorWidget(QWidget):
     def _on_add_collection(self) -> None:
         """Handle add collection button click."""
         dialog = QDialog(self)
-        dialog.setWindowTitle("Add Collection")
+        dialog.setWindowTitle("Add New Collection")
         layout = QVBoxLayout(dialog)
 
-        combo = QComboBox()
-        # TODO: Load collections from database
-        combo.addItem("Sample Collection")
-        layout.addWidget(QLabel("Select Collection:"))
-        layout.addWidget(combo)
+        collection_input = QLineEdit()
+        collection_input.setPlaceholderText("Enter collection name (e.g., 'Watchlist', 'Kids')")
+        layout.addWidget(QLabel("Collection Name:"))
+        layout.addWidget(collection_input)
+
+        description_input = QTextEdit()
+        description_input.setPlaceholderText("Optional description")
+        description_input.setMaximumHeight(80)
+        layout.addWidget(QLabel("Description:"))
+        layout.addWidget(description_input)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(dialog.accept)
@@ -585,9 +640,54 @@ class MetadataEditorWidget(QWidget):
         layout.addWidget(buttons)
 
         if dialog.exec() == QDialog.Accepted:
-            self._add_collection_row(combo.currentText(), None)
+            name = collection_input.text().strip()
+            if name:
+                try:
+                    with transactional_context() as uow:
+                        collection_repo = uow.get_repository(Collection)
+                        existing = collection_repo.filter_by(name=name)
+
+                        if existing:
+                            collection = existing[0]
+                        else:
+                            collection = Collection(name=name, description=description_input.toPlainText() or None)
+                            collection_repo.create(collection)
+
+                    # Reload collections
+                    self._load_collections(self._current_media_item)
+                    self._is_dirty = True
+                    self._update_button_states()
+                except Exception as e:
+                    self._logger.error(f"Error creating collection: {e}")
+                    QMessageBox.critical(self, "Error", f"Failed to create collection: {str(e)}")
+
+    @Slot()
+    def _on_add_new_tag(self) -> None:
+        """Handle add new tag button click."""
+        tag_name = self.tags_input.text().strip()
+        if not tag_name:
+            QMessageBox.warning(self, "Invalid Input", "Please enter a tag name.")
+            return
+
+        try:
+            with transactional_context() as uow:
+                tag_repo = uow.get_repository(Tag)
+                existing = tag_repo.filter_by(name=tag_name)
+
+                if existing:
+                    QMessageBox.information(self, "Tag Exists", f"Tag '{tag_name}' already exists.")
+                else:
+                    tag = Tag(name=tag_name)
+                    tag_repo.create(tag)
+
+            # Reload tags
+            self.tags_input.clear()
+            self._load_tags(self._current_media_item)
             self._is_dirty = True
             self._update_button_states()
+        except Exception as e:
+            self._logger.error(f"Error creating tag: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to create tag: {str(e)}")
 
     @Slot()
     def _on_add_cast_member(self) -> None:
@@ -810,9 +910,55 @@ class MetadataEditorWidget(QWidget):
 
     def _save_collections_and_tags(self, uow) -> None:
         """Save collections and tags changes."""
-        # This would involve:
-        # 1. Reading the tags input and collections table
-        # 2. Creating/updating Tag and Collection records
-        # 3. Updating the many-to-many relationships
-        # For now, this is a placeholder
-        pass
+        if self._current_media_item is None:
+            return
+
+        try:
+            # Save tags
+            tag_repo = uow.get_repository(Tag)
+            selected_tag_ids = []
+            
+            for i in range(self.tags_list.count()):
+                item = self.tags_list.item(i)
+                if item.checkState() == Qt.Checked:
+                    tag_id = item.data(Qt.UserRole)
+                    selected_tag_ids.append(tag_id)
+            
+            # Clear existing tags and add selected ones
+            self._current_media_item.tags = []
+            for tag_id in selected_tag_ids:
+                tag = tag_repo.read(tag_id)
+                if tag:
+                    self._current_media_item.tags.append(tag)
+            
+            # Save collections
+            collection_repo = uow.get_repository(Collection)
+            selected_collection_ids = []
+            
+            for i in range(self.collections_list.count()):
+                item = self.collections_list.item(i)
+                if item.checkState() == Qt.Checked:
+                    collection_id = item.data(Qt.UserRole)
+                    selected_collection_ids.append(collection_id)
+            
+            # Clear existing collections and add selected ones
+            self._current_media_item.collections = []
+            for collection_id in selected_collection_ids:
+                collection = collection_repo.read(collection_id)
+                if collection:
+                    self._current_media_item.collections.append(collection)
+            
+            # Save favorite status
+            favorite_repo = uow.get_repository(Favorite)
+            is_favorite = self.favorite_checkbox.isChecked()
+            existing_favorite = favorite_repo.filter_by(media_item_id=self._current_media_item.id)
+            
+            if is_favorite and not existing_favorite:
+                favorite = Favorite(media_item_id=self._current_media_item.id)
+                favorite_repo.create(favorite)
+            elif not is_favorite and existing_favorite:
+                favorite_repo.delete(existing_favorite[0].id)
+        
+        except Exception as e:
+            self._logger.error(f"Error saving collections and tags: {e}")
+            raise

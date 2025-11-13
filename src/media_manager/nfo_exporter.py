@@ -96,6 +96,12 @@ class NFOExporter:
             else:
                 self._add_element(root, "id", media_match.external_id)
 
+        # Tags
+        if hasattr(media_match, 'tags') and media_match.tags:
+            for tag in media_match.tags:
+                tag_name = tag.name if hasattr(tag, 'name') else str(tag)
+                self._add_element(root, "tag", tag_name)
+
         # Cast
         for actor in media_match.cast:
             actor_elem = ET.SubElement(root, "actor")
@@ -133,6 +139,12 @@ class NFOExporter:
                 self._add_element(root, "tvdbid", media_match.external_id)
             else:
                 self._add_element(root, "id", media_match.external_id)
+
+        # Tags
+        if hasattr(media_match, 'tags') and media_match.tags:
+            for tag in media_match.tags:
+                tag_name = tag.name if hasattr(tag, 'name') else str(tag)
+                self._add_element(root, "tag", tag_name)
 
         # Cast
         for actor in media_match.cast:
