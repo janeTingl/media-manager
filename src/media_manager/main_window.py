@@ -32,6 +32,7 @@ from .media_table_view import MediaTableView
 from .metadata_editor_widget import MetadataEditorWidget
 from .persistence.repositories import LibraryRepository
 from .scan_queue_widget import ScanQueueWidget
+from .search_tab_widget import SearchTabWidget
 from .settings import SettingsManager
 
 
@@ -89,6 +90,7 @@ class MainWindow(QMainWindow):
         self.scan_queue_widget = ScanQueueWidget(self)
         self.match_resolution_widget = MatchResolutionWidget(self)
         self.metadata_editor_widget = MetadataEditorWidget(self)
+        self.search_tab_widget = SearchTabWidget(self)
 
         # Connect signals
         self._connect_signals()
@@ -196,10 +198,12 @@ class MainWindow(QMainWindow):
         
         self.tab_widget.addTab(library_widget, "Library")
         
+        # Add search tab
+        self.tab_widget.addTab(self.search_tab_widget, "Search")
+        
         # Add other tabs (keeping existing structure)
         self.tab_widget.addTab(QListWidget(), "Recent")
         self.tab_widget.addTab(QListWidget(), "Favorites")
-        self.tab_widget.addTab(QListWidget(), "Search")
 
         # Add matching tab
         self.tab_widget.addTab(self._create_matching_tab(), "Matching")
@@ -274,6 +278,10 @@ class MainWindow(QMainWindow):
         # Metadata editor signals
         self.metadata_editor_widget.match_updated.connect(self.match_manager.update_match)
         self.metadata_editor_widget.validation_error.connect(self.update_status)
+        
+        # Search tab signals
+        self.search_tab_widget.item_selected.connect(self._on_item_selected)
+        self.search_tab_widget.item_activated.connect(self._on_item_activated)
 
     def _on_start_matching(self) -> None:
         """Handle start matching request."""

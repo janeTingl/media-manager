@@ -289,3 +289,14 @@ class JobRun(SQLModel, table=True):
 
     # Relationships
     library: Optional[Library] = Relationship(back_populates="job_runs")
+
+
+class SavedSearch(SQLModel, table=True):
+    """User-saved search with criteria."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    description: Optional[str] = None
+    criteria: str  # JSON-serialized SearchCriteria
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
