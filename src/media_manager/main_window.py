@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from .batch_operations_dialog import BatchOperationsDialog
 from .dashboard_widget import DashboardWidget
 from .detail_panel import DetailPanel
+from .help_center_dialog import HelpCenterDialog
 from .library_manager_dialog import LibraryManagerDialog
 from .library_postprocessor import PostProcessingOptions
 from .library_tree_widget import LibraryTreeWidget
@@ -32,6 +33,7 @@ from .match_resolution_widget import MatchResolutionWidget
 from .media_grid_view import MediaGridView
 from .media_table_view import MediaTableView
 from .metadata_editor_widget import MetadataEditorWidget
+from .onboarding_wizard import OnboardingWizard
 from .persistence.repositories import LibraryRepository
 from .preferences_window import PreferencesWindow
 from .scan_queue_widget import ScanQueueWidget
@@ -70,6 +72,9 @@ class MainWindow(QMainWindow):
         
         # Restore last active library
         self._restore_last_active_library()
+
+        # Show onboarding wizard if first run
+        self._check_first_run()
 
         self._logger.info("Main window initialized")
 
@@ -401,6 +406,17 @@ class MainWindow(QMainWindow):
         # Help menu
         help_menu = menubar.addMenu("&Help")
 
+        help_center_action = QAction("&Help Center", self)
+        help_center_action.setShortcut("F1")
+        help_center_action.triggered.connect(self._on_help_center)
+        help_menu.addAction(help_center_action)
+
+        onboarding_action = QAction("Show &Onboarding Wizard", self)
+        onboarding_action.triggered.connect(self._on_show_onboarding)
+        help_menu.addAction(onboarding_action)
+
+        help_menu.addSeparator()
+
         about_action = QAction("&About", self)
         about_action.triggered.connect(self._on_about)
         help_menu.addAction(about_action)
@@ -489,6 +505,35 @@ class MainWindow(QMainWindow):
     def update_item_count(self, count: int) -> None:
         """Update the item count in the status bar."""
         self.item_count_label.setText(f"{count} items")
+
+    def keyPressEvent(self, event: Any) -> None:
+        """Handle key press events for context-sensitive help."""
+        from PySide6.QtCore import Qt
+        
+        if event.key() == Qt.Key.Key_F1:
+            # Context-sensitive help
+            self._open_context_help()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def _open_context_help(self) -> None:
+        """Open help center with context-appropriate topic."""
+        # Determine current context and show relevant help
+        current_tab_index = self.tab_widget.currentIndex()
+        
+        topic_map = {
+            0: "library-setup",      # Library tab
+            1: "search",              # Search tab  
+            2: "dashboard",           # Dashboard tab (fallback to welcome)
+            3: "metadata-editing",    # Metadata editor tab
+            4: "scanning",            # Matching/scan queue tab
+        }
+        
+        topic = topic_map.get(current_tab_index, "welcome")
+        
+        dialog = HelpCenterDialog(self, initial_topic=topic)
+        dialog.exec()
 
     def closeEvent(self, event: Any) -> None:
         """Handle window close event."""
@@ -672,6 +717,31 @@ class MainWindow(QMainWindow):
         # Find and select the item in both views
         # This is a simplified implementation - in practice you'd need to map items to indices
         pass
+
+    def _check_first_run(self) -> None:
+        """Check if this is the first run and show onboarding if needed."""
+        if not self._settings.get("onboarding_completed", False):
+            from PySide6.QtCore import QTimer
+            # Delay showing wizard until after window is displayed
+            QTimer.singleShot(500, self._show_onboarding_wizard)
+
+    def _show_onboarding_wizard(self) -> None:
+        """Show the onboarding wizard."""
+        wizard = OnboardingWizard(self._settings, self)
+        if wizard.exec():
+            # Reload library tree if libraries were created
+            self.library_tree_widget.load_libraries()
+            # Restore the first library
+            self._restore_last_active_library()
+
+    def _on_help_center(self) -> None:
+        """Open the help center dialog."""
+        dialog = HelpCenterDialog(self)
+        dialog.exec()
+
+    def _on_show_onboarding(self) -> None:
+        """Show the onboarding wizard manually."""
+        self._show_onboarding_wizard()
 
     def _on_library_selected(self, library, media_type_filter: str) -> None:
         """Handle library selection from tree widget."""

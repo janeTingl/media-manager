@@ -677,6 +677,22 @@ class SettingsManager(QObject):
     def clear_ui_layout(self, key: str) -> None:
         self.set_ui_layout(key, None)
 
+    def get_language(self) -> str:
+        """Get the UI language/locale setting."""
+        return str(self.get_ui_setting("language", "en"))
+
+    def set_language(self, language: str) -> None:
+        """Set the UI language/locale setting."""
+        self.set_ui_setting("language", language)
+
+    def get_help_locale(self) -> str:
+        """Get the help documentation locale (falls back to UI language)."""
+        return str(self.get_ui_setting("help_locale", self.get_language()))
+
+    def set_help_locale(self, locale: str) -> None:
+        """Set the help documentation locale."""
+        self.set_ui_setting("help_locale", locale)
+
     # ------------------------------------------------------------------
     # Advanced settings
     # ------------------------------------------------------------------

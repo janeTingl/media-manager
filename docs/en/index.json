@@ -1,0 +1,79 @@
+{
+  "title": "Media Manager Help",
+  "version": "1.0",
+  "locale": "en",
+  "topics": [
+    {
+      "id": "welcome",
+      "title": "Welcome",
+      "file": "welcome.html",
+      "keywords": ["introduction", "overview", "getting started"]
+    },
+    {
+      "id": "quick-start",
+      "title": "Quick Start Guide",
+      "file": "quick-start.html",
+      "keywords": ["quick start", "tutorial", "first steps"]
+    },
+    {
+      "id": "library-setup",
+      "title": "Library Setup",
+      "file": "library-setup.html",
+      "keywords": ["library", "setup", "configuration", "folders"]
+    },
+    {
+      "id": "providers",
+      "title": "Metadata Providers",
+      "file": "providers.html",
+      "keywords": ["providers", "tmdb", "tvdb", "api keys", "metadata"]
+    },
+    {
+      "id": "scanning",
+      "title": "Scanning Media",
+      "file": "scanning.html",
+      "keywords": ["scan", "matching", "import", "files"]
+    },
+    {
+      "id": "metadata-editing",
+      "title": "Editing Metadata",
+      "file": "metadata-editing.html",
+      "keywords": ["metadata", "edit", "information", "details"]
+    },
+    {
+      "id": "batch-operations",
+      "title": "Batch Operations",
+      "file": "batch-operations.html",
+      "keywords": ["batch", "bulk", "operations", "multiple"]
+    },
+    {
+      "id": "tags-favorites",
+      "title": "Tags and Favorites",
+      "file": "tags-favorites.html",
+      "keywords": ["tags", "favorites", "collections", "organize"]
+    },
+    {
+      "id": "search",
+      "title": "Searching Media",
+      "file": "search.html",
+      "keywords": ["search", "find", "filter", "query"]
+    },
+    {
+      "id": "import-export",
+      "title": "Import and Export",
+      "file": "import-export.html",
+      "keywords": ["import", "export", "backup", "restore"]
+    },
+    {
+      "id": "preferences",
+      "title": "Preferences",
+      "file": "preferences.html",
+      "keywords": ["preferences", "settings", "configuration", "options"]
+    },
+    {
+      "id": "troubleshooting",
+      "title": "Troubleshooting",
+      "file": "troubleshooting.html",
+      "keywords": ["troubleshooting", "problems", "issues", "help", "faq"]
+    }
+  ]
+}
