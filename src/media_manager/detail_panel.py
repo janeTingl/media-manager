@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..persistence.models import MediaItem
+from ..logging import get_logger
 
 
 class DetailPanel(QFrame):
@@ -49,6 +50,9 @@ class DetailPanel(QFrame):
         
         # Current item
         self._current_item: Optional[MediaItem] = None
+        
+        # Logger
+        self._logger = get_logger().get_logger(__name__)
         
         # Setup UI
         self._setup_ui()
@@ -165,7 +169,12 @@ class DetailPanel(QFrame):
         
         self._cast_label = QLabel("No cast information available")
         self._cast_label.setWordWrap(True)
-        self._cast_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._cast_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse | 
+            Qt.TextInteractionFlag.LinksAccessibleByMouse
+        )
+        self._cast_label.setOpenExternalLinks(False)
+        self._cast_label.linkActivated.connect(self._on_cast_link_clicked)
         
         self._cast_layout.addWidget(self._cast_label)
         
@@ -313,15 +322,18 @@ class DetailPanel(QFrame):
         for credit in sorted(item.credits, key=lambda c: c.order):
             if credit.role == "actor" and credit.person:
                 name = credit.person.name
+                character_info = ""
                 if credit.character_name:
-                    name += f" ({credit.character_name})"
-                cast_members.append(name)
+                    character_info = f" ({credit.character_name})"
+                # Create clickable link with person ID as data
+                link = f'<a href="person:{credit.person.id}" style="text-decoration: none; color: #0066cc;">{name}</a>{character_info}'
+                cast_members.append(link)
         
         if cast_members:
-            cast_text = "\n".join(cast_members[:10])  # Show top 10
+            cast_html = "<br>".join(cast_members[:10])  # Show top 10
             if len(cast_members) > 10:
-                cast_text += f"\n... and {len(cast_members) - 10} more"
-            self._cast_label.setText(cast_text)
+                cast_html += f"<br>... and {len(cast_members) - 10} more"
+            self._cast_label.setText(cast_html)
         else:
             self._cast_label.setText("No cast information available")
 
@@ -411,3 +423,28 @@ class DetailPanel(QFrame):
         """Collapse the panel."""
         if not self._collapsed:
             self.toggle_collapse()
+    
+    def _on_cast_link_clicked(self, link: str) -> None:
+        """Handle cast member link click.
+        
+        Args:
+            link: Link URL in format "person:123"
+        """
+        if link.startswith("person:"):
+            try:
+                person_id = int(link.split(":")[1])
+                self._show_person_dialog(person_id)
+            except (ValueError, IndexError) as exc:
+                self._logger.error(f"Invalid person link: {link}, error: {exc}")
+    
+    def _show_person_dialog(self, person_id: int) -> None:
+        """Show person detail dialog.
+        
+        Args:
+            person_id: Database person ID
+        """
+        from .entity_detail_dialog import EntityDetailDialog
+        
+        dialog = EntityDetailDialog(self)
+        dialog.show_person(person_id)
+        dialog.exec()
