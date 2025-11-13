@@ -119,9 +119,9 @@ class LibraryPostProcessor:
     ) -> None:
         self._settings = settings or get_settings()
         self._renamer = renamer or RenamingEngine(self._settings)
-        self._default_root = self._settings.get("library_root")
-        if self._default_root:
-            self._default_root = Path(self._default_root)
+        root_setting = self._settings.get_library_setting("library_root")
+        if root_setting:
+            self._default_root = Path(str(root_setting))
         else:
             self._default_root = Path.home() / "MediaLibrary"
 

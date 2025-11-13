@@ -53,6 +53,7 @@ class BatchOperationsDialog(QDialog):
 
         self._setup_ui()
         self._load_libraries()
+        self._apply_defaults()
 
     def _setup_ui(self) -> None:
         self.setWindowTitle("Batch Operations")
@@ -159,6 +160,48 @@ class BatchOperationsDialog(QDialog):
             self.move_checkbox.setEnabled(False)
             self.library_combo.setEnabled(False)
             self.move_checkbox.setToolTip("No active libraries available")
+
+    def _apply_defaults(self) -> None:
+        defaults = self._settings.get_batch_defaults()
+        if not defaults:
+            return
+
+        self.rename_checkbox.setChecked(bool(defaults.get("rename", self.rename_checkbox.isChecked())))
+        move_default = bool(defaults.get("move", self.move_checkbox.isChecked()))
+        self.move_checkbox.setChecked(move_default)
+        delete_default = bool(defaults.get("delete", self.delete_checkbox.isChecked()))
+        self.delete_checkbox.setChecked(delete_default)
+        tags_default = bool(defaults.get("tags", self.tags_checkbox.isChecked()))
+        self.tags_checkbox.setChecked(tags_default)
+        metadata_default = bool(defaults.get("metadata", self.metadata_checkbox.isChecked()))
+        self.metadata_checkbox.setChecked(metadata_default)
+        resync_default = bool(defaults.get("resync", self.resync_checkbox.isChecked()))
+        self.resync_checkbox.setChecked(resync_default)
+
+        move_library_id = defaults.get("move_library_id")
+        if move_library_id is not None:
+            index = self.library_combo.findData(move_library_id)
+            if index >= 0:
+                self.library_combo.setCurrentIndex(index)
+
+        default_tags = defaults.get("default_tags")
+        if isinstance(default_tags, str):
+            self.tags_edit.setText(default_tags)
+        elif isinstance(default_tags, list):
+            self.tags_edit.setText(", ".join(str(tag) for tag in default_tags))
+
+        default_genres = defaults.get("default_genres")
+        if isinstance(default_genres, list):
+            self.genres_edit.setText(", ".join(str(genre) for genre in default_genres))
+        elif isinstance(default_genres, str):
+            self.genres_edit.setText(default_genres)
+
+        default_rating = defaults.get("default_rating")
+        if default_rating is not None:
+            try:
+                self.rating_spin.setValue(int(default_rating))
+            except (TypeError, ValueError):
+                pass
 
     def _on_apply_clicked(self) -> None:
         config = self._build_config()

@@ -33,6 +33,7 @@ from .media_grid_view import MediaGridView
 from .media_table_view import MediaTableView
 from .metadata_editor_widget import MetadataEditorWidget
 from .persistence.repositories import LibraryRepository
+from .preferences_window import PreferencesWindow
 from .scan_queue_widget import ScanQueueWidget
 from .search_tab_widget import SearchTabWidget
 from .settings import SettingsManager
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
     def __init__(self, settings: SettingsManager) -> None:
         super().__init__()
         self._settings = settings
+        self._settings.setting_changed.connect(self._on_settings_manager_changed)
         self._logger = get_logger().get_logger(__name__)
         self._current_library = None
         self._library_repository = LibraryRepository()
@@ -406,14 +408,14 @@ class MainWindow(QMainWindow):
 
     def _load_window_state(self) -> None:
         """Load saved window geometry and state."""
-        geometry = self._settings.get("window_geometry")
+        geometry = self._settings.get_ui_layout("main_window.geometry")
         if geometry:
             try:
                 self.restoreGeometry(bytes.fromhex(geometry))
             except (ValueError, TypeError):
                 pass
 
-        state = self._settings.get("window_state")
+        state = self._settings.get_ui_layout("main_window.state")
         if state:
             try:
                 self.restoreState(bytes.fromhex(state))
@@ -424,8 +426,8 @@ class MainWindow(QMainWindow):
         """Save window geometry and state."""
         geometry_bytes = self.saveGeometry()
         state_bytes = self.saveState()
-        self._settings.set("window_geometry", bytes(geometry_bytes).hex())
-        self._settings.set("window_state", bytes(state_bytes).hex())
+        self._settings.set_ui_layout("main_window.geometry", bytes(geometry_bytes).hex())
+        self._settings.set_ui_layout("main_window.state", bytes(state_bytes).hex())
         self._settings.save_settings()
 
     def _on_open_file(self) -> None:
@@ -441,37 +443,8 @@ class MainWindow(QMainWindow):
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
-        from PySide6.QtWidgets import (
-            QDialog,
-            QDialogButtonBox,
-            QTabWidget,
-            QVBoxLayout,
-        )
-
-        from .poster_settings_widget import PosterSettingsWidget
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Preferences")
-        dialog.setMinimumSize(600, 500)
-
-        layout = QVBoxLayout(dialog)
-
-        # Create tab widget for different preference categories
-        tab_widget = QTabWidget()
-
-        # Poster settings tab
-        poster_settings = PosterSettingsWidget()
-        poster_settings.settings_changed.connect(self.settings_changed.emit)
-        tab_widget.addTab(poster_settings, "Posters")
-
-        layout.addWidget(tab_widget)
-
-        # Dialog buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok)
-        button_box.accepted.connect(dialog.accept)
-        layout.addWidget(button_box)
-
-        # Show dialog
+        dialog = PreferencesWindow(self._settings, self)
+        dialog.preferences_applied.connect(self.settings_changed.emit)
         dialog.exec()
         self.status_label.setText("Preferences updated")
 
@@ -486,6 +459,11 @@ class MainWindow(QMainWindow):
             "A PySide6-based media management application.\n\n"
             "Built with Python and PySide6.",
         )
+
+    def _on_settings_manager_changed(self, key: str, value: object) -> None:
+        """Forward settings updates to interested components."""
+        del key, value  # Unused but kept for signal compatibility
+        self.settings_changed.emit()
 
     def _toggle_panes(self, checked: bool) -> None:
         """Toggle navigation and properties panes."""

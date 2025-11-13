@@ -182,6 +182,7 @@ class PosterSettingsWidget(QWidget):
 
         # Download settings
         self.max_retries_spinbox.setValue(self._settings.get_max_retries())
+        self.timeout_spinbox.setValue(self._settings.get_provider_timeout())
 
         # Cache directory
         cache_dir = self._settings.get_cache_dir()
@@ -210,6 +211,7 @@ class PosterSettingsWidget(QWidget):
 
         # Download settings
         self._settings.set_max_retries(self.max_retries_spinbox.value())
+        self._settings.set_provider_timeout(self.timeout_spinbox.value())
 
         # Cache directory
         cache_dir = self.cache_dir_edit.text().strip()
@@ -218,6 +220,10 @@ class PosterSettingsWidget(QWidget):
 
         # Save settings
         self._settings.save_settings()
+
+    def save(self) -> None:
+        """Persist the current poster preferences."""
+        self._save_settings()
 
     def _on_setting_changed(self) -> None:
         """Handle setting change."""
