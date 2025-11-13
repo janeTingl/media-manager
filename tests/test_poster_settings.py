@@ -51,6 +51,7 @@ class TestPosterSettingsWidget:
             settings.set_enabled_poster_types(["poster", "fanart"])
             settings.set_poster_size("poster", "large")
             settings.set_max_retries(5)
+            settings.set_provider_timeout(45)
             settings.set_cache_dir("/test/cache")
             settings.save_settings()
             
@@ -64,6 +65,7 @@ class TestPosterSettingsWidget:
                 assert not widget.banner_checkbox.isChecked()
                 assert widget.poster_size_combo.currentText() == "large"
                 assert widget.max_retries_spinbox.value() == 5
+                assert widget.timeout_spinbox.value() == 45
                 assert widget.cache_dir_edit.text() == "/test/cache"
 
     def test_save_settings(self, qapp) -> None:
@@ -101,6 +103,7 @@ class TestPosterSettingsWidget:
                 assert settings.get_poster_size("fanart") == "medium"
                 assert settings.get_poster_size("banner") == "large"
                 assert settings.get_max_retries() == 7
+                assert settings.get_provider_timeout() == 60
                 assert settings.get_cache_dir() == "/new/cache"
 
     def test_setting_changed_signal(self, qapp) -> None:
