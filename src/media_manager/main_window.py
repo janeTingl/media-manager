@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .dashboard_widget import DashboardWidget
 from .detail_panel import DetailPanel
 from .library_manager_dialog import LibraryManagerDialog
 from .library_postprocessor import PostProcessingOptions
@@ -91,6 +92,7 @@ class MainWindow(QMainWindow):
         self.match_resolution_widget = MatchResolutionWidget(self)
         self.metadata_editor_widget = MetadataEditorWidget(self)
         self.search_tab_widget = SearchTabWidget(self)
+        self.dashboard_widget = DashboardWidget(self)
 
         # Connect signals
         self._connect_signals()
@@ -198,6 +200,9 @@ class MainWindow(QMainWindow):
         
         self.tab_widget.addTab(library_widget, "Library")
         
+        # Add dashboard tab
+        self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
+        
         # Add search tab
         self.tab_widget.addTab(self.search_tab_widget, "Search")
         
@@ -282,6 +287,10 @@ class MainWindow(QMainWindow):
         # Search tab signals
         self.search_tab_widget.item_selected.connect(self._on_item_selected)
         self.search_tab_widget.item_activated.connect(self._on_item_activated)
+        
+        # Dashboard signals
+        self.match_manager.matches_updated.connect(self.dashboard_widget.on_data_mutation)
+        self.library_view_model.data_loaded.connect(self.dashboard_widget.on_data_mutation)
 
     def _on_start_matching(self) -> None:
         """Handle start matching request."""
