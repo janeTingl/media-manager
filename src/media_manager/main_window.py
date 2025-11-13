@@ -376,6 +376,18 @@ class MainWindow(QMainWindow):
         batch_ops_action.triggered.connect(self._on_batch_operations)
         edit_menu.addAction(batch_ops_action)
 
+        edit_menu.addSeparator()
+
+        export_action = QAction("&Export Media...", self)
+        export_action.setShortcut("Ctrl+E")
+        export_action.triggered.connect(self._on_export_media)
+        edit_menu.addAction(export_action)
+
+        import_action = QAction("&Import Media...", self)
+        import_action.setShortcut("Ctrl+I")
+        import_action.triggered.connect(self._on_import_media)
+        edit_menu.addAction(import_action)
+
         # View menu
         view_menu = menubar.addMenu("&View")
 
@@ -574,6 +586,28 @@ class MainWindow(QMainWindow):
         if summary:
             self.update_status(summary.to_message())
         self.library_view_model.refresh()
+
+    def _on_export_media(self) -> None:
+        """Handle export media action."""
+        from .import_export_wizard import ExportWizard
+
+        wizard = ExportWizard(self)
+        if wizard.exec():
+            self.update_status("Export completed successfully")
+        else:
+            self.update_status("Export cancelled")
+
+    def _on_import_media(self) -> None:
+        """Handle import media action."""
+        from .import_export_wizard import ImportWizard
+
+        wizard = ImportWizard(self)
+        if wizard.exec():
+            self.update_status("Import completed successfully")
+            # Refresh the library view to show imported items
+            self.library_view_model.refresh()
+        else:
+            self.update_status("Import cancelled")
 
     def _get_selected_media_items(self) -> list:
         """Return the currently selected media items from the active view."""
