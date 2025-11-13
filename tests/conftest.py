@@ -68,6 +68,7 @@ def pytest_configure(config):
         "markers", "gui: marks tests as GUI tests (may require display)"
     )
     config.addinivalue_line("markers", "slow: marks tests as slow running")
+    config.addinivalue_line("markers", "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')")
 
 
 def pytest_collection_modifyitems(config, items):
