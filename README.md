@@ -11,6 +11,7 @@ A modern PySide6-based media management application built with Python.
 - **Persistent settings** with JSON storage and QSettings fallback
 - **Structured logging** with file output
 - **Comprehensive testing** with pytest and pytest-qt
+- **Performance monitoring** with automated benchmarks and regression detection
 - **Modern tooling** with ruff, black, mypy, and pytest
 
 ## Project Structure
@@ -270,7 +271,36 @@ pytest tests/test_smoke.py
 
 # Run with verbose output
 pytest -v
+
+# Run performance benchmarks
+pytest tests/performance/ -m benchmark --benchmark-only
+
+# Run tests excluding benchmarks (faster)
+pytest -m "not benchmark"
 ```
+
+### Performance Testing
+
+The project includes comprehensive performance testing with automated regression detection:
+
+```bash
+# Run all performance benchmarks
+python tests/performance/runner.py
+
+# Run specific benchmark suite
+python tests/performance/runner.py --suite database
+python tests/performance/runner.py --suite ui
+python tests/performance/runner.py --suite scanning
+python tests/performance/runner.py --suite matching
+
+# Generate performance report
+python tests/performance/runner.py --report
+
+# Set performance baseline
+python tests/performance/runner.py --set-baseline
+```
+
+See [docs/performance.md](docs/performance.md) for detailed performance testing documentation.
 
 ### Code Formatting
 

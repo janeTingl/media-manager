@@ -322,10 +322,14 @@ class LibraryRepository:
 class MediaItemRepository:
     """Repository for MediaItem operations."""
     
-    def __init__(self) -> None:
-        """Initialize the media item repository."""
+    def __init__(self, database_service: Optional[DatabaseService] = None) -> None:
+        """Initialize the media item repository.
+        
+        Args:
+            database_service: Optional database service instance
+        """
         self._logger = logger
-        self._db_service = get_database_service()
+        self._db_service = database_service or get_database_service()
     
     def get_all(self, limit: Optional[int] = None, offset: int = 0, lazy_load: bool = False) -> List[MediaItem]:
         """Get all media items with optional pagination and lazy loading.
