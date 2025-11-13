@@ -561,6 +561,35 @@ class MainWindow(QMainWindow):
 
             menu.addSeparator()
 
+            # Quick tags submenu
+            tags_menu = menu.addMenu("Quick Tags")
+            from .persistence.models import Tag, Favorite
+            from .search_service import SearchService
+            from .persistence.repositories import transactional_context
+
+            search_service = SearchService()
+            available_tags = search_service.get_available_tags()
+
+            for tag in available_tags:
+                tag_action = tags_menu.addAction(tag.name)
+                tag_action.setCheckable(True)
+                tag_action.setChecked(tag in item.tags)
+                tag_action.triggered.connect(
+                    lambda checked, t=tag, i=item: self._toggle_tag_on_item(i, t)
+                )
+
+            tags_menu.addSeparator()
+            new_tag_action = tags_menu.addAction("+ Add New Tag...")
+            new_tag_action.triggered.connect(lambda: self._create_new_tag_for_item(item))
+
+            # Toggle favorite
+            favorite_action = menu.addAction("Toggle Favorite")
+            favorite_action.setCheckable(True)
+            favorite_action.setChecked(len(item.favorites) > 0)
+            favorite_action.triggered.connect(lambda: self._toggle_favorite(item))
+
+            menu.addSeparator()
+
         batch_action = menu.addAction("Batch Operations...")
         batch_action.triggered.connect(self._on_batch_operations)
 
@@ -727,3 +756,88 @@ class MainWindow(QMainWindow):
     def get_current_library(self):
         """Get the currently selected library."""
         return self._current_library
+
+    def _toggle_tag_on_item(self, item, tag) -> None:
+        """Toggle a tag on a media item."""
+        from .persistence.repositories import transactional_context
+        
+        try:
+            with transactional_context() as uow:
+                from .persistence.models import Tag, MediaItem
+                repo = uow.get_repository(MediaItem)
+                current_item = repo.read(item.id)
+                
+                if tag in current_item.tags:
+                    current_item.tags.remove(tag)
+                    self.update_status(f"Removed tag '{tag.name}' from {item.title}")
+                else:
+                    current_item.tags.append(tag)
+                    self.update_status(f"Added tag '{tag.name}' to {item.title}")
+                
+                uow.commit()
+                self.library_view_model.refresh()
+        except Exception as e:
+            self._logger.error(f"Error toggling tag: {e}")
+            self.update_status(f"Error toggling tag: {str(e)}")
+
+    def _create_new_tag_for_item(self, item) -> None:
+        """Create a new tag and add it to the item."""
+        from PySide6.QtWidgets import QInputDialog
+        from .persistence.models import Tag
+        from .persistence.repositories import transactional_context
+        
+        tag_name, ok = QInputDialog.getText(
+            self, "New Tag", "Enter tag name:"
+        )
+        
+        if ok and tag_name.strip():
+            try:
+                with transactional_context() as uow:
+                    tag_repo = uow.get_repository(Tag)
+                    from .persistence.models import MediaItem
+                    media_repo = uow.get_repository(MediaItem)
+                    
+                    existing = tag_repo.filter_by(name=tag_name.strip())
+                    if existing:
+                        tag = existing[0]
+                    else:
+                        tag = Tag(name=tag_name.strip())
+                        tag_repo.create(tag)
+                    
+                    current_item = media_repo.read(item.id)
+                    if tag not in current_item.tags:
+                        current_item.tags.append(tag)
+                    
+                    uow.commit()
+                    self.update_status(f"Created and added tag '{tag.name}' to {item.title}")
+                    self.library_view_model.refresh()
+            except Exception as e:
+                self._logger.error(f"Error creating tag: {e}")
+                self.update_status(f"Error creating tag: {str(e)}")
+
+    def _toggle_favorite(self, item) -> None:
+        """Toggle favorite status for a media item."""
+        from .persistence.models import Favorite, MediaItem
+        from .persistence.repositories import transactional_context
+        
+        try:
+            with transactional_context() as uow:
+                media_repo = uow.get_repository(MediaItem)
+                favorite_repo = uow.get_repository(Favorite)
+                
+                current_item = media_repo.read(item.id)
+                existing_favorite = favorite_repo.filter_by(media_item_id=item.id)
+                
+                if existing_favorite:
+                    favorite_repo.delete(existing_favorite[0].id)
+                    self.update_status(f"Removed {item.title} from favorites")
+                else:
+                    favorite = Favorite(media_item_id=item.id)
+                    favorite_repo.create(favorite)
+                    self.update_status(f"Added {item.title} to favorites")
+                
+                uow.commit()
+                self.library_view_model.refresh()
+        except Exception as e:
+            self._logger.error(f"Error toggling favorite: {e}")
+            self.update_status(f"Error toggling favorite: {str(e)}")
