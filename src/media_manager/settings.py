@@ -396,6 +396,46 @@ class SettingsManager(QObject):
             cache_settings[key] = value
         self._emit_change(f"{CACHE_DOMAIN}.{key}", value, "caching")
 
+    def get_provider_cache_enabled(self) -> bool:
+        """Get whether provider caching is enabled."""
+        return bool(self.get_cache_setting("provider_cache_enabled", True))
+
+    def set_provider_cache_enabled(self, enabled: bool) -> None:
+        """Set whether provider caching is enabled."""
+        self.set_cache_setting("provider_cache_enabled", enabled)
+
+    def get_provider_cache_ttl(self) -> int:
+        """Get provider cache TTL in seconds (default 1 hour)."""
+        return int(self.get_cache_setting("provider_cache_ttl", 3600))
+
+    def set_provider_cache_ttl(self, ttl: int) -> None:
+        """Set provider cache TTL in seconds."""
+        self.set_cache_setting("provider_cache_ttl", ttl)
+
+    def get_cache_backend_type(self) -> str:
+        """Get cache backend type: 'db', 'redis', or 'disk'."""
+        return str(self.get_cache_setting("backend_type", "db"))
+
+    def set_cache_backend_type(self, backend_type: str) -> None:
+        """Set cache backend type."""
+        self.set_cache_setting("backend_type", backend_type)
+
+    def get_redis_url(self) -> Optional[str]:
+        """Get Redis connection URL."""
+        return self.get_cache_setting("redis_url")
+
+    def set_redis_url(self, url: Optional[str]) -> None:
+        """Set Redis connection URL."""
+        self.set_cache_setting("redis_url", url)
+
+    def get_disk_cache_dir(self) -> Optional[str]:
+        """Get disk cache directory."""
+        return self.get_cache_setting("disk_cache_dir")
+
+    def set_disk_cache_dir(self, directory: Optional[str]) -> None:
+        """Set disk cache directory."""
+        self.set_cache_setting("disk_cache_dir", directory)
+
     def get_cache_dir(self) -> Optional[str]:
         poster_settings = self._get_poster_settings()
         cache_dir = poster_settings.get("cache_dir")

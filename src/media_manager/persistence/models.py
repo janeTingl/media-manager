@@ -301,3 +301,18 @@ class SavedSearch(SQLModel, table=True):
     criteria: str  # JSON-serialized SearchCriteria
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProviderCache(SQLModel, table=True):
+    """Cache for provider API responses with TTL."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    cache_key: str = Field(index=True, unique=True)  # Hash of query parameters
+    provider_name: str = Field(index=True)  # "tmdb", "tvdb", etc.
+    query_type: str = Field(index=True)  # "search_movie", "search_tv", "get_details"
+    query_params: str  # JSON-serialized query parameters
+    response_data: str  # JSON-serialized response
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    expires_at: datetime = Field(index=True)  # TTL expiration
+    hit_count: int = Field(default=0)  # Track cache hits
+    last_accessed: datetime = Field(default_factory=datetime.utcnow, index=True)

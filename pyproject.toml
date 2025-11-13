@@ -39,6 +39,13 @@ dev = [
     "pytest-qt>=4.2.0",
     "types-PySide6>=6.5.0",
 ]
+cache = [
+    "redis>=5.0.0",
+    "diskcache>=5.6.0",
+]
+performance = [
+    "psutil>=5.9.0",
+]
 
 [project.scripts]
 media-manager = "media_manager.main:main"
@@ -98,3 +105,6 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+markers = [
+    "benchmark: marks tests as performance benchmarks (deselect with '-m \"not benchmark\"')",
+]

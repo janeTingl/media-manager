@@ -327,36 +327,66 @@ class MediaItemRepository:
         self._logger = logger
         self._db_service = get_database_service()
     
-    def get_all(self) -> List[MediaItem]:
-        """Get all media items with their relationships."""
+    def get_all(self, limit: Optional[int] = None, offset: int = 0, lazy_load: bool = False) -> List[MediaItem]:
+        """Get all media items with optional pagination and lazy loading.
+
+        Args:
+            limit: Maximum number of items to return (None for all)
+            offset: Number of items to skip
+            lazy_load: If True, don't eagerly load relationships
+
+        Returns:
+            List of media items
+        """
         with self._db_service.get_session() as session:
-            statement = (
-                select(MediaItem)
-                .options(
+            statement = select(MediaItem)
+            
+            if not lazy_load:
+                statement = statement.options(
                     selectinload(MediaItem.files),
                     selectinload(MediaItem.artworks),
                     selectinload(MediaItem.credits).selectinload(Credit.person),
                     selectinload(MediaItem.library)
                 )
-                .order_by(MediaItem.title)
-            )
+            
+            statement = statement.order_by(MediaItem.title).offset(offset)
+            
+            if limit is not None:
+                statement = statement.limit(limit)
+            
             result = session.exec(statement)
             return list(result.all())
     
-    def get_by_library(self, library_id: int) -> List[MediaItem]:
-        """Get media items by library ID."""
+    def get_by_library(
+        self, library_id: int, limit: Optional[int] = None, offset: int = 0, lazy_load: bool = False
+    ) -> List[MediaItem]:
+        """Get media items by library ID with optional pagination.
+
+        Args:
+            library_id: Library ID to filter by
+            limit: Maximum number of items to return (None for all)
+            offset: Number of items to skip
+            lazy_load: If True, don't eagerly load relationships
+
+        Returns:
+            List of media items
+        """
         with self._db_service.get_session() as session:
-            statement = (
-                select(MediaItem)
-                .where(MediaItem.library_id == library_id)
-                .options(
+            statement = select(MediaItem).where(MediaItem.library_id == library_id)
+            
+            if not lazy_load:
+                statement = statement.options(
                     selectinload(MediaItem.files),
                     selectinload(MediaItem.artworks),
                     selectinload(MediaItem.credits).selectinload(Credit.person),
                     selectinload(MediaItem.library)
                 )
-                .order_by(MediaItem.title)
-            )
+            
+            statement = statement.order_by(MediaItem.title).offset(offset)
+            
+            if limit is not None:
+                statement = statement.limit(limit)
+            
             result = session.exec(statement)
             return list(result.all())
     
@@ -376,8 +406,46 @@ class MediaItemRepository:
             result = session.exec(statement)
             return result.first()
     
-    def search(self, query: str, limit: int = 100) -> List[MediaItem]:
-        """Search media items by title or description."""
+    def count_by_library(self, library_id: int) -> int:
+        """Count media items in a library.
+
+        Args:
+            library_id: Library ID
+
+        Returns:
+            Count of items
+        """
+        with self._db_service.get_session() as session:
+            from sqlalchemy import func
+            statement = select(func.count(MediaItem.id)).where(
+                MediaItem.library_id == library_id
+            )
+            result = session.exec(statement)
+            return result.one()
+
+    def count_all(self) -> int:
+        """Count all media items.
+
+        Returns:
+            Total count of items
+        """
+        with self._db_service.get_session() as session:
+            from sqlalchemy import func
+            statement = select(func.count(MediaItem.id))
+            result = session.exec(statement)
+            return result.one()
+
+    def search(self, query: str, limit: int = 100, offset: int = 0) -> List[MediaItem]:
+        """Search media items by title or description.
+
+        Args:
+            query: Search query
+            limit: Maximum number of results
+            offset: Number of results to skip
+
+        Returns:
+            List of matching items
+        """
         with self._db_service.get_session() as session:
             statement = (
                 select(MediaItem)
@@ -392,6 +460,7 @@ class MediaItemRepository:
                     selectinload(MediaItem.library)
                 )
                 .order_by(MediaItem.title)
+                .offset(offset)
                 .limit(limit)
             )
             result = session.exec(statement)
