@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Troubleshooting</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        h3 { color: #546e7a; }
+        .solution { background: #e8f5e9; padding: 10px; margin: 10px 0; border-left: 3px solid #4caf50; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Troubleshooting</h1>
+    
+    <p>Common issues and their solutions.</p>
+    
+    <h2>Metadata Issues</h2>
+    
+    <h3>No metadata is being fetched</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Verify your API keys are configured correctly in <strong>Edit → Preferences → Providers</strong></li>
+            <li>Check your internet connection</li>
+            <li>Ensure at least one provider is enabled</li>
+            <li>Check the logs for error messages</li>
+        </ul>
+    </div>
+    
+    <h3>Wrong metadata is matched</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Use the search function to manually find the correct match</li>
+            <li>Rename your files to include the year (e.g., "Movie Title (2020).mkv")</li>
+            <li>Edit metadata manually after matching</li>
+        </ul>
+    </div>
+    
+    <h2>Scanning Issues</h2>
+    
+    <h3>Files are not being detected</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Verify the file format is supported (mkv, mp4, avi, etc.)</li>
+            <li>Check that the files are in the library's root path</li>
+            <li>Ensure you have read permissions for the directory</li>
+        </ul>
+    </div>
+    
+    <h3>Scanning is very slow</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Large libraries take time on first scan</li>
+            <li>Subsequent scans will be faster due to caching</li>
+            <li>Consider splitting very large libraries</li>
+        </ul>
+    </div>
+    
+    <h2>Performance Issues</h2>
+    
+    <h3>Application is slow or unresponsive</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Clear the cache in <strong>Edit → Preferences → Advanced</strong></li>
+            <li>Reduce the number of enabled poster types</li>
+            <li>Increase cache TTL to reduce provider calls</li>
+            <li>Close other resource-intensive applications</li>
+        </ul>
+    </div>
+    
+    <h2>UI Issues</h2>
+    
+    <h3>Posters not displaying</h3>
+    <div class="solution">
+        <strong>Solutions:</strong>
+        <ul>
+            <li>Check poster download settings in Preferences</li>
+            <li>Verify cache directory is writable</li>
+            <li>Try clearing and re-downloading posters</li>
+        </ul>
+    </div>
+    
+    <h2>Getting More Help</h2>
+    <p>If your issue persists:</p>
+    <ul>
+        <li>Check the application logs (usually in <code>~/.media-manager/logs/</code>)</li>
+        <li>Review other help topics for detailed information</li>
+        <li>Report bugs to the development team</li>
+    </ul>
+    
+    <h2>Related Topics</h2>
+    <ul>
+        <li><a href="providers.html">Metadata Providers</a></li>
+        <li><a href="scanning.html">Scanning Media</a></li>
+        <li><a href="preferences.html">Preferences</a></li>
+    </ul>
+</body>
+</html>
