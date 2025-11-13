@@ -29,7 +29,25 @@
 
 ## Installation Methods
 
-### Method 1: Production Installation (PyPI)
+### Method 1: Pre-built Binaries (Recommended)
+
+Download pre-built executables from the [Releases](https://github.com/your-username/media-manager/releases) page:
+
+#### Windows
+1. Download `media-manager.exe` or `media-manager-installer-*.zip`
+2. Extract the ZIP file
+3. Run `media-manager.exe` or `install.bat` (for installer version)
+
+#### macOS
+1. Download `Media Manager-*.dmg`
+2. Open the DMG file
+3. Drag `Media Manager.app` to Applications folder
+4. Launch from Applications or Launchpad
+
+#### Linux (Coming Soon)
+- AppImage format will be available in future releases
+
+### Method 2: Production Installation (PyPI)
 
 **Prerequisites:**
 - pip (comes with Python 3.4+)
@@ -97,6 +115,53 @@ poetry shell
 
 # Run the application
 media-manager
+```
+
+### Method 4: Building from Source
+
+This method is for developers who want to build executables from source code.
+
+**Prerequisites:**
+- Python 3.8+
+- Git
+- Platform-specific build tools
+
+**Steps:**
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/media-manager.git
+cd media-manager
+
+# 2. Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 3. Install build dependencies
+pip install -r build-requirements.txt
+
+# 4. Build for your platform
+python build.py --package
+
+# 5. Find built packages
+# Windows: dist/media-manager.exe, package/media-manager-*.zip
+# macOS: dist/Media Manager.app, package/*.dmg
+```
+
+**Platform-Specific Builds:**
+
+```bash
+# Build only for Windows
+python build.py --platform windows --package
+
+# Build only for macOS
+python build.py --platform macos --package
+
+# Build with code signing (macOS only, requires setup)
+python build.py --platform macos --sign --package
+
+# Build for all platforms (requires different OS environments)
+python build.py --platform all --package
 ```
 
 ## Development Setup
