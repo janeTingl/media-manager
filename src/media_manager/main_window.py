@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .batch_operations_dialog import BatchOperationsDialog
 from .dashboard_widget import DashboardWidget
 from .detail_panel import DetailPanel
 from .library_manager_dialog import LibraryManagerDialog
@@ -368,6 +369,11 @@ class MainWindow(QMainWindow):
         preferences_action.triggered.connect(self._on_preferences)
         edit_menu.addAction(preferences_action)
 
+        batch_ops_action = QAction("Batch &Operations...", self)
+        batch_ops_action.setShortcut("Ctrl+B")
+        batch_ops_action.triggered.connect(self._on_batch_operations)
+        edit_menu.addAction(batch_ops_action)
+
         # View menu
         view_menu = menubar.addMenu("&View")
 
@@ -548,30 +554,58 @@ class MainWindow(QMainWindow):
         """Handle context menu request."""
         # Create context menu
         from PySide6.QtWidgets import QMenu
-        
+
         menu = QMenu(self)
-        
+
         if item:
             view_action = menu.addAction("View Details")
             view_action.triggered.connect(lambda: self.detail_panel.set_media_item(item))
-            
+
             edit_action = menu.addAction("Edit Metadata")
             edit_action.triggered.connect(lambda: self._on_edit_requested(item))
-            
+
             menu.addSeparator()
-            
+
             play_action = menu.addAction("Play")
             play_action.triggered.connect(lambda: self._on_play_requested(item))
-            
+
             menu.addSeparator()
-        
+
+        batch_action = menu.addAction("Batch Operations...")
+        batch_action.triggered.connect(self._on_batch_operations)
+
+        menu.addSeparator()
+
         refresh_action = menu.addAction("Refresh")
         refresh_action.triggered.connect(lambda: self.library_view_model.refresh())
-        
+
         menu.exec(global_pos)
 
+    def _on_batch_operations(self) -> None:
+        """Open the batch operations dialog for the current selection."""
+        selected_items = self._get_selected_media_items()
+        if not selected_items:
+            self.update_status("Select one or more items to run batch operations")
+            return
+        dialog = BatchOperationsDialog(selected_items, self._settings, self)
+        dialog.operations_completed.connect(self._on_batch_operations_completed)
+        dialog.exec()
+
+    def _on_batch_operations_completed(self, summary) -> None:
+        """Handle completion of batch operations."""
+        if summary:
+            self.update_status(summary.to_message())
+        self.library_view_model.refresh()
+
+    def _get_selected_media_items(self) -> list:
+        """Return the currently selected media items from the active view."""
+        items = self.media_table_view.get_selected_items()
+        if not items:
+            items = self.media_grid_view.get_selected_items()
+        return items
+
     def _on_edit_requested(self, item) -> None:
-        """Handle edit request from detail panel or context menu."""
+
         if item:
             # Load item into metadata editor
             self.update_status(f"Editing: {item.title}")

@@ -385,8 +385,8 @@ class MetadataEditorWidget(QWidget):
         # Ratings
         self.rating_input.setValue(int(media_item.rating or 0))
 
-        # Genres and keywords (would need to be parsed from description or added to model)
-        self.genres_input.clear()
+        # Genres and keywords
+        self.genres_input.setText(media_item.genres or "")
         self.keywords_input.clear()
 
         # Load collections
@@ -756,6 +756,8 @@ class MetadataEditorWidget(QWidget):
         self._current_media_item.year = self.year_input.value()
         self._current_media_item.runtime = self.runtime_input.value() or None
         self._current_media_item.description = self.plot_input.toPlainText() or None
+        genres_text = self.genres_input.text().strip()
+        self._current_media_item.genres = genres_text or None
         self._current_media_item.season = self.season_input.value() if self.season_input.value() > 0 else None
         self._current_media_item.episode = self.episode_input.value() if self.episode_input.value() > 0 else None
         self._current_media_item.aired_date = self.aired_input.text() or None

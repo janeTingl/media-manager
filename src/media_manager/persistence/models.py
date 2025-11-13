@@ -59,6 +59,7 @@ class MediaItem(SQLModel, table=True):
     media_type: str = Field(index=True)  # "movie" or "tv"
     year: Optional[int] = Field(index=True)
     description: Optional[str] = None
+    genres: Optional[str] = None
     runtime: Optional[int] = None
     aired_date: Optional[str] = None
     rating: Optional[float] = None
