@@ -55,10 +55,14 @@ class MatchWorker(QRunnable):
     @Slot()
     def run(self) -> None:
         """Run the matching process."""
+        from .instrumentation import get_instrumentation
+        instrumentation = get_instrumentation()
+        
         total = len(self.metadata_list)
         
         # Initialize provider adapter
-        adapter = self._get_adapter()
+        with instrumentation.timer("match_worker.initialize_adapter"):
+            adapter = self._get_adapter()
 
         for index, metadata in enumerate(self.metadata_list, start=1):
             if self._should_stop:
@@ -66,15 +70,18 @@ class MatchWorker(QRunnable):
 
             try:
                 # Use provider adapter for matching
-                match = adapter.search_and_match(metadata, fallback_to_mock=True)
+                with instrumentation.timer("match_worker.search_and_match"):
+                    match = adapter.search_and_match(metadata, fallback_to_mock=True)
 
                 self.signals.match_found.emit(match)
                 self.signals.progress.emit(index, total)
+                instrumentation.increment_counter("match_worker.matches_found")
 
             except Exception as exc:
                 error_msg = f"Failed to match {metadata.path}: {exc}"
                 self._logger.error(error_msg)
                 self.signals.match_failed.emit(str(metadata.path), str(exc))
+                instrumentation.increment_counter("match_worker.matches_failed")
 
         self.signals.finished.emit()
 
@@ -207,28 +214,35 @@ class SearchWorker(QRunnable):
     @Slot()
     def run(self) -> None:
         """Run the search process."""
+        from .instrumentation import get_instrumentation
+        instrumentation = get_instrumentation()
+        
         try:
             # Use provider adapter for search
-            adapter = self._get_adapter()
-            provider_results = adapter.search_results(
-                self.request.query,
-                self.request.media_type,
-                self.request.year
-            )
+            with instrumentation.timer("search_worker.search"):
+                adapter = self._get_adapter()
+                provider_results = adapter.search_results(
+                    self.request.query,
+                    self.request.media_type,
+                    self.request.year
+                )
 
             # Convert provider results to SearchResult
-            results = self._convert_to_search_results(provider_results)
+            with instrumentation.timer("search_worker.convert_results"):
+                results = self._convert_to_search_results(provider_results)
 
             # Fallback to mock if no results
             if not results:
                 self._logger.debug("No provider results, using mock")
                 results = self._create_mock_results()
 
+            instrumentation.increment_counter("search_worker.searches_completed", metadata={"result_count": len(results)})
             self.signals.search_completed.emit(results)
 
         except Exception as exc:
             error_msg = f"Search failed: {exc}"
             self._logger.error(error_msg)
+            instrumentation.increment_counter("search_worker.searches_failed")
             self.signals.search_failed.emit(error_msg)
 
     def _get_adapter(self) -> ProviderAdapter:
@@ -327,10 +341,23 @@ class SearchWorker(QRunnable):
 class WorkerManager(QObject):
     """Manages background workers and thread pools."""
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, parent: QObject | None = None, max_thread_count: int | None = None) -> None:
         super().__init__(parent)
         self._thread_pool = QThreadPool()
+        
+        # Set thread pool size based on CPU count and workload
+        if max_thread_count is not None:
+            self._thread_pool.setMaxThreadCount(max_thread_count)
+        else:
+            # Auto-configure based on CPU count
+            # Use more threads for I/O-bound operations (network requests)
+            import os
+            cpu_count = os.cpu_count() or 4
+            # Use 2x CPU count for I/O-bound worker operations
+            self._thread_pool.setMaxThreadCount(max(4, cpu_count * 2))
+        
         self._logger = get_logger().get_logger(__name__)
+        self._logger.info(f"Worker thread pool size: {self._thread_pool.maxThreadCount()}")
         self._active_workers: list[QRunnable] = []
 
     def start_match_worker(self, metadata_list: list[VideoMetadata]) -> MatchWorker:
