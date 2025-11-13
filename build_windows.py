@@ -20,39 +20,31 @@ from pathlib import Path
 import zipfile
 import hashlib
 
-# Configuration
-PROJECT_NAME = "media-manager"
-VERSION = "0.1.0"
-APP_NAME = "Media Manager"
-EXECUTABLE_NAME = "media-manager.exe"
+# Import shared build configuration
+from build_config import get_build_config, run_command
 
-# Paths
-PROJECT_ROOT = Path(__file__).parent.absolute()
-BUILD_DIR = PROJECT_ROOT / "build"
-DIST_DIR = PROJECT_ROOT / "dist"
-PACKAGE_DIR = PROJECT_ROOT / "package"
+# Get platform-specific configuration
+config = get_build_config("windows")
 
-def run_command(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess:
-    """Run a command and return the result."""
-    print(f"Running: {' '.join(cmd)}")
-    if cwd:
-        print(f"Working directory: {cwd}")
-    
-    result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
-    
-    if result.stdout:
-        print(f"STDOUT:\n{result.stdout}")
-    if result.stderr:
-        print(f"STDERR:\n{result.stderr}")
-    
-    if check and result.returncode != 0:
-        raise subprocess.CalledProcessError(result.returncode, cmd)
-    
-    return result
+# Configuration from shared config
+PROJECT_NAME = config.PROJECT_NAME
+VERSION = config.VERSION
+APP_NAME = config.APP_NAME
+EXECUTABLE_NAME = config.get_executable_name()
+
+# Paths from shared config
+PROJECT_ROOT = config.PROJECT_ROOT
+BUILD_DIR = config.BUILD_DIR
+DIST_DIR = config.DIST_DIR
+PACKAGE_DIR = config.PACKAGE_DIR
 
 def setup_environment():
     """Setup the build environment."""
     print("Setting up build environment...")
+    
+    # Validate environment using shared config
+    if not config.validate_environment():
+        sys.exit(1)
     
     # Create necessary directories
     BUILD_DIR.mkdir(exist_ok=True)
@@ -60,7 +52,7 @@ def setup_environment():
     PACKAGE_DIR.mkdir(exist_ok=True)
     
     # Check if we're on Windows
-    if os.name != 'nt':
+    if not config.is_windows:
         print("WARNING: This build script is optimized for Windows.")
         print("The executable may not work properly on other platforms.")
 
@@ -107,13 +99,13 @@ def build_executable():
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
     
-    # PyInstaller command
-    cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--clean",
-        "--noconfirm", 
-        str(PROJECT_ROOT / "media-manager.spec")
-    ]
+    # Create spec file using shared config
+    spec_file = config.create_spec_file()
+    print(f"Created spec file: {spec_file}")
+    
+    # PyInstaller command using shared config
+    pyinstaller_args = config.get_pyinstaller_args()
+    cmd = [sys.executable, "-m", "PyInstaller"] + pyinstaller_args + [str(spec_file)]
     
     try:
         run_command(cmd)

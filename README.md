@@ -41,6 +41,60 @@ media-manager/
 - Python 3.8 or higher
 - pip or poetry package manager
 
+### Building and Distribution
+
+### Cross-Platform Builds
+
+The project includes a unified build system that supports multiple platforms:
+
+```bash
+# Build for current platform with packages
+python build.py --package
+
+# Build for all platforms (requires different OS environments)
+python build.py --platform all --package
+
+# Build with code signing (requires setup)
+python build.py --platform macos --sign --package
+```
+
+### Platform-Specific Scripts
+
+- **Windows**: `build_windows.py` - Creates .exe with installer
+- **macOS**: `build_macos.py` - Creates .app bundle and .dmg
+- **Unified**: `build.py` - Cross-platform build interface
+
+### Build Configuration
+
+Shared configuration is managed in `build_config.py`:
+
+- PyInstaller spec generation
+- Platform-specific settings
+- Dependency management
+- Icon and resource handling
+
+### Continuous Integration
+
+GitHub Actions workflows handle automated builds:
+
+- **Windows builds** on `windows-latest`
+- **macOS builds** on `macos-latest`
+- **Artifact uploads** for distribution
+- **Smoke tests** for verification
+- **PyPI publishing** on tags
+
+### Testing Builds
+
+Smoke tests verify built executables:
+
+```bash
+# Run build smoke tests
+python -m pytest tests/test_build_smoke.py -v
+
+# Test specific platform builds
+python -m pytest tests/test_build_smoke.py::TestBuildSmoke::test_executable_exists -v
+```
+
 ### Development Setup
 
 1. **Clone the repository:**
@@ -67,9 +121,45 @@ media-manager/
 
 ### Production Installation
 
+#### From PyPI (Recommended)
+
 ```bash
 pip install media-manager
 ```
+
+#### Pre-built Binaries
+
+Download pre-built executables from the [Releases](https://github.com/your-repo/media-manager/releases) page:
+
+- **Windows**: `media-manager.exe` with installer
+- **macOS**: `Media Manager.app` with DMG installer
+- **Linux**: AppImage (coming soon)
+
+#### Building from Source
+
+If you want to build the application yourself:
+
+1. **Install build dependencies:**
+   ```bash
+   pip install -r build-requirements.txt
+   ```
+
+2. **Build for your platform:**
+   ```bash
+   # Build for current platform
+   python build.py --package
+   
+   # Build for specific platform
+   python build.py --platform windows --package
+   python build.py --platform macos --package
+   
+   # Build for all platforms
+   python build.py --platform all --package
+   ```
+
+3. **Find the built packages:**
+   - Windows: `dist/media-manager.exe`, `package/media-manager-*.zip`
+   - macOS: `dist/Media Manager.app`, `package/*.dmg`
 
 ## Usage
 
