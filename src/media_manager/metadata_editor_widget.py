@@ -293,8 +293,8 @@ class MetadataEditorWidget(QWidget):
         cast_group = QGroupBox("Cast")
         cast_layout = QVBoxLayout(cast_group)
         self.cast_table = QTableWidget()
-        self.cast_table.setColumnCount(3)
-        self.cast_table.setHorizontalHeaderLabels(["Name", "Character", ""])
+        self.cast_table.setColumnCount(4)
+        self.cast_table.setHorizontalHeaderLabels(["Name", "Character", "", ""])
         self.cast_table.horizontalHeader().setStretchLastSection(False)
         self.cast_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.cast_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -313,8 +313,8 @@ class MetadataEditorWidget(QWidget):
         crew_group = QGroupBox("Crew")
         crew_layout = QVBoxLayout(crew_group)
         self.crew_table = QTableWidget()
-        self.crew_table.setColumnCount(3)
-        self.crew_table.setHorizontalHeaderLabels(["Name", "Role", ""])
+        self.crew_table.setColumnCount(4)
+        self.crew_table.setHorizontalHeaderLabels(["Name", "Role", "", ""])
         self.crew_table.horizontalHeader().setStretchLastSection(False)
         self.crew_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.crew_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -416,9 +416,9 @@ class MetadataEditorWidget(QWidget):
 
         for credit in media_item.credits:
             if credit.role == "actor":
-                self._add_cast_row(credit.person.name, credit.character_name or "", credit.id)
+                self._add_cast_row(credit.person.name, credit.character_name or "", credit.id, credit.person.id)
             else:
-                self._add_crew_row(credit.person.name, credit.role, credit.id)
+                self._add_crew_row(credit.person.name, credit.role, credit.id, credit.person.id)
 
     def _clear_form(self) -> None:
         """Clear all form fields."""
@@ -654,7 +654,7 @@ class MetadataEditorWidget(QWidget):
         remove_btn.clicked.connect(lambda: self.collections_table.removeRow(row))
         self.collections_table.setCellWidget(row, 1, remove_btn)
 
-    def _add_cast_row(self, name: str, character: str, credit_id: int | None) -> None:
+    def _add_cast_row(self, name: str, character: str, credit_id: int | None, person_id: int | None = None) -> None:
         """Add a row to the cast table."""
         row = self.cast_table.rowCount()
         self.cast_table.insertRow(row)
@@ -662,18 +662,25 @@ class MetadataEditorWidget(QWidget):
         # Name
         name_item = QTableWidgetItem(name)
         name_item.setData(Qt.UserRole, credit_id)
+        name_item.setData(Qt.UserRole + 1, person_id)
         self.cast_table.setItem(row, 0, name_item)
 
         # Character
         char_item = QTableWidgetItem(character)
         self.cast_table.setItem(row, 1, char_item)
 
+        # View details button
+        if person_id:
+            view_btn = QPushButton("View")
+            view_btn.clicked.connect(lambda: self._on_view_person_clicked(person_id))
+            self.cast_table.setCellWidget(row, 2, view_btn)
+
         # Remove button
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda: self.cast_table.removeRow(row))
-        self.cast_table.setCellWidget(row, 2, remove_btn)
+        self.cast_table.setCellWidget(row, 3, remove_btn)
 
-    def _add_crew_row(self, name: str, role: str, credit_id: int | None) -> None:
+    def _add_crew_row(self, name: str, role: str, credit_id: int | None, person_id: int | None = None) -> None:
         """Add a row to the crew table."""
         row = self.crew_table.rowCount()
         self.crew_table.insertRow(row)
@@ -681,16 +688,23 @@ class MetadataEditorWidget(QWidget):
         # Name
         name_item = QTableWidgetItem(name)
         name_item.setData(Qt.UserRole, credit_id)
+        name_item.setData(Qt.UserRole + 1, person_id)
         self.crew_table.setItem(row, 0, name_item)
 
         # Role
         role_item = QTableWidgetItem(role)
         self.crew_table.setItem(row, 1, role_item)
 
+        # View details button
+        if person_id:
+            view_btn = QPushButton("View")
+            view_btn.clicked.connect(lambda: self._on_view_person_clicked(person_id))
+            self.crew_table.setCellWidget(row, 2, view_btn)
+
         # Remove button
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda: self.crew_table.removeRow(row))
-        self.crew_table.setCellWidget(row, 2, remove_btn)
+        self.crew_table.setCellWidget(row, 3, remove_btn)
 
     def _validate_form(self) -> bool:
         """Validate form inputs.
@@ -779,6 +793,18 @@ class MetadataEditorWidget(QWidget):
         # 3. Creating/updating Credit records
         # For now, this is a placeholder
         pass
+    
+    def _on_view_person_clicked(self, person_id: int) -> None:
+        """Handle view person details button click.
+        
+        Args:
+            person_id: Database person ID
+        """
+        from .entity_detail_dialog import EntityDetailDialog
+        
+        dialog = EntityDetailDialog(self)
+        dialog.show_person(person_id)
+        dialog.exec()
 
     def _save_collections_and_tags(self, uow) -> None:
         """Save collections and tags changes."""
