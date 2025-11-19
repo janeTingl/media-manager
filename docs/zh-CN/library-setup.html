@@ -1,0 +1,71 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>媒体库设置</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .note { background: #fff3cd; padding: 15px; margin: 15px 0; border-left: 4px solid #ffc107; }
+        .tip { background: #d4edda; padding: 15px; margin: 15px 0; border-left: 4px solid #28a745; }
+        pre { background: #f5f5f5; padding: 12px; overflow-x: auto; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>媒体库设置</h1>
+    <p>媒体库是 Media Manager 的核心，每个库都代表一组具有相同类型或用途的媒体文件。</p>
+
+    <h2>创建媒体库</h2>
+    <ol>
+        <li>打开 <strong>文件 → 管理媒体库</strong></li>
+        <li>点击 <strong>添加媒体库</strong></li>
+        <li>填写以下信息：
+            <ul>
+                <li><strong>名称：</strong> 建议使用描述性名称（如“动作片”或“家庭剧集”）</li>
+                <li><strong>类型：</strong> 电影或电视剧</li>
+                <li><strong>根目录：</strong> 存放媒体文件的上级文件夹</li>
+            </ul>
+        </li>
+        <li>点击 <strong>保存</strong></li>
+    </ol>
+
+    <div class="tip">
+        <strong>提示：</strong> 你可以为不同场景建立多个媒体库，例如“动漫”、“纪录片”、“儿童影片”等。
+    </div>
+
+    <h2>推荐的文件结构</h2>
+    <h3>电影</h3>
+    <pre>/Movies/
+  电影名称 (年份)/
+    电影名称 (年份).mkv</pre>
+
+    <h3>电视剧</h3>
+    <pre>/TV Shows/
+  剧名/
+    Season 01/
+      剧名 S01E01.mkv
+      剧名 S01E02.mkv</pre>
+
+    <div class="note">
+        <strong>注意：</strong> 程序能识别多种命名规则，但保持如上结构可显著提升匹配准确率。
+    </div>
+
+    <h2>管理媒体库</h2>
+    <ul>
+        <li><strong>编辑：</strong> 选择媒体库后点击 <strong>编辑</strong> 修改名称或路径</li>
+        <li><strong>删除：</strong> 删除媒体库不会移除硬盘上的实际文件</li>
+        <li><strong>设为默认：</strong> 右键媒体库可设为默认加载</li>
+    </ul>
+
+    <h2>多媒体库场景</h2>
+    <p>根据需要，你可以将电影与剧集、不同清晰度或不同成员的收藏拆分到独立媒体库中。这能让扫描与筛选更加清晰。</p>
+
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="scanning.html">扫描媒体</a></li>
+        <li><a href="preferences.html">库相关偏好设置</a></li>
+    </ul>
+</body>
+</html>

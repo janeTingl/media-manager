@@ -14,7 +14,7 @@ from media_manager.settings import get_settings
 
 
 
-def create_application() -> QApplication:
+def create_application(settings: SettingsManager) -> QApplication:
     """Create and configure the Qt application."""
     app = QApplication(sys.argv)
 
@@ -26,9 +26,14 @@ def create_application() -> QApplication:
 
     # Setup translator
     translator = QTranslator()
-    locale = QLocale.system()
+    locale_name = settings.get_language()
+    locale = QLocale(locale_name)
+    QLocale.setDefault(locale)
     translations_path = str(Path(__file__).parent / "translations")
-    if translator.load(locale, "media_manager", "_", translations_path):
+    if not translator.load(locale, "media_manager", "_", translations_path):
+        system_locale = QLocale.system()
+        translator.load(system_locale, "media_manager", "_", translations_path)
+    if not translator.isEmpty():
         app.installTranslator(translator)
 
     return app
@@ -42,11 +47,11 @@ def main() -> int:
     logger = get_logger().get_logger(__name__)
 
     try:
-        # Create Qt application
-        app = create_application()
-
-        # Get settings
+        # Load settings before creating the application
         settings = get_settings()
+
+        # Create Qt application with language preference
+        app = create_application(settings)
 
         # Initialize database service
         db_service = init_database_service(settings.get_database_url())

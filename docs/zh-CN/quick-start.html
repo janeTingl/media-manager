@@ -1,0 +1,80 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>快速上手指南</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .step { background: #ecf0f1; padding: 15px; margin: 15px 0; border-left: 4px solid #3498db; }
+        .step h3 { margin-top: 0; color: #2980b9; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>快速上手指南</h1>
+    <p>只需几分钟即可完成 Media Manager 的基本配置。按照以下四个步骤完成初始设置：</p>
+
+    <div class="step">
+        <h3>步骤 1：创建媒体库</h3>
+        <p>媒体库用于组织影片或剧集：</p>
+        <ol>
+            <li>点击菜单 <strong>文件 → 管理媒体库</strong></li>
+            <li>选择 <strong>添加媒体库</strong></li>
+            <li>输入名称（例如“电影”或“剧集”）</li>
+            <li>选择媒体类型（电影 / 电视剧）</li>
+            <li>指定存放视频文件的根目录</li>
+            <li>点击 <strong>保存</strong></li>
+        </ol>
+        <p>更多说明：<a href="library-setup.html">媒体库设置</a></p>
+    </div>
+
+    <div class="step">
+        <h3>步骤 2：配置元数据提供者</h3>
+        <p>输入 TMDB / TVDB API Key 以自动拉取影片信息：</p>
+        <ol>
+            <li>打开 <strong>编辑 → 偏好设置</strong></li>
+            <li>切换到 <strong>提供者</strong> 分页</li>
+            <li>填写 TMDB 与 / 或 TVDB 的 API Key</li>
+            <li>点击 <strong>应用</strong></li>
+        </ol>
+        <p>获取密钥：</p>
+        <ul>
+            <li>TMDB：<a href="https://www.themoviedb.org/settings/api">themoviedb.org/settings/api</a></li>
+            <li>TVDB：<a href="https://thetvdb.com/dashboard/account/apikeys">thetvdb.com/dashboard/account/apikeys</a></li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>步骤 3：扫描媒体</h3>
+        <p>创建媒体库后，程序会自动扫描文件夹：</p>
+        <ol>
+            <li>在左侧面板选择目标媒体库</li>
+            <li>系统会识别并列出所有视频文件</li>
+            <li>匹配结果将在 <strong>匹配</strong> 标签页中展示</li>
+            <li>核对信息并点击 <strong>Finalize</strong> 完成写入</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>步骤 4：浏览与管理</h3>
+        <p>扫描完成后你可以：</p>
+        <ul>
+            <li>在 <strong>网格视图</strong> 与 <strong>表格视图</strong> 之间切换</li>
+            <li>使用 <strong>搜索</strong> 标签快速定位内容</li>
+            <li>右键条目以编辑元数据、下载海报或添加标签</li>
+        </ul>
+    </div>
+
+    <h2>下一步</h2>
+    <p>熟悉基础流程后，建议继续查看：</p>
+    <ul>
+        <li><a href="metadata-editing.html">自定义元数据</a></li>
+        <li><a href="batch-operations.html">批量操作技巧</a></li>
+        <li><a href="tags-favorites.html">使用标签与收藏</a></li>
+        <li><a href="import-export.html">备份与迁移媒体库</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>故障排除</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        ul { margin-left: 20px; }
+        .tip { background: #eef6ff; padding: 12px; border-left: 4px solid #3498db; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>故障排除</h1>
+    <p>遇到问题时，可从以下检查开始。</p>
+
+    <h2>常见问题</h2>
+    <ul>
+        <li><strong>无法加载媒体库：</strong> 确认根目录仍然存在且具有读取权限。</li>
+        <li><strong>匹配失败：</strong> 检查 TMDB / TVDB API Key 是否有效，或尝试手动搜索。</li>
+        <li><strong>海报 / 字幕下载失败：</strong> 查看网络连接，并在 <strong>下载</strong> 设置中延长超时。</li>
+        <li><strong>程序未显示中文界面：</strong> 在 <strong>偏好设置 → UI</strong> 中选择 <strong>简体中文</strong> 或 <strong>繁体中文</strong>，然后重启程序。</li>
+    </ul>
+
+    <h2>日志文件</h2>
+    <p>日志位于 <code>~/.media-manager/logs/app.log</code>。若需要向支持团队反馈，请附上最新日志。</p>
+
+    <div class="tip">
+        <strong>提示：</strong> 若界面出现异常，可在 <strong>偏好设置 → UI</strong> 取消“记住房屋布局”，然后重新启动应用。</div>
+
+    <h2>进一步支持</h2>
+    <p>若以上步骤无法解决问题，请在 <strong>帮助 → 报告问题</strong> 中提供详细描述与截图，我们会尽快跟进。</p>
+</body>
+</html>
