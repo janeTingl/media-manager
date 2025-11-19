@@ -54,20 +54,12 @@ jobs:
           $res_src = ".\resources"
           $res_dest = "resources"
 
+          $pyInstallerCmd = "python -m PyInstaller .\src\media_manager\main.py --onefile --paths .\src --name `"media-manager-$VERSION`""
           if (Test-Path $res_src) {
-              python -m PyInstaller `
-                --onefile `
-                -m media_manager `
-                --paths .\src `
-                --name "media-manager-$VERSION" `
-                --add-data "$res_src;$res_dest"
-          } else {
-              python -m PyInstaller `
-                --onefile `
-                -m media_manager `
-                --paths .\src `
-                --name "media-manager-$VERSION"
+              $pyInstallerCmd += " --add-data `"${res_src};${res_dest}`""
           }
+
+          Invoke-Expression $pyInstallerCmd
 
           # 压缩
           $exePath = "dist/media-manager-$VERSION.exe"
@@ -131,13 +123,13 @@ jobs:
           RES_DEST="resources"
 
           if [ -d "$RES_SRC" ]; then
-              python -m PyInstaller src/media_manager/main.py \
+              pyinstaller -m media_manager \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION" \
                 --add-data "$RES_SRC:$RES_DEST"
           else
-              python -m PyInstaller src/media_manager/main.py \
+              pyinstaller -m media_manager \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION"
