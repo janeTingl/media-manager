@@ -6,11 +6,12 @@ from pathlib import Path
 from PySide6.QtCore import QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
-from .logging import get_logger, setup_logging
-from .main_window import MainWindow
-from .persistence.database import init_database_service
-from .services import get_service_registry
-from .settings import get_settings
+from media_manager.logging import get_logger, setup_logging
+from media_manager.main_window import MainWindow
+from media_manager.persistence.database import init_database_service
+from media_manager.services import get_service_registry
+from media_manager.settings import get_settings
+
 
 
 def create_application() -> QApplication:
