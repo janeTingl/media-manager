@@ -2,17 +2,25 @@
 
 block_cipher = None
 
+from PySide6.QtCore import QLibraryInfo
+
 entry_script = 'src/media_manager/main.py'
+
+# 获取 PySide6 翻译文件路径
+translations_path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
 
 a = Analysis(
     [entry_script],
     pathex=['.'],
     binaries=[],
 
-    # 如果有资源文件，请加入下面 datas 列表
     datas=[
         ('assets/*', 'assets'),
         ('config/*', 'config'),
+
+        # 加入 Qt 中文翻译文件（关键）
+        (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
+        (translations_path + '/qt_zh_CN.qm', 'PySide6/translations'),
     ],
 
     hiddenimports=[],
@@ -39,7 +47,7 @@ exe = EXE(
     exclude_binaries=True,
     strip=False,
     upx=False,
-    runtime_tmpdir=None    # 解压到系统临时目录（最稳定）
+    runtime_tmpdir=None
 )
 
 # —— 单文件的其他内容统一放这 —— #
