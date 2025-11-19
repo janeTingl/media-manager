@@ -34,9 +34,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install PySide6
-          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+          pip install -r requirements.txt
+          if (Test-Path "build-requirements.txt") { pip install -r build-requirements.txt }
 
       - name: Build Windows EXE
         shell: pwsh
@@ -54,7 +53,7 @@ jobs:
           $res_src = ".\resources"
           $res_dest = "resources"
 
-          $pyinstallerCmd = "python -m PyInstaller .\src\media_manager\main.py --paths .\src --onefile --name media-manager-$VERSION"
+          $pyinstallerCmd = "python -m PyInstaller .\src\media_manager\main.py --paths .\src --onefile --name media-manager-$VERSION --hidden-import sqlalchemy --hidden-import sqlalchemy.sql.default_comparator"
           if (Test-Path $res_src) {
               $pyinstallerCmd += " --add-data `"$res_src;$res_dest`""
           }
@@ -109,9 +108,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install PySide6
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
+          if [ -f build-requirements.txt ]; then pip install -r build-requirements.txt; fi
 
       - name: Build macOS APP
         run: |
@@ -122,7 +120,7 @@ jobs:
           RES_SRC="resources"
           RES_DEST="resources"
 
-          PYINSTALL_CMD="pyinstaller src/media_manager/main.py --paths src --onefile --name media-manager-macos-$VERSION"
+          PYINSTALL_CMD="pyinstaller src/media_manager/main.py --paths src --onefile --name media-manager-macos-$VERSION --hidden-import sqlalchemy --hidden-import sqlalchemy.sql.default_comparator"
           if [ -d "$RES_SRC" ]; then
               PYINSTALL_CMD="$PYINSTALL_CMD --add-data $RES_SRC:$RES_DEST"
           fi

@@ -60,22 +60,41 @@ def install_dependencies():
     """Install required dependencies."""
     print("Installing dependencies...")
     
-    # Core dependencies
-    dependencies = [
-        "PySide6>=6.5.0",
-        "pyinstaller>=5.0.0",
-        "upx"  # For executable compression (optional)
-    ]
+    requirements_file = PROJECT_ROOT / "requirements.txt"
+    if requirements_file.exists():
+        print(f"Installing runtime dependencies from {requirements_file}...")
+        run_command([sys.executable, "-m", "pip", "install", "-r", str(requirements_file)])
+    else:
+        print("requirements.txt not found, installing runtime dependencies individually...")
+        runtime_dependencies = [
+            "PySide6>=6.5.0",
+            "sqlmodel>=0.0.14",
+            "alembic>=1.12.0",
+            "sqlalchemy>=2.0.0",
+            "requests>=2.31.0",
+            "tenacity>=8.2.0",
+            "openpyxl>=3.1.0",
+        ]
+        for dep in runtime_dependencies:
+            run_command([sys.executable, "-m", "pip", "install", dep])
     
-    for dep in dependencies:
+    build_requirements_file = PROJECT_ROOT / "build-requirements.txt"
+    if build_requirements_file.exists():
+        print(f"Installing build dependencies from {build_requirements_file}...")
+        run_command([sys.executable, "-m", "pip", "install", "-r", str(build_requirements_file)])
+    else:
+        print("build-requirements.txt not found, installing build dependencies individually...")
+        build_dependencies = ["pyinstaller>=5.0.0"]
+        for dep in build_dependencies:
+            run_command([sys.executable, "-m", "pip", "install", dep])
+    
+    optional_dependencies = ["upx"]
+    for dep in optional_dependencies:
         try:
             run_command([sys.executable, "-m", "pip", "install", dep])
         except subprocess.CalledProcessError as e:
-            print(f"Failed to install {dep}: {e}")
-            if dep == "upx":
-                print("UPX is optional, continuing without it...")
-            else:
-                raise
+            print(f"Failed to install optional dependency {dep}: {e}")
+            print(f"{dep} is optional, continuing without it...")
 
 def create_icon():
     """Create a simple icon if one doesn't exist."""
