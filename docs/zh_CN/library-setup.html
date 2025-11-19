@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>资料库设置</title>
+    <style>
+        body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .note { background: #fff3cd; padding: 15px; margin: 15px 0; border-left: 4px solid #ffc107; }
+        .tip { background: #d4edda; padding: 15px; margin: 15px 0; border-left: 4px solid #28a745; }
+        pre { background: #f8f8f8; padding: 12px; border-radius: 4px; }
+        a { color: #3498db; }
+    </style>
+</head>
+<body>
+    <h1>资料库设置</h1>
+    <p>资料库是 Media Manager 的核心。每个资料库对应一组特定类型（电影或剧集）的文件夹。</p>
+
+    <h2>如何建立资料库</h2>
+    <ol>
+        <li>打开 <strong>文件 → 管理资料库</strong></li>
+        <li>点击 <strong>新增资料库</strong></li>
+        <li>填写下列栏位：
+            <ul>
+                <li><strong>名称：</strong> 建议使用描述性名称，例如「动作电影」或「Netflix 剧集」</li>
+                <li><strong>类型：</strong> 选择 <em>电影</em> 或 <em>剧集</em></li>
+                <li><strong>根路径：</strong> 指向存放媒体文件的资料夹</li>
+            </ul>
+        </li>
+        <li>按下 <strong>储存</strong></li>
+    </ol>
+
+    <div class="tip">
+        <strong>技巧：</strong> 你可以为不同来源、画质或家庭成员建立多个资料库，方便独立管理与筛选。
+    </div>
+
+    <h2>推荐的资料夹结构</h2>
+    <h3>电影</h3>
+    <pre>/Movies/
+  电影名称 (年份)/
+    电影名称 (年份).mkv</pre>
+
+    <h3>剧集</h3>
+    <pre>/TV Shows/
+  剧名/
+    Season 01/
+      剧名 S01E01.mkv
+      剧名 S01E02.mkv</pre>
+
+    <div class="note">
+        <strong>提醒：</strong> Media Manager 能容忍大多数命名方式，但按照以上模式可显著提升自动匹配的准确度。
+    </div>
+
+    <h2>管理既有资料库</h2>
+    <ul>
+        <li><strong>编辑：</strong> 选取资料库后点击 <strong>编辑</strong> 可修改名称、类型或路径</li>
+        <li><strong>删除：</strong> 删除只会移除索引，不会删除磁碟上的原始文件</li>
+        <li><strong>设为预设：</strong> 右键资料库即可快速将其设为应用程式启动时加载的目标</li>
+    </ul>
+
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="scanning.html">媒体扫描</a></li>
+        <li><a href="preferences.html">偏好设置</a></li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>疑难解答</title>
+    <style>
+        body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        h3 { color: #546e7a; }
+        .solution { background: #e8f5e9; padding: 10px; margin: 10px 0; border-left: 3px solid #4caf50; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>疑难解答</h1>
+    <p>以下列出最常见的问题与处理方式。</p>
+
+    <h2>元数据相关</h2>
+    <h3>无法取得任何元数据</h3>
+    <div class="solution">
+        <strong>可能的解决方法：</strong>
+        <ul>
+            <li>确认在 <strong>编辑 → 偏好设置 → 提供商</strong> 中已正确填入 API Key</li>
+            <li>检查网路连接是否正常</li>
+            <li>确保至少启用一个提供商</li>
+            <li>打开日志查看是否有错误讯息</li>
+        </ul>
+    </div>
+
+    <h3>匹配到错误的作品</h3>
+    <div class="solution">
+        <ul>
+            <li>在匹配视窗中手动搜索正确的条目再指定</li>
+            <li>在档名加入年份以提高辨识度（例如《电影名 (2020).mkv》）</li>
+            <li>匹配完成后可手动编辑并覆盖字段</li>
+        </ul>
+    </div>
+
+    <h2>扫描相关</h2>
+    <h3>文件未被侦测</h3>
+    <div class="solution">
+        <ul>
+            <li>确认档案格式为常见的视频格式（mkv、mp4、avi 等）</li>
+            <li>检查文件是否确实置于资料库的根目录或其子目录</li>
+            <li>确认资料夹权限允许 Media Manager 读取</li>
+        </ul>
+    </div>
+
+    <h3>扫描速度非常慢</h3>
+    <div class="solution">
+        <ul>
+            <li>第一次扫描大型资料库需要较长时间，后续扫描会因快取而加速</li>
+            <li>可考虑将超大型的收藏拆成多个资料库</li>
+        </ul>
+    </div>
+
+    <h2>效能与介面</h2>
+    <h3>程式反应迟缓</h3>
+    <div class="solution">
+        <ul>
+            <li>在 <strong>编辑 → 偏好设置 → 进阶</strong> 中清除快取再试</li>
+            <li>减少需下载的海报尺寸或数量</li>
+            <li>增加快取保存时间，降低对 API 的即时请求</li>
+            <li>关闭其他占用大量资源的应用程式</li>
+        </ul>
+    </div>
+
+    <h3>海报不显示</h3>
+    <div class="solution">
+        <ul>
+            <li>确认偏好设置中的海报下载选项已启用</li>
+            <li>检查快取目录是否具备写入权限</li>
+            <li>尝试清空并重新下载海报</li>
+        </ul>
+    </div>
+
+    <h2>取得更多协助</h2>
+    <p>若问题仍存在：</p>
+    <ul>
+        <li>查看日志（默认位于 <code>~/.media-manager/logs/</code>）</li>
+        <li>阅读其他帮助主题，了解详细的操作说明</li>
+        <li>将重现步骤提交给维护团队</li>
+    </ul>
+
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="providers.html">元数据提供商</a></li>
+        <li><a href="scanning.html">媒体扫描</a></li>
+        <li><a href="preferences.html">偏好设置</a></li>
+    </ul>
+</body>
+</html>

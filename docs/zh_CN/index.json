@@ -1,0 +1,85 @@
+{
+  "title": "Media Manager 帮助中心",
+  "version": "1.0",
+  "locale": "zh_CN",
+  "topics": [
+    {
+      "id": "welcome",
+      "title": "欢迎使用",
+      "file": "welcome.html",
+      "keywords": ["欢迎", "概览", "入门"]
+    },
+    {
+      "id": "quick-start",
+      "title": "快速上手指南",
+      "file": "quick-start.html",
+      "keywords": ["快速上手", "教程", "第一步"]
+    },
+    {
+      "id": "about",
+      "title": "关于 Media Manager",
+      "file": "about.html",
+      "keywords": ["关于", "作者", "janeT", "简介"]
+    },
+    {
+      "id": "library-setup",
+      "title": "资料库设置",
+      "file": "library-setup.html",
+      "keywords": ["资料库", "设置", "路径", "配置"]
+    },
+    {
+      "id": "providers",
+      "title": "元数据提供商",
+      "file": "providers.html",
+      "keywords": ["元数据", "提供商", "TMDB", "TVDB"]
+    },
+    {
+      "id": "scanning",
+      "title": "媒体扫描",
+      "file": "scanning.html",
+      "keywords": ["扫描", "匹配", "导入", "文件"]
+    },
+    {
+      "id": "metadata-editing",
+      "title": "编辑元数据",
+      "file": "metadata-editing.html",
+      "keywords": ["元数据", "编辑", "详情"]
+    },
+    {
+      "id": "batch-operations",
+      "title": "批量操作",
+      "file": "batch-operations.html",
+      "keywords": ["批处理", "批量", "自动化"]
+    },
+    {
+      "id": "tags-favorites",
+      "title": "标签与收藏",
+      "file": "tags-favorites.html",
+      "keywords": ["标签", "收藏", "整理"]
+    },
+    {
+      "id": "search",
+      "title": "搜索媒体",
+      "file": "search.html",
+      "keywords": ["搜索", "过滤", "查询"]
+    },
+    {
+      "id": "import-export",
+      "title": "导入与导出",
+      "file": "import-export.html",
+      "keywords": ["导入", "导出", "备份", "恢复"]
+    },
+    {
+      "id": "preferences",
+      "title": "偏好设置",
+      "file": "preferences.html",
+      "keywords": ["偏好", "设置", "界面"]
+    },
+    {
+      "id": "troubleshooting",
+      "title": "疑难解答",
+      "file": "troubleshooting.html",
+      "keywords": ["问题", "帮助", "FAQ"]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>快速上手指南</title>
+    <style>
+        body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .step { background: #ecf0f1; padding: 15px; margin: 15px 0; border-left: 4px solid #3498db; }
+        .step h3 { margin-top: 0; color: #2980b9; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>快速上手指南</h1>
+    <p>按照以下 4 个步骤，你可以在几分钟内完成 Media Manager 的初始配置。</p>
+
+    <div class="step">
+        <h3>步骤 1：建立第一个资料库</h3>
+        <p>资料库是媒体文件的集合，通常按照类型或存储位置区分。</p>
+        <ol>
+            <li>打开菜单 <strong>文件 → 管理资料库</strong></li>
+            <li>点击 <strong>新增资料库</strong></li>
+            <li>填写名称（如「电影」、「动漫」）</li>
+            <li>选择类型（电影或剧集）</li>
+            <li>指定媒体所在的根目录</li>
+            <li>按下 <strong>储存</strong></li>
+        </ol>
+        <p>详细说明：<a href="library-setup.html">资料库设置</a></p>
+    </div>
+
+    <div class="step">
+        <h3>步骤 2：配置元数据提供商</h3>
+        <p>为了自动抓取影片资料，需要在偏好设置中填写 API Key：</p>
+        <ol>
+            <li>打开 <strong>编辑 → 偏好设置</strong></li>
+            <li>切换到 <strong>提供商</strong> 分页</li>
+            <li>填写 TMDB 与/或 TVDB 的 API Key</li>
+            <li>点击 <strong>套用</strong></li>
+        </ol>
+        <p><strong>如何取得 API Key：</strong></p>
+        <ul>
+            <li>TMDB：<a href="https://www.themoviedb.org/settings/api">themoviedb.org/settings/api</a></li>
+            <li>TVDB：<a href="https://thetvdb.com/dashboard/account/apikeys">thetvdb.com/dashboard/account/apikeys</a></li>
+        </ul>
+        <p>延伸阅读：<a href="providers.html">元数据提供商</a></p>
+    </div>
+
+    <div class="step">
+        <h3>步骤 3：扫描媒体文件</h3>
+        <p>建立资料库后，系统会自动侦测并扫描文件：</p>
+        <ol>
+            <li>在左侧选择刚建立的资料库</li>
+            <li>Media Manager 会立即开始扫描</li>
+            <li>在 <strong>匹配</strong> 分页中确认自动配对的结果</li>
+            <li>必要时手动搜索正确的条目</li>
+            <li>点击 <strong>完成</strong> 保存元数据</li>
+        </ol>
+        <p>延伸阅读：<a href="scanning.html">媒体扫描</a></p>
+    </div>
+
+    <div class="step">
+        <h3>步骤 4：探索你的资料库</h3>
+        <p>扫描完成后，你可以：</p>
+        <ul>
+            <li>在 <strong>缩图</strong> 与 <strong>表格</strong> 视图之间切换</li>
+            <li>利用 <strong>搜索</strong> 分页找到特定作品</li>
+            <li>点选任一条目查看详细资讯、下载海报或编辑元数据</li>
+            <li>透过批量操作一次调整多部影片</li>
+        </ul>
+    </div>
+
+    <h2>下一步</h2>
+    <p>熟悉基础流程后，可继续了解：</p>
+    <ul>
+        <li><a href="metadata-editing.html">如何微调元数据</a></li>
+        <li><a href="batch-operations.html">批量操作技巧</a></li>
+        <li><a href="tags-favorites.html">使用标签与收藏整理内容</a></li>
+        <li><a href="import-export.html">导入、导出与备份</a></li>
+    </ul>
+</body>
+</html>
