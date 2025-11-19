@@ -54,12 +54,12 @@ jobs:
           $res_src = ".\resources"
           $res_dest = "resources"
 
-          $pyInstallerCmd = "python -m PyInstaller .\src\media_manager\main.py --onefile --paths .\src --name `"media-manager-$VERSION`""
+          $pyinstallerCmd = "python -m PyInstaller .\src\media_manager\main.py --paths .\src --onefile --name media-manager-$VERSION"
           if (Test-Path $res_src) {
-              $pyInstallerCmd += " --add-data `"${res_src};${res_dest}`""
+              $pyinstallerCmd += " --add-data `"$res_src;$res_dest`""
           }
 
-          Invoke-Expression $pyInstallerCmd
+          Invoke-Expression $pyinstallerCmd
 
           # 压缩
           $exePath = "dist/media-manager-$VERSION.exe"
@@ -122,18 +122,11 @@ jobs:
           RES_SRC="resources"
           RES_DEST="resources"
 
+          PYINSTALL_CMD="pyinstaller src/media_manager/main.py --paths src --onefile --name media-manager-macos-$VERSION"
           if [ -d "$RES_SRC" ]; then
-              pyinstaller -m media_manager \
-                --paths src \
-                --onefile \
-                --name "media-manager-macos-$VERSION" \
-                --add-data "$RES_SRC:$RES_DEST"
-          else
-              pyinstaller -m media_manager \
-                --paths src \
-                --onefile \
-                --name "media-manager-macos-$VERSION"
+              PYINSTALL_CMD="$PYINSTALL_CMD --add-data $RES_SRC:$RES_DEST"
           fi
+          eval $PYINSTALL_CMD
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
