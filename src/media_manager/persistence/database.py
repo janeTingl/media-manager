@@ -19,15 +19,23 @@ logger = logger_instance.get_logger(__name__)
 class DatabaseService:
     """Service for managing database connections and operations."""
 
-    def __init__(self, database_url: str, auto_migrate: bool = True) -> None:
+    def __init__(
+        self,
+        database_url: str,
+        auto_migrate: bool = True,
+        alembic_ini_path: Optional[Path] = None,
+    ) -> None:
         """Initialize database service.
 
         Args:
             database_url: SQLAlchemy database URL
             auto_migrate: Whether to automatically run migrations on init
+            alembic_ini_path: Optional path to the Alembic configuration file
         """
         self.database_url = database_url
         self.auto_migrate = auto_migrate
+        default_alembic_path = Path(__file__).parent / "alembic.ini"
+        self.alembic_ini_path = Path(alembic_ini_path) if alembic_ini_path else default_alembic_path
         self._engine: Optional[Engine] = None
 
     @property
@@ -51,17 +59,20 @@ class DatabaseService:
             raise
 
     def run_migrations(self) -> None:
-        """Run Alembic migrations."""
+        """Run Alembic migrations or fall back to direct table creation when unavailable."""
+        alembic_ini = self.alembic_ini_path
+
+        if not alembic_ini.exists():
+            logger.warning(
+                "Alembic configuration not found at %s. Creating tables using SQLModel metadata instead of running migrations.",
+                alembic_ini,
+            )
+            self.create_all()
+            return
+
         try:
             from alembic.config import Config
             from alembic.command import upgrade
-
-            # Get the alembic config path
-            alembic_ini = Path(__file__).parent / "alembic.ini"
-
-            if not alembic_ini.exists():
-                logger.warning("alembic.ini not found, skipping migrations")
-                return
 
             config = Config(str(alembic_ini))
             config.set_main_option("sqlalchemy.url", self.database_url)
