@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self._current_library = None
         self._library_repository = LibraryRepository()
 
-        self.setWindowTitle("Media Manager")
+        self.setWindowTitle(self.tr("Media Manager"))
         self.setMinimumSize(1200, 800)
 
         # Initialize components
@@ -151,13 +151,13 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         
         # View mode buttons
-        self.grid_action = QAction("Grid View", self)
+        self.grid_action = QAction(self.tr("Grid View"), self)
         self.grid_action.setCheckable(True)
         self.grid_action.setChecked(True)
         self.grid_action.triggered.connect(lambda: self._switch_view("grid"))
         toolbar.addAction(self.grid_action)
         
-        self.table_action = QAction("Table View", self)
+        self.table_action = QAction(self.tr("Table View"), self)
         self.table_action.setCheckable(True)
         self.table_action.triggered.connect(lambda: self._switch_view("table"))
         toolbar.addAction(self.table_action)
@@ -165,27 +165,33 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         
         # Thumbnail size controls
-        toolbar.addWidget(QLabel("Thumbnail Size:"))
+        toolbar.addWidget(QLabel(self.tr("Thumbnail Size:")))
+        size_labels = {
+            "small": self.tr("Small"),
+            "medium": self.tr("Medium"),
+            "large": self.tr("Large"),
+            "extra_large": self.tr("Extra Large"),
+        }
         for size in ["small", "medium", "large", "extra_large"]:
-            action = QAction(size.capitalize(), self)
+            action = QAction(size_labels.get(size, size.capitalize()), self)
             action.triggered.connect(lambda checked, s=size: self.media_grid_view.set_thumbnail_size(s))
             toolbar.addAction(action)
         
         toolbar.addSeparator()
         
         # Filter controls
-        self.filter_all_action = QAction("All", self)
+        self.filter_all_action = QAction(self.tr("All"), self)
         self.filter_all_action.setCheckable(True)
         self.filter_all_action.setChecked(True)
         self.filter_all_action.triggered.connect(lambda: self._set_media_filter("all"))
         toolbar.addAction(self.filter_all_action)
         
-        self.filter_movies_action = QAction("Movies", self)
+        self.filter_movies_action = QAction(self.tr("Movies"), self)
         self.filter_movies_action.setCheckable(True)
         self.filter_movies_action.triggered.connect(lambda: self._set_media_filter("movie"))
         toolbar.addAction(self.filter_movies_action)
         
-        self.filter_tv_action = QAction("TV Shows", self)
+        self.filter_tv_action = QAction(self.tr("TV Shows"), self)
         self.filter_tv_action.setCheckable(True)
         self.filter_tv_action.triggered.connect(lambda: self._set_media_filter("tv"))
         toolbar.addAction(self.filter_tv_action)
@@ -206,20 +212,20 @@ class MainWindow(QMainWindow):
         self.view_stack.addWidget(self.media_table_view)
         library_layout.addWidget(self.view_stack)
         
-        self.tab_widget.addTab(library_widget, "Library")
+        self.tab_widget.addTab(library_widget, self.tr("Library"))
         
         # Add dashboard tab
-        self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
+        self.tab_widget.addTab(self.dashboard_widget, self.tr("Dashboard"))
         
         # Add search tab
-        self.tab_widget.addTab(self.search_tab_widget, "Search")
+        self.tab_widget.addTab(self.search_tab_widget, self.tr("Search"))
         
         # Add other tabs (keeping existing structure)
-        self.tab_widget.addTab(QListWidget(), "Recent")
-        self.tab_widget.addTab(QListWidget(), "Favorites")
+        self.tab_widget.addTab(QListWidget(), self.tr("Recent"))
+        self.tab_widget.addTab(QListWidget(), self.tr("Favorites"))
 
         # Add matching tab
-        self.tab_widget.addTab(self._create_matching_tab(), "Matching")
+        self.tab_widget.addTab(self._create_matching_tab(), self.tr("Matching"))
 
         layout.addWidget(self.tab_widget)
         
@@ -317,7 +323,7 @@ class MainWindow(QMainWindow):
         self.match_manager.clear_all()
         self.scan_queue_widget.clear_queue()
         self.match_resolution_widget.clear_match()
-        self.update_status("Queue cleared")
+        self.update_status(self.tr("Queue cleared"))
 
     def _on_poster_download_requested(self, match, poster_types) -> None:
         """Handle poster download request."""
@@ -341,62 +347,64 @@ class MainWindow(QMainWindow):
         # Switch to matching tab
         self.tab_widget.setCurrentIndex(4)  # Matching tab index
 
-        self.update_status(f"Added {len(metadata_list)} items to scan queue")
+        self.update_status(
+            self.tr("Added {count} items to scan queue").format(count=len(metadata_list))
+        )
 
     def _setup_menu_bar(self) -> None:
         """Setup the application menu bar."""
         menubar = self.menuBar()
 
         # File menu
-        file_menu = menubar.addMenu("&File")
+        file_menu = menubar.addMenu(self.tr("&File"))
 
-        open_action = QAction("&Open", self)
+        open_action = QAction(self.tr("&Open"), self)
         open_action.setShortcut("Ctrl+O")
         open_action.triggered.connect(self._on_open_file)
         file_menu.addAction(open_action)
 
         file_menu.addSeparator()
 
-        manage_libraries_action = QAction("Manage &Libraries...", self)
+        manage_libraries_action = QAction(self.tr("Manage &Libraries..."), self)
         manage_libraries_action.setShortcut("Ctrl+L")
         manage_libraries_action.triggered.connect(self._on_manage_libraries)
         file_menu.addAction(manage_libraries_action)
 
         file_menu.addSeparator()
 
-        exit_action = QAction("E&xit", self)
+        exit_action = QAction(self.tr("E&xit"), self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
         # Edit menu
-        edit_menu = menubar.addMenu("&Edit")
+        edit_menu = menubar.addMenu(self.tr("&Edit"))
 
-        preferences_action = QAction("&Preferences", self)
+        preferences_action = QAction(self.tr("&Preferences"), self)
         preferences_action.triggered.connect(self._on_preferences)
         edit_menu.addAction(preferences_action)
 
-        batch_ops_action = QAction("Batch &Operations...", self)
+        batch_ops_action = QAction(self.tr("Batch &Operations..."), self)
         batch_ops_action.setShortcut("Ctrl+B")
         batch_ops_action.triggered.connect(self._on_batch_operations)
         edit_menu.addAction(batch_ops_action)
 
         edit_menu.addSeparator()
 
-        export_action = QAction("&Export Media...", self)
+        export_action = QAction(self.tr("&Export Media..."), self)
         export_action.setShortcut("Ctrl+E")
         export_action.triggered.connect(self._on_export_media)
         edit_menu.addAction(export_action)
 
-        import_action = QAction("&Import Media...", self)
+        import_action = QAction(self.tr("&Import Media..."), self)
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self._on_import_media)
         edit_menu.addAction(import_action)
 
         # View menu
-        view_menu = menubar.addMenu("&View")
+        view_menu = menubar.addMenu(self.tr("&View"))
 
-        toggle_panes_action = QAction("Toggle &Panes", self)
+        toggle_panes_action = QAction(self.tr("Toggle &Panes"), self)
         toggle_panes_action.setShortcut("F9")
         toggle_panes_action.setCheckable(True)
         toggle_panes_action.setChecked(True)
@@ -404,20 +412,20 @@ class MainWindow(QMainWindow):
         view_menu.addAction(toggle_panes_action)
 
         # Help menu
-        help_menu = menubar.addMenu("&Help")
+        help_menu = menubar.addMenu(self.tr("&Help"))
 
-        help_center_action = QAction("&Help Center", self)
+        help_center_action = QAction(self.tr("&Help Center"), self)
         help_center_action.setShortcut("F1")
         help_center_action.triggered.connect(self._on_help_center)
         help_menu.addAction(help_center_action)
 
-        onboarding_action = QAction("Show &Onboarding Wizard", self)
+        onboarding_action = QAction(self.tr("Show &Onboarding Wizard"), self)
         onboarding_action.triggered.connect(self._on_show_onboarding)
         help_menu.addAction(onboarding_action)
 
         help_menu.addSeparator()
 
-        about_action = QAction("&About", self)
+        about_action = QAction(self.tr("&About"), self)
         about_action.triggered.connect(self._on_about)
         help_menu.addAction(about_action)
 
@@ -427,11 +435,11 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         # Status label
-        self.status_label = QLabel("Ready")
+        self.status_label = QLabel(self.tr("Ready"))
         self.status_bar.addWidget(self.status_label)
 
         # Permanent widgets
-        self.item_count_label = QLabel("0 items")
+        self.item_count_label = QLabel(self.tr("0 items"))
         self.status_bar.addPermanentWidget(self.item_count_label)
 
     def _load_window_state(self) -> None:
@@ -463,18 +471,21 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QFileDialog
 
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open File", "", "All Files (*)"
+            self,
+            self.tr("Open File"),
+            "",
+            self.tr("All Files (*)"),
         )
         if file_path:
             self.file_opened.emit(file_path)
-            self.status_label.setText(f"Opened: {file_path}")
+            self.status_label.setText(self.tr("Opened: {path}").format(path=file_path))
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
         dialog = PreferencesWindow(self._settings, self)
         dialog.preferences_applied.connect(self.settings_changed.emit)
         dialog.exec()
-        self.status_label.setText("Preferences updated")
+        self.status_label.setText(self.tr("Preferences updated"))
 
     def _on_about(self) -> None:
         """Handle about action."""
@@ -482,10 +493,12 @@ class MainWindow(QMainWindow):
 
         QMessageBox.about(
             self,
-            "About Media Manager",
-            "Media Manager v0.1.0\n\n"
-            "A PySide6-based media management application.\n\n"
-            "Built with Python and PySide6.",
+            self.tr("About Media Manager"),
+            self.tr(
+                "Media Manager v0.1.0\n\n"
+                "A PySide6-based media management application.\n\n"
+                "Built with Python and PySide6."
+            ),
         )
 
     def _on_settings_manager_changed(self, key: str, value: object) -> None:
@@ -496,7 +509,8 @@ class MainWindow(QMainWindow):
     def _toggle_panes(self, checked: bool) -> None:
         """Toggle navigation and properties panes."""
         # This is a placeholder - actual implementation would hide/show panes
-        self.status_label.setText(f"Panes {'shown' if checked else 'hidden'}")
+        message = self.tr("Panes shown") if checked else self.tr("Panes hidden")
+        self.status_label.setText(message)
 
     def update_status(self, message: str) -> None:
         """Update the status bar message."""
@@ -504,7 +518,7 @@ class MainWindow(QMainWindow):
 
     def update_item_count(self, count: int) -> None:
         """Update the item count in the status bar."""
-        self.item_count_label.setText(f"{count} items")
+        self.item_count_label.setText(self.tr("{count} items").format(count=count))
 
     def keyPressEvent(self, event: Any) -> None:
         """Handle key press events for context-sensitive help."""
@@ -565,7 +579,7 @@ class MainWindow(QMainWindow):
     def _on_data_loaded(self, count: int) -> None:
         """Handle data loaded from model."""
         self.update_item_count(count)
-        self.update_status(f"Loaded {count} media items")
+        self.update_status(self.tr("Loaded {count} media items").format(count=count))
 
     def _on_item_selected(self, item) -> None:
         """Handle item selection in any view."""
@@ -578,7 +592,7 @@ class MainWindow(QMainWindow):
         """Handle item activation (double click)."""
         if item:
             # Could play media, open details, or trigger matching
-            self.update_status(f"Activated: {item.title}")
+            self.update_status(self.tr("Activated: {title}").format(title=item.title))
 
     def _on_selection_changed(self, items: list) -> None:
         """Handle selection change in table view."""
@@ -593,21 +607,21 @@ class MainWindow(QMainWindow):
         menu = QMenu(self)
 
         if item:
-            view_action = menu.addAction("View Details")
+            view_action = menu.addAction(self.tr("View Details"))
             view_action.triggered.connect(lambda: self.detail_panel.set_media_item(item))
 
-            edit_action = menu.addAction("Edit Metadata")
+            edit_action = menu.addAction(self.tr("Edit Metadata"))
             edit_action.triggered.connect(lambda: self._on_edit_requested(item))
 
             menu.addSeparator()
 
-            play_action = menu.addAction("Play")
+            play_action = menu.addAction(self.tr("Play"))
             play_action.triggered.connect(lambda: self._on_play_requested(item))
 
             menu.addSeparator()
 
             # Quick tags submenu
-            tags_menu = menu.addMenu("Quick Tags")
+            tags_menu = menu.addMenu(self.tr("Quick Tags"))
             from .persistence.models import Tag, Favorite
             from .search_service import SearchService
             from .persistence.repositories import transactional_context
@@ -624,23 +638,23 @@ class MainWindow(QMainWindow):
                 )
 
             tags_menu.addSeparator()
-            new_tag_action = tags_menu.addAction("+ Add New Tag...")
+            new_tag_action = tags_menu.addAction(self.tr("+ Add New Tag..."))
             new_tag_action.triggered.connect(lambda: self._create_new_tag_for_item(item))
 
             # Toggle favorite
-            favorite_action = menu.addAction("Toggle Favorite")
+            favorite_action = menu.addAction(self.tr("Toggle Favorite"))
             favorite_action.setCheckable(True)
             favorite_action.setChecked(len(item.favorites) > 0)
             favorite_action.triggered.connect(lambda: self._toggle_favorite(item))
 
             menu.addSeparator()
 
-        batch_action = menu.addAction("Batch Operations...")
+        batch_action = menu.addAction(self.tr("Batch Operations..."))
         batch_action.triggered.connect(self._on_batch_operations)
 
         menu.addSeparator()
 
-        refresh_action = menu.addAction("Refresh")
+        refresh_action = menu.addAction(self.tr("Refresh"))
         refresh_action.triggered.connect(lambda: self.library_view_model.refresh())
 
         menu.exec(global_pos)
@@ -649,7 +663,7 @@ class MainWindow(QMainWindow):
         """Open the batch operations dialog for the current selection."""
         selected_items = self._get_selected_media_items()
         if not selected_items:
-            self.update_status("Select one or more items to run batch operations")
+            self.update_status(self.tr("Select one or more items to run batch operations"))
             return
         dialog = BatchOperationsDialog(selected_items, self._settings, self)
         dialog.operations_completed.connect(self._on_batch_operations_completed)
@@ -667,9 +681,9 @@ class MainWindow(QMainWindow):
 
         wizard = ExportWizard(self)
         if wizard.exec():
-            self.update_status("Export completed successfully")
+            self.update_status(self.tr("Export completed successfully"))
         else:
-            self.update_status("Export cancelled")
+            self.update_status(self.tr("Export cancelled"))
 
     def _on_import_media(self) -> None:
         """Handle import media action."""
@@ -677,11 +691,11 @@ class MainWindow(QMainWindow):
 
         wizard = ImportWizard(self)
         if wizard.exec():
-            self.update_status("Import completed successfully")
+            self.update_status(self.tr("Import completed successfully"))
             # Refresh the library view to show imported items
             self.library_view_model.refresh()
         else:
-            self.update_status("Import cancelled")
+            self.update_status(self.tr("Import cancelled"))
 
     def _get_selected_media_items(self) -> list:
         """Return the currently selected media items from the active view."""
@@ -694,7 +708,7 @@ class MainWindow(QMainWindow):
 
         if item:
             # Load item into metadata editor
-            self.update_status(f"Editing: {item.title}")
+            self.update_status(self.tr("Editing: {title}").format(title=item.title))
             # Could switch to metadata editor tab or open dialog
 
     def _on_play_requested(self, item) -> None:
@@ -702,7 +716,7 @@ class MainWindow(QMainWindow):
         if item and item.files:
             # Play the first file
             file_path = item.files[0].path
-            self.update_status(f"Playing: {file_path}")
+            self.update_status(self.tr("Playing: {path}").format(path=file_path))
             # Could use system default media player
 
     def _synchronize_selection(self, item) -> None:
@@ -768,8 +782,19 @@ class MainWindow(QMainWindow):
         self.scan_queue_widget.set_target_library(library.id)
         
         # Update status
-        media_type_text = media_type_filter.title() if media_type_filter != "all" else "All"
-        self.update_status(f"Viewing {library.name} - {media_type_text}")
+        media_type_labels = {
+            "all": self.tr("All"),
+            "movie": self.tr("Movies"),
+            "tv": self.tr("TV Shows"),
+            "library": self.tr("Library"),
+        }
+        media_type_text = media_type_labels.get(media_type_filter, media_type_filter.title())
+        self.update_status(
+            self.tr("Viewing {library} - {media_type}").format(
+                library=library.name,
+                media_type=media_type_text,
+            )
+        )
 
     def _on_manage_libraries(self) -> None:
         """Handle manage libraries request."""
@@ -782,7 +807,9 @@ class MainWindow(QMainWindow):
     def _on_library_created(self, library) -> None:
         """Handle library created event."""
         self.library_tree_widget.load_libraries()
-        self.update_status(f"Library '{library.name}' created")
+        self.update_status(
+            self.tr("Library '{name}' created").format(name=library.name)
+        )
 
     def _on_library_updated(self, library) -> None:
         """Handle library updated event."""
@@ -793,7 +820,9 @@ class MainWindow(QMainWindow):
             self._current_library = library
             self.library_view_model.load_data()
         
-        self.update_status(f"Library '{library.name}' updated")
+        self.update_status(
+            self.tr("Library '{name}' updated").format(name=library.name)
+        )
 
     def _on_library_deleted(self, library_id: int) -> None:
         """Handle library deleted event."""
@@ -804,7 +833,7 @@ class MainWindow(QMainWindow):
             self._current_library = None
             self.library_view_model.clear_filters()
         
-        self.update_status("Library deleted")
+        self.update_status(self.tr("Library deleted"))
 
     def _restore_last_active_library(self) -> None:
         """Restore the last active library from settings."""
@@ -821,7 +850,9 @@ class MainWindow(QMainWindow):
             self.library_tree_widget.select_library(libraries[0].id)
         else:
             # No libraries exist, prompt to create one
-            self.update_status("No libraries found. Please create a library to get started.")
+            self.update_status(
+                self.tr("No libraries found. Please create a library to get started.")
+            )
 
     def get_current_library(self):
         """Get the currently selected library."""
@@ -839,16 +870,26 @@ class MainWindow(QMainWindow):
                 
                 if tag in current_item.tags:
                     current_item.tags.remove(tag)
-                    self.update_status(f"Removed tag '{tag.name}' from {item.title}")
+                    self.update_status(
+                        self.tr("Removed tag '{tag}' from {title}").format(
+                            tag=tag.name, title=item.title
+                        )
+                    )
                 else:
                     current_item.tags.append(tag)
-                    self.update_status(f"Added tag '{tag.name}' to {item.title}")
+                    self.update_status(
+                        self.tr("Added tag '{tag}' to {title}").format(
+                            tag=tag.name, title=item.title
+                        )
+                    )
                 
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:
             self._logger.error(f"Error toggling tag: {e}")
-            self.update_status(f"Error toggling tag: {str(e)}")
+            self.update_status(
+                self.tr("Error toggling tag: {error}").format(error=str(e))
+            )
 
     def _create_new_tag_for_item(self, item) -> None:
         """Create a new tag and add it to the item."""
@@ -857,7 +898,7 @@ class MainWindow(QMainWindow):
         from .persistence.repositories import transactional_context
         
         tag_name, ok = QInputDialog.getText(
-            self, "New Tag", "Enter tag name:"
+            self, self.tr("New Tag"), self.tr("Enter tag name:")
         )
         
         if ok and tag_name.strip():
@@ -879,11 +920,17 @@ class MainWindow(QMainWindow):
                         current_item.tags.append(tag)
                     
                     uow.commit()
-                    self.update_status(f"Created and added tag '{tag.name}' to {item.title}")
+                    self.update_status(
+                        self.tr("Created and added tag '{tag}' to {title}").format(
+                            tag=tag.name, title=item.title
+                        )
+                    )
                     self.library_view_model.refresh()
             except Exception as e:
                 self._logger.error(f"Error creating tag: {e}")
-                self.update_status(f"Error creating tag: {str(e)}")
+                self.update_status(
+                    self.tr("Error creating tag: {error}").format(error=str(e))
+                )
 
     def _toggle_favorite(self, item) -> None:
         """Toggle favorite status for a media item."""
@@ -900,14 +947,20 @@ class MainWindow(QMainWindow):
                 
                 if existing_favorite:
                     favorite_repo.delete(existing_favorite[0].id)
-                    self.update_status(f"Removed {item.title} from favorites")
+                    self.update_status(
+                        self.tr("Removed {title} from favorites").format(title=item.title)
+                    )
                 else:
                     favorite = Favorite(media_item_id=item.id)
                     favorite_repo.create(favorite)
-                    self.update_status(f"Added {item.title} to favorites")
+                    self.update_status(
+                        self.tr("Added {title} to favorites").format(title=item.title)
+                    )
                 
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:
             self._logger.error(f"Error toggling favorite: {e}")
-            self.update_status(f"Error toggling favorite: {str(e)}")
+            self.update_status(
+                self.tr("Error toggling favorite: {error}").format(error=str(e))
+            )

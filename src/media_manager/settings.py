@@ -679,7 +679,7 @@ class SettingsManager(QObject):
 
     def get_language(self) -> str:
         """Get the UI language/locale setting."""
-        return str(self.get_ui_setting("language", "en"))
+        return str(self.get_ui_setting("language", "system"))
 
     def set_language(self, language: str) -> None:
         """Set the UI language/locale setting."""

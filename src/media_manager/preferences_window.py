@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from .library_manager_dialog import LibraryManagerDialog
+from .localization import get_language_display_name, iter_language_options
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
 from .settings import SettingsManager, get_settings
@@ -60,7 +61,7 @@ class PreferencesWindow(QDialog):
     ) -> None:
         super().__init__(parent)
         self._settings = settings or get_settings()
-        self.setWindowTitle("Preferences")
+        self.setWindowTitle(self.tr("Preferences"))
         self.setMinimumSize(780, 580)
 
         layout = QVBoxLayout(self)
@@ -71,26 +72,28 @@ class PreferencesWindow(QDialog):
 
         # Build tabs
         self._libraries_section = LibrariesPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._libraries_section, "Libraries")
+        self._add_section(self._libraries_section, self.tr("Libraries"))
 
         self._metadata_section = MetadataPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._metadata_section, "Metadata")
+        self._add_section(self._metadata_section, self.tr("Metadata"))
 
         self._providers_section = ProvidersPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._providers_section, "Providers")
+        self._add_section(self._providers_section, self.tr("Providers"))
 
         self._downloads_section = DownloadsPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._downloads_section, "Downloads")
+        self._add_section(self._downloads_section, self.tr("Downloads"))
 
         self._ui_section = UIPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._ui_section, "UI")
+        self._add_section(self._ui_section, self.tr("UI"))
 
         self._advanced_section = AdvancedPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._advanced_section, "Advanced")
+        self._add_section(self._advanced_section, self.tr("Advanced"))
 
         # Dialog buttons
         self._button_box = QDialogButtonBox(QDialogButtonBox.Apply | QDialogButtonBox.Close)
+        self._button_box.button(QDialogButtonBox.Apply).setText(self.tr("Apply"))
         self._button_box.button(QDialogButtonBox.Apply).clicked.connect(self._on_apply_clicked)
+        self._button_box.button(QDialogButtonBox.Close).setText(self.tr("Close"))
         self._button_box.button(QDialogButtonBox.Close).clicked.connect(self.accept)
         layout.addWidget(self._button_box)
 
@@ -105,7 +108,11 @@ class PreferencesWindow(QDialog):
             success, error_message = section.apply()
             if not success:
                 if error_message:
-                    QMessageBox.warning(self, f"{title} Settings", error_message)
+                    QMessageBox.warning(
+                        self,
+                        self.tr("{section} Settings").format(section=title),
+                        error_message,
+                    )
                 self._tab_widget.setCurrentWidget(section)
                 return
 
@@ -135,23 +142,23 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.default_library_combo = QComboBox()
-        form.addRow("Default library:", self.default_library_combo)
+        form.addRow(self.tr("Default library:"), self.default_library_combo)
 
-        self.auto_restore_checkbox = QCheckBox("Restore last active library on startup")
+        self.auto_restore_checkbox = QCheckBox(self.tr("Restore last active library on startup"))
         form.addRow("", self.auto_restore_checkbox)
 
         root_layout = QHBoxLayout()
         self.library_root_edit = QLineEdit()
-        self.library_root_edit.setPlaceholderText("/path/to/default/library")
-        browse_button = QPushButton("Browse…")
+        self.library_root_edit.setPlaceholderText(self.tr("/path/to/default/library"))
+        browse_button = QPushButton(self.tr("Browse…"))
         browse_button.clicked.connect(self._on_browse_root)
         root_layout.addWidget(self.library_root_edit)
         root_layout.addWidget(browse_button)
-        form.addRow("Library root:", root_layout)
+        form.addRow(self.tr("Library root:"), root_layout)
 
         layout.addLayout(form)
 
-        manage_button = QPushButton("Manage Libraries…")
+        manage_button = QPushButton(self.tr("Manage Libraries…"))
         manage_button.clicked.connect(self._on_manage_libraries)
         layout.addWidget(manage_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
@@ -168,7 +175,11 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         try:
             libraries = self._repository.get_active()
         except Exception as exc:  # pragma: no cover - defensive fallback
-            QMessageBox.warning(self, "Libraries", f"Failed to load libraries: {exc}")
+            QMessageBox.warning(
+                self,
+                self.tr("Libraries"),
+                self.tr("Failed to load libraries: {error}").format(error=exc),
+            )
             libraries = []
 
         for library in libraries:
@@ -176,7 +187,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             self._libraries.append((library.name, library.id))
 
         if not libraries:
-            self.default_library_combo.addItem("No libraries available", None)
+            self.default_library_combo.addItem(self.tr("No libraries available"), None)
             self.default_library_combo.setEnabled(False)
         else:
             self.default_library_combo.setEnabled(True)
@@ -196,7 +207,11 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             self.library_root_edit.setText(str(root_setting))
 
     def _on_browse_root(self) -> None:
-        directory = QFileDialog.getExistingDirectory(self, "Select Library Root", self.library_root_edit.text())
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            self.tr("Select Library Root"),
+            self.library_root_edit.text(),
+        )
         if directory:
             self.library_root_edit.setText(directory)
 
@@ -214,7 +229,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             try:
                 root_path.mkdir(parents=True, exist_ok=True)
             except OSError as exc:
-                return False, f"Unable to access library root: {exc}"
+                return False, self.tr("Unable to access library root: {error}").format(error=exc)
             self._settings.set_library_setting("library_root", str(root_path))
         else:
             self._settings.set_library_setting("library_root", None)
@@ -245,12 +260,14 @@ class MetadataPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.movie_template_edit = QLineEdit()
-        self.movie_template_edit.setPlaceholderText("{title} ({year})")
-        form.addRow("Movie rename template:", self.movie_template_edit)
+        self.movie_template_edit.setPlaceholderText(self.tr("{title} ({year})"))
+        form.addRow(self.tr("Movie rename template:"), self.movie_template_edit)
 
         self.tv_template_edit = QLineEdit()
-        self.tv_template_edit.setPlaceholderText("{title} - S{season:02d}E{episode:02d}")
-        form.addRow("TV episode template:", self.tv_template_edit)
+        self.tv_template_edit.setPlaceholderText(
+            self.tr("{title} - S{season:02d}E{episode:02d}")
+        )
+        form.addRow(self.tr("TV episode template:"), self.tv_template_edit)
 
         self.subtitle_provider_combo = QComboBox()
         self.subtitle_provider_combo.addItems([
@@ -259,21 +276,21 @@ class MetadataPreferencesWidget(BasePreferencesSection):
             "Addic7ed",
             "Podnapisi",
         ])
-        form.addRow("Subtitle provider:", self.subtitle_provider_combo)
+        form.addRow(self.tr("Subtitle provider:"), self.subtitle_provider_combo)
 
         self.subtitle_languages_edit = QLineEdit()
-        self.subtitle_languages_edit.setPlaceholderText("en, es, fr")
-        form.addRow("Subtitle languages:", self.subtitle_languages_edit)
+        self.subtitle_languages_edit.setPlaceholderText(self.tr("en, es, fr"))
+        form.addRow(self.tr("Subtitle languages:"), self.subtitle_languages_edit)
 
-        self.subtitle_auto_checkbox = QCheckBox("Automatically download subtitles")
+        self.subtitle_auto_checkbox = QCheckBox(self.tr("Automatically download subtitles"))
         form.addRow("", self.subtitle_auto_checkbox)
 
-        self.nfo_enabled_checkbox = QCheckBox("Generate NFO metadata files")
+        self.nfo_enabled_checkbox = QCheckBox(self.tr("Generate NFO metadata files"))
         form.addRow("", self.nfo_enabled_checkbox)
 
         self.nfo_subfolder_edit = QLineEdit()
-        self.nfo_subfolder_edit.setPlaceholderText("optional/subfolder")
-        form.addRow("NFO subfolder:", self.nfo_subfolder_edit)
+        self.nfo_subfolder_edit.setPlaceholderText(self.tr("optional/subfolder"))
+        form.addRow(self.tr("NFO subfolder:"), self.nfo_subfolder_edit)
 
         layout.addLayout(form)
         layout.addStretch()
@@ -340,7 +357,7 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.tmdb_key_edit = QLineEdit()
-        self.tmdb_key_edit.setPlaceholderText("TMDB API key")
+        self.tmdb_key_edit.setPlaceholderText(self.tr("TMDB API key"))
         self.tmdb_error_label = QLabel()
         self.tmdb_error_label.setStyleSheet("color: #c62828;")
         tmdb_container = QVBoxLayout()
@@ -348,10 +365,10 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         tmdb_container.addWidget(self.tmdb_error_label)
         tmdb_widget = QWidget()
         tmdb_widget.setLayout(tmdb_container)
-        form.addRow("TMDB API key:", tmdb_widget)
+        form.addRow(self.tr("TMDB API key:"), tmdb_widget)
 
         self.tvdb_key_edit = QLineEdit()
-        self.tvdb_key_edit.setPlaceholderText("TVDB API key")
+        self.tvdb_key_edit.setPlaceholderText(self.tr("TVDB API key"))
         self.tvdb_error_label = QLabel()
         self.tvdb_error_label.setStyleSheet("color: #c62828;")
         tvdb_container = QVBoxLayout()
@@ -359,21 +376,21 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         tvdb_container.addWidget(self.tvdb_error_label)
         tvdb_widget = QWidget()
         tvdb_widget.setLayout(tvdb_container)
-        form.addRow("TVDB API key:", tvdb_widget)
+        form.addRow(self.tr("TVDB API key:"), tvdb_widget)
 
-        self.tmdb_enabled_checkbox = QCheckBox("Enable TMDB provider")
+        self.tmdb_enabled_checkbox = QCheckBox(self.tr("Enable TMDB provider"))
         form.addRow("", self.tmdb_enabled_checkbox)
 
-        self.tvdb_enabled_checkbox = QCheckBox("Enable TVDB provider")
+        self.tvdb_enabled_checkbox = QCheckBox(self.tr("Enable TVDB provider"))
         form.addRow("", self.tvdb_enabled_checkbox)
 
         self.retry_spin = QSpinBox()
         self.retry_spin.setRange(0, 10)
-        form.addRow("Retry attempts:", self.retry_spin)
+        form.addRow(self.tr("Retry attempts:"), self.retry_spin)
 
         self.timeout_spin = QSpinBox()
         self.timeout_spin.setRange(5, 300)
-        form.addRow("API timeout (seconds):", self.timeout_spin)
+        form.addRow(self.tr("API timeout (seconds):"), self.timeout_spin)
 
         layout.addLayout(form)
         layout.addStretch()
@@ -397,13 +414,13 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         tvdb_key = self.tvdb_key_edit.text().strip()
 
         if tmdb_key and not self._is_valid_api_key(tmdb_key):
-            self.tmdb_error_label.setText("Invalid TMDB API key")
-            return False, "TMDB API key must be at least 16 characters."
+            self.tmdb_error_label.setText(self.tr("Invalid TMDB API key"))
+            return False, self.tr("TMDB API key must be at least 16 characters.")
         self.tmdb_error_label.clear()
 
         if tvdb_key and not self._is_valid_api_key(tvdb_key):
-            self.tvdb_error_label.setText("Invalid TVDB API key")
-            return False, "TVDB API key must be at least 16 characters."
+            self.tvdb_error_label.setText(self.tr("Invalid TVDB API key"))
+            return False, self.tr("TVDB API key must be at least 16 characters.")
         self.tvdb_error_label.clear()
 
         self._settings.set_tmdb_api_key(tmdb_key)
@@ -440,7 +457,7 @@ class DownloadsPreferencesWidget(BasePreferencesSection):
         layout.addWidget(self.poster_settings_widget)
 
         trailer_layout = QHBoxLayout()
-        trailer_layout.addWidget(QLabel("Trailer quality:"))
+        trailer_layout.addWidget(QLabel(self.tr("Trailer quality:")))
         self.trailer_quality_combo = QComboBox()
         self.trailer_quality_combo.addItems(["auto", "720p", "1080p", "4K"])
         trailer_layout.addWidget(self.trailer_quality_combo)
@@ -469,10 +486,10 @@ class UIPreferencesWidget(BasePreferencesSection):
     """Preferences section for UI-related options."""
 
     THEMES = ["system", "light", "dark"]
-    LANGUAGES = ["en", "de", "es", "fr"]
 
     def __init__(self, settings: SettingsManager, parent: Optional[QWidget] = None) -> None:
         super().__init__(settings, parent)
+        self._last_language = self._settings.get_language()
         self._setup_ui()
         self.refresh()
 
@@ -481,16 +498,26 @@ class UIPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.theme_combo = QComboBox()
+        theme_labels = {
+            "system": self.tr("System Default"),
+            "light": self.tr("Light"),
+            "dark": self.tr("Dark"),
+        }
         for theme in self.THEMES:
-            self.theme_combo.addItem(theme.capitalize(), theme)
-        form.addRow("Theme:", self.theme_combo)
+            self.theme_combo.addItem(theme_labels.get(theme, theme.title()), theme)
+        form.addRow(self.tr("Theme:"), self.theme_combo)
 
         self.language_combo = QComboBox()
-        for language in self.LANGUAGES:
-            self.language_combo.addItem(language.upper(), language)
-        form.addRow("Language:", self.language_combo)
+        for code, label in iter_language_options():
+            self.language_combo.addItem(self.tr(label), code)
+        form.addRow(self.tr("Language:"), self.language_combo)
 
-        self.remember_layout_checkbox = QCheckBox("Remember window layout between sessions")
+        self.language_help_label = QLabel(self.tr("Language changes take effect after restarting the application."))
+        self.language_help_label.setWordWrap(True)
+        self.language_help_label.setStyleSheet("color: #6c6c6c; font-size: 11px;")
+        form.addRow("", self.language_help_label)
+
+        self.remember_layout_checkbox = QCheckBox(self.tr("Remember window layout between sessions"))
         form.addRow("", self.remember_layout_checkbox)
 
         layout.addLayout(form)
@@ -502,18 +529,28 @@ class UIPreferencesWidget(BasePreferencesSection):
         if index >= 0:
             self.theme_combo.setCurrentIndex(index)
 
-        language = self._settings.get_ui_setting("language", "en")
+        language = self._settings.get_language()
         index = self.language_combo.findData(language)
         if index >= 0:
             self.language_combo.setCurrentIndex(index)
 
         remember = bool(self._settings.get_ui_setting("remember_layout", True))
         self.remember_layout_checkbox.setChecked(remember)
+        self._last_language = language
 
     def apply(self) -> Tuple[bool, Optional[str]]:
         self._settings.set_ui_setting("theme", self.theme_combo.currentData())
-        self._settings.set_ui_setting("language", self.language_combo.currentData())
+        selected_language = self.language_combo.currentData()
+        previous_language = self._settings.get_language()
+        self._settings.set_language(selected_language)
         self._settings.set_ui_setting("remember_layout", self.remember_layout_checkbox.isChecked())
+
+        if previous_language != selected_language:
+            QMessageBox.information(
+                self,
+                self.tr("Language Updated"),
+                self.tr("Please restart the application to apply the new language."),
+            )
         return True, None
 
 
@@ -531,39 +568,39 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
 
-        cache_group = QGroupBox("Caching")
+        cache_group = QGroupBox(self.tr("Caching"))
         cache_layout = QFormLayout(cache_group)
 
         cache_dir_layout = QHBoxLayout()
         self.cache_dir_edit = QLineEdit()
-        self.cache_dir_edit.setPlaceholderText("/path/to/cache")
-        cache_browse = QPushButton("Browse…")
+        self.cache_dir_edit.setPlaceholderText(self.tr("/path/to/cache"))
+        cache_browse = QPushButton(self.tr("Browse…"))
         cache_browse.clicked.connect(self._on_browse_cache)
         cache_dir_layout.addWidget(self.cache_dir_edit)
         cache_dir_layout.addWidget(cache_browse)
-        cache_layout.addRow("Shared cache directory:", cache_dir_layout)
+        cache_layout.addRow(self.tr("Shared cache directory:"), cache_dir_layout)
 
         self.cache_ttl_spin = QSpinBox()
         self.cache_ttl_spin.setRange(1, 1440)
-        cache_layout.addRow("Provider cache TTL (minutes):", self.cache_ttl_spin)
+        cache_layout.addRow(self.tr("Provider cache TTL (minutes):"), self.cache_ttl_spin)
 
         layout.addWidget(cache_group)
 
-        logging_group = QGroupBox("Logging")
+        logging_group = QGroupBox(self.tr("Logging"))
         logging_layout = QFormLayout(logging_group)
         self.logging_combo = QComboBox()
         for level in self.LOG_LEVELS:
             self.logging_combo.addItem(level, level)
-        logging_layout.addRow("Log level:", self.logging_combo)
+        logging_layout.addRow(self.tr("Log level:"), self.logging_combo)
         layout.addWidget(logging_group)
 
-        batch_group = QGroupBox("Batch operation defaults")
+        batch_group = QGroupBox(self.tr("Batch operation defaults"))
         batch_layout = QFormLayout(batch_group)
 
-        self.batch_rename_checkbox = QCheckBox("Rename using templates")
+        self.batch_rename_checkbox = QCheckBox(self.tr("Rename using templates"))
         batch_layout.addRow("", self.batch_rename_checkbox)
 
-        self.batch_move_checkbox = QCheckBox("Move to library")
+        self.batch_move_checkbox = QCheckBox(self.tr("Move to library"))
         move_layout = QHBoxLayout()
         self.batch_move_combo = QComboBox()
         self.batch_move_combo.setEnabled(False)
@@ -571,21 +608,22 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         move_layout.addWidget(self.batch_move_combo)
         batch_layout.addRow(self.batch_move_checkbox, move_layout)
 
-        self.batch_delete_checkbox = QCheckBox("Delete source files")
+        self.batch_delete_checkbox = QCheckBox(self.tr("Delete source files"))
         batch_layout.addRow("", self.batch_delete_checkbox)
 
-        self.batch_tags_checkbox = QCheckBox("Assign tags")
+        self.batch_tags_checkbox = QCheckBox(self.tr("Assign tags"))
         self.batch_tags_edit = QLineEdit()
         self.batch_tags_edit.setEnabled(False)
+        self.batch_tags_edit.setPlaceholderText(self.tr("to-watch, favorites"))
         self.batch_tags_checkbox.toggled.connect(self.batch_tags_edit.setEnabled)
         tag_layout = QHBoxLayout()
         tag_layout.addWidget(self.batch_tags_edit)
         batch_layout.addRow(self.batch_tags_checkbox, tag_layout)
 
-        self.batch_metadata_checkbox = QCheckBox("Override metadata")
+        self.batch_metadata_checkbox = QCheckBox(self.tr("Override metadata"))
         metadata_layout = QHBoxLayout()
         self.batch_genres_edit = QLineEdit()
-        self.batch_genres_edit.setPlaceholderText("genre1, genre2")
+        self.batch_genres_edit.setPlaceholderText(self.tr("genre1, genre2"))
         self.batch_genres_edit.setEnabled(False)
         self.batch_rating_spin = QSpinBox()
         self.batch_rating_spin.setRange(0, 100)
@@ -596,7 +634,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         metadata_layout.addWidget(self.batch_rating_spin)
         batch_layout.addRow(self.batch_metadata_checkbox, metadata_layout)
 
-        self.batch_resync_checkbox = QCheckBox("Re-sync provider metadata")
+        self.batch_resync_checkbox = QCheckBox(self.tr("Re-sync provider metadata"))
         batch_layout.addRow("", self.batch_resync_checkbox)
 
         layout.addWidget(batch_group)
@@ -665,13 +703,17 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         for library in libraries:
             self.batch_move_combo.addItem(library.name, library.id)
         if not libraries:
-            self.batch_move_combo.addItem("No libraries", None)
+            self.batch_move_combo.addItem(self.tr("No libraries"), None)
             self.batch_move_combo.setEnabled(False)
         else:
             self.batch_move_combo.setEnabled(True)
 
     def _on_browse_cache(self) -> None:
-        directory = QFileDialog.getExistingDirectory(self, "Select Cache Directory", self.cache_dir_edit.text())
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            self.tr("Select Cache Directory"),
+            self.cache_dir_edit.text(),
+        )
         if directory:
             self.cache_dir_edit.setText(directory)
 
@@ -682,7 +724,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
             try:
                 cache_path.mkdir(parents=True, exist_ok=True)
             except OSError as exc:
-                return False, f"Unable to access cache directory: {exc}"
+                return False, self.tr("Unable to access cache directory: {error}").format(error=exc)
             self._settings.set_cache_setting("shared_cache_dir", str(cache_path))
         else:
             self._settings.set_cache_setting("shared_cache_dir", None)
