@@ -39,8 +39,18 @@ jobs:
         run: |
           $version = "${GITHUB_REF#refs/tags/}"
           $args = Get-Content resources_args.txt
-          # 生成 version.txt，用于 EXE 内部读取
-          Set-Content -Path "./media_manager/version.txt" -Value $version
+
+          # 确保 media_manager 目录存在
+          $versionFile = "./media_manager/version.txt"
+          $dir = Split-Path $versionFile
+          if (-not (Test-Path $dir)) {
+              New-Item -ItemType Directory -Path $dir | Out-Null
+          }
+
+          # 写入 version.txt
+          Set-Content -Path $versionFile -Value $version
+
+          # 打包 EXE
           pyinstaller --onefile ./media_manager/__main__.py --name "media-manager-$version" --icon "./media-manager.ico" $args
 
       - name: Compress EXE to zip
