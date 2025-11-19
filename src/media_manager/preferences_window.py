@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .i18n import get_available_languages, get_language_label, translate as _
 from .library_manager_dialog import LibraryManagerDialog
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
@@ -60,7 +61,7 @@ class PreferencesWindow(QDialog):
     ) -> None:
         super().__init__(parent)
         self._settings = settings or get_settings()
-        self.setWindowTitle("Preferences")
+        self.setWindowTitle(_("Preferences"))
         self.setMinimumSize(780, 580)
 
         layout = QVBoxLayout(self)
@@ -97,7 +98,7 @@ class PreferencesWindow(QDialog):
     def _add_section(self, section: BasePreferencesSection, title: str) -> None:
         """Register a section and add it to the tab stack."""
         self._sections.append((section, title))
-        self._tab_widget.addTab(section, title)
+        self._tab_widget.addTab(section, _(title))
 
     def _on_apply_clicked(self) -> None:
         """Apply all section changes and persist to disk."""
@@ -105,7 +106,11 @@ class PreferencesWindow(QDialog):
             success, error_message = section.apply()
             if not success:
                 if error_message:
-                    QMessageBox.warning(self, f"{title} Settings", error_message)
+                    QMessageBox.warning(
+                        self,
+                        _("{title} Settings").format(title=_(title)),
+                        error_message,
+                    )
                 self._tab_widget.setCurrentWidget(section)
                 return
 
@@ -469,7 +474,7 @@ class UIPreferencesWidget(BasePreferencesSection):
     """Preferences section for UI-related options."""
 
     THEMES = ["system", "light", "dark"]
-    LANGUAGES = ["en", "de", "es", "fr"]
+    LANGUAGES = get_available_languages()
 
     def __init__(self, settings: SettingsManager, parent: Optional[QWidget] = None) -> None:
         super().__init__(settings, parent)
@@ -481,16 +486,23 @@ class UIPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.theme_combo = QComboBox()
+        theme_labels = {
+            "system": _("System"),
+            "light": _("Light"),
+            "dark": _("Dark"),
+        }
         for theme in self.THEMES:
-            self.theme_combo.addItem(theme.capitalize(), theme)
-        form.addRow("Theme:", self.theme_combo)
+            self.theme_combo.addItem(theme_labels.get(theme, theme.capitalize()), theme)
+        form.addRow(_("Theme:"), self.theme_combo)
 
         self.language_combo = QComboBox()
         for language in self.LANGUAGES:
-            self.language_combo.addItem(language.upper(), language)
-        form.addRow("Language:", self.language_combo)
+            self.language_combo.addItem(get_language_label(language), language)
+        form.addRow(_("Language:"), self.language_combo)
 
-        self.remember_layout_checkbox = QCheckBox("Remember window layout between sessions")
+        self.remember_layout_checkbox = QCheckBox(
+            _("Remember window layout between sessions")
+        )
         form.addRow("", self.remember_layout_checkbox)
 
         layout.addLayout(form)

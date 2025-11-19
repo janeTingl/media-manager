@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .i18n import translate as _
 from .logging import get_logger
 from .settings import get_settings
 
@@ -43,7 +44,7 @@ class HelpCenterDialog(QDialog):
         self._history = []
         self._history_index = -1
 
-        self.setWindowTitle("Help Center")
+        self.setWindowTitle(_("Help Center"))
         self.resize(900, 700)
 
         self._setup_ui()
@@ -89,12 +90,12 @@ class HelpCenterDialog(QDialog):
         toolbar_layout.setContentsMargins(10, 5, 10, 5)
 
         # Navigation buttons
-        self._back_button = QPushButton("◀ Back")
+        self._back_button = QPushButton(_("◀ Back"))
         self._back_button.setEnabled(False)
         self._back_button.clicked.connect(self._navigate_back)
         toolbar_layout.addWidget(self._back_button)
 
-        self._forward_button = QPushButton("Forward ▶")
+        self._forward_button = QPushButton(_("Forward ▶"))
         self._forward_button.setEnabled(False)
         self._forward_button.clicked.connect(self._navigate_forward)
         toolbar_layout.addWidget(self._forward_button)
@@ -103,7 +104,7 @@ class HelpCenterDialog(QDialog):
 
         # Search box
         self._search_box = QLineEdit()
-        self._search_box.setPlaceholderText("Search help topics...")
+        self._search_box.setPlaceholderText(_("Search help topics..."))
         self._search_box.textChanged.connect(self._filter_topics)
         self._search_box.setMaximumWidth(300)
         toolbar_layout.addWidget(self._search_box)
@@ -111,7 +112,7 @@ class HelpCenterDialog(QDialog):
         toolbar_layout.addStretch()
 
         # Close button
-        close_button = QPushButton("Close")
+        close_button = QPushButton(_("Close"))
         close_button.clicked.connect(self.accept)
         toolbar_layout.addWidget(close_button)
 
@@ -217,9 +218,11 @@ class HelpCenterDialog(QDialog):
 
         if not topic_file.exists():
             self._logger.error(f"Help file not found: {topic_file}")
-            self._content_browser.setHtml(
-                f"<h1>Error</h1><p>Help topic file not found: {topic['file']}</p>"
+            error_html = (
+                f"<h1>{_('Error')}</h1>"
+                f"<p>{_('Help topic file not found: {filename}').format(filename=topic['file'])}</p>"
             )
+            self._content_browser.setHtml(error_html)
             return
 
         try:
@@ -246,7 +249,11 @@ class HelpCenterDialog(QDialog):
 
         except OSError as e:
             self._logger.error(f"Failed to load help file: {e}")
-            self._content_browser.setHtml(f"<h1>Error</h1><p>Failed to load help content: {e}</p>")
+            error_html = (
+                f"<h1>{_('Error')}</h1>"
+                f"<p>{_('Failed to load help content: {error}').format(error=e)}</p>"
+            )
+            self._content_browser.setHtml(error_html)
 
     def _on_topic_selected(self, item: QListWidgetItem) -> None:
         """Handle topic selection from list."""

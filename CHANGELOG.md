@@ -4,6 +4,10 @@ All notable changes to the Media Manager project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Simplified (zh-CN) and Traditional (zh-TW) Chinese localization for the UI and help center.
+
 ### Planned Features
 
 - [ ] Real TMDB and TVDB API integration

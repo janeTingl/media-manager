@@ -1,0 +1,79 @@
+{
+  "title": "Media Manager 說明",
+  "version": "1.0",
+  "locale": "zh-TW",
+  "topics": [
+    {
+      "id": "welcome",
+      "title": "歡迎",
+      "file": "welcome.html",
+      "keywords": ["介紹", "概覽", "入門"]
+    },
+    {
+      "id": "quick-start",
+      "title": "快速上手指南",
+      "file": "quick-start.html",
+      "keywords": ["快速", "教學", "第一步"]
+    },
+    {
+      "id": "library-setup",
+      "title": "媒體庫設定",
+      "file": "library-setup.html",
+      "keywords": ["媒體庫", "設定", "資料夾"]
+    },
+    {
+      "id": "providers",
+      "title": "中繼資料提供者",
+      "file": "providers.html",
+      "keywords": ["提供者", "TMDB", "TVDB", "API"]
+    },
+    {
+      "id": "scanning",
+      "title": "掃描媒體",
+      "file": "scanning.html",
+      "keywords": ["掃描", "比對", "匯入"]
+    },
+    {
+      "id": "metadata-editing",
+      "title": "編輯中繼資料",
+      "file": "metadata-editing.html",
+      "keywords": ["中繼資料", "編輯", "詳細資訊"]
+    },
+    {
+      "id": "batch-operations",
+      "title": "批次作業",
+      "file": "batch-operations.html",
+      "keywords": ["批次", "作業", "多選"]
+    },
+    {
+      "id": "tags-favorites",
+      "title": "標籤與最愛",
+      "file": "tags-favorites.html",
+      "keywords": ["標籤", "最愛", "整理"]
+    },
+    {
+      "id": "search",
+      "title": "搜尋媒體",
+      "file": "search.html",
+      "keywords": ["搜尋", "篩選", "查找"]
+    },
+    {
+      "id": "import-export",
+      "title": "匯入與匯出",
+      "file": "import-export.html",
+      "keywords": ["匯入", "匯出", "備份"]
+    },
+    {
+      "id": "preferences",
+      "title": "偏好設定",
+      "file": "preferences.html",
+      "keywords": ["偏好", "設定", "選項"]
+    },
+    {
+      "id": "troubleshooting",
+      "title": "疑難排解",
+      "file": "troubleshooting.html",
+      "keywords": ["問題", "說明", "常見"]
+    }
+  ]
+}
