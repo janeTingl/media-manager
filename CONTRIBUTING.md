@@ -1,6 +1,6 @@
-# Contributing to Media Manager
+# Contributing to 影藏·媒体管理器
 
-Thank you for your interest in contributing to Media Manager! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to 影藏·媒体管理器! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -730,4 +730,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to Media Manager! 🎉
+Thank you for contributing to 影藏·媒体管理器! 🎉

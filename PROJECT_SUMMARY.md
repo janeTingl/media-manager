@@ -1,8 +1,8 @@
-# Media Manager - Project Summary
+# 影藏·媒体管理器 - Project Summary
 
 ## Executive Summary
 
-**Media Manager** is a modern, modular PySide6-based desktop application for managing and organizing media libraries. It automates the process of scanning, matching, and organizing video files (movies and TV episodes) with comprehensive metadata, artwork, and subtitle management.
+**影藏·媒体管理器** is a modern, modular PySide6-based desktop application for managing and organizing media libraries. It automates the process of scanning, matching, and organizing video files (movies and TV episodes) with comprehensive metadata, artwork, and subtitle management.
 
 ### Key Statistics
 
@@ -413,7 +413,7 @@ MIT License - See LICENSE file for details
 
 ## Contributors
 
-- Media Manager Team
+- 影藏·媒体管理器团队
 - Community contributors (future)
 
 ## Roadmap
@@ -498,7 +498,7 @@ MIT License - See LICENSE file for details
 
 ## Conclusion
 
-Media Manager v0.1.0 is a feature-complete MVP that demonstrates:
+影藏·媒体管理器 v0.1.0 is a feature-complete MVP that demonstrates:
 
 ✓ Clean, modular architecture
 ✓ Comprehensive documentation

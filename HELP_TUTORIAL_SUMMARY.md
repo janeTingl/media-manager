@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation adds a comprehensive help and onboarding system to Media Manager, fulfilling all requirements from the ticket:
+This implementation adds a comprehensive help and onboarding system to 影藏·媒体管理器, fulfilling all requirements from the ticket:
 
 ✅ **Embedded Help Center** - Searchable documentation with navigation  
 ✅ **Onboarding Wizard** - First-run setup guide  
@@ -75,7 +75,7 @@ docs/
 **index.json structure:**
 ```json
 {
-  "title": "Media Manager Help",
+  "title": "影藏·媒体管理器 Help",
   "version": "1.0",
   "locale": "en",
   "topics": [

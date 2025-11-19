@@ -2,7 +2,7 @@
 
 ## Overview
 
-A comprehensive media analytics dashboard has been successfully implemented for the Media Manager application. The system provides real-time statistics, visualization of top performers, and activity tracking with intelligent caching and reactive updates.
+A comprehensive media analytics dashboard has been successfully implemented for the 影藏·媒体管理器 application. The system provides real-time statistics, visualization of top performers, and activity tracking with intelligent caching and reactive updates.
 
 ## What Was Delivered
 

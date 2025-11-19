@@ -1,7 +1,7 @@
-Media Manager v0.1.0 - Portable Version
+影藏·媒体管理器 v0.1.0 - Portable Version
 ==================================================
 
-This is a portable version of Media Manager. No installation is required.
+This is a portable version of 影藏·媒体管理器. No installation is required.
 
 System Requirements:
 - Windows 7 or higher
@@ -10,7 +10,7 @@ System Requirements:
 - .NET Framework 4.5 or higher (usually pre-installed)
 
 Getting Started:
-1. Double-click media-manager.exe to launch the application
+1. Double-click 影藏·媒体管理器.exe to launch the application
 2. The application will create configuration files in:
    %USERPROFILE%\.media-manager\
 

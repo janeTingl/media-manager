@@ -1,4 +1,4 @@
-# Media Manager
+# 影藏·媒体管理器
 
 A modern PySide6-based media management application built with Python.
 
@@ -132,8 +132,8 @@ pip install media-manager
 
 Download pre-built executables from the [Releases](https://github.com/your-repo/media-manager/releases) page:
 
-- **Windows**: `media-manager.exe` with installer
-- **macOS**: `Media Manager.app` with DMG installer
+- **Windows**: `影藏·媒体管理器.exe` with installer
+- **macOS**: `影藏·媒体管理器.app` with DMG installer
 - **Linux**: AppImage (coming soon)
 
 #### Building from Source
@@ -159,8 +159,8 @@ If you want to build the application yourself:
    ```
 
 3. **Find the built packages:**
-   - Windows: `dist/media-manager.exe`, `package/media-manager-*.zip`
-   - macOS: `dist/Media Manager.app`, `package/*.dmg`
+   - Windows: `dist/影藏·媒体管理器.exe`, `package/media-manager-*.zip`
+   - macOS: `dist/影藏·媒体管理器.app`, `package/*.dmg`
 
 ## Usage
 

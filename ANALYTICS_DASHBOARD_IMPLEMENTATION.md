@@ -94,7 +94,7 @@ Reusable card widget for displaying statistics.
 ## Usage Examples
 
 ### Basic Usage (UI)
-1. Open Media Manager application
+1. Open 影藏·媒体管理器 application
 2. Click the "Dashboard" tab
 3. View summary statistics and top lists
 4. Select a library from the dropdown to filter

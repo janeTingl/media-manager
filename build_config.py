@@ -1,20 +1,18 @@
 """
-Shared build configuration for Media Manager cross-platform builds.
+Shared build configuration for 影藏·媒体管理器 cross-platform builds.
 
 This module provides common functionality and configuration for building
-Media Manager executables on different platforms using PyInstaller.
+影藏·媒体管理器 executables on different platforms using PyInstaller.
 """
 
-import os
-import sys
 import platform
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import List, Optional
 
 # Project configuration
 PROJECT_NAME = "media-manager"
 VERSION = "0.1.0"
-APP_NAME = "Media Manager"
+APP_NAME = "影藏·媒体管理器"
 MAIN_SCRIPT = "src/media_manager/main.py"
 
 # Paths
@@ -27,29 +25,30 @@ PACKAGE_DIR = PROJECT_ROOT / "package"
 
 class BuildConfig:
     """Shared build configuration class."""
-    
+
     def __init__(self, platform_name: Optional[str] = None):
         self.platform_name = platform_name or platform.system().lower()
         self.is_windows = self.platform_name == "windows"
         self.is_macos = self.platform_name == "darwin"
         self.is_linux = self.platform_name == "linux"
-        
+
     def get_executable_name(self) -> str:
         """Get the platform-specific executable name."""
+        base_name = APP_NAME
         if self.is_windows:
-            return f"{PROJECT_NAME}.exe"
-        return PROJECT_NAME
-    
+            return f"{base_name}.exe"
+        return base_name
+
     def get_pyinstaller_args(self) -> List[str]:
         """Get platform-specific PyInstaller arguments."""
         args = [
             "--clean",
             "--noconfirm",
-            "--name", PROJECT_NAME,
+            "--name", APP_NAME,
             "--onefile",
             "--windowed" if not self.is_windows else "",  # Console on Windows for debugging
         ]
-        
+
         # Add platform-specific arguments
         if self.is_macos:
             args.extend([
@@ -61,7 +60,7 @@ class BuildConfig:
                 "--icon", "icon.ico" if Path("icon.ico").exists() else "",
                 "--add-data", "src/media_manager;media_manager",  # Include source
                 "--hidden-import", "PySide6.QtCore",
-                "--hidden-import", "PySide6.QtWidgets", 
+                "--hidden-import", "PySide6.QtWidgets",
                 "--hidden-import", "PySide6.QtGui",
                 "--hidden-import", "sqlmodel",
                 "--hidden-import", "sqlalchemy",
@@ -76,19 +75,19 @@ class BuildConfig:
                 "--hidden-import", "PySide6.QtMultimedia",
                 "--hidden-import", "PySide6.QtMultimediaWidgets",
             ])
-        
+
         # Filter out empty strings
         return [arg for arg in args if arg]
-    
+
     def get_data_files(self) -> List[tuple]:
         """Get data files to include in the build."""
         data_files = []
-        
+
         # Include translation files if they exist
         translations_dir = SRC_DIR / "media_manager" / "translations"
         if translations_dir.exists():
             data_files.append((str(translations_dir), "media_manager/translations"))
-        
+
         # Include any resource files
         resources_dir = PROJECT_ROOT / "resources"
         if resources_dir.exists():
@@ -96,16 +95,16 @@ class BuildConfig:
                 if resource_file.is_file():
                     rel_path = resource_file.relative_to(resources_dir)
                     data_files.append((str(resource_file), f"resources/{rel_path.parent}"))
-        
+
         return data_files
-    
+
     def get_excludes(self) -> List[str]:
         """Get modules to exclude from the build."""
         excludes = [
             # Development and testing modules
             "pytest",
             "black",
-            "ruff", 
+            "ruff",
             "mypy",
             "setuptools",
             "pip",
@@ -126,11 +125,11 @@ class BuildConfig:
             "PySide6.QtXmlPatterns",
         ]
         return excludes
-    
+
     def get_spec_file_content(self) -> str:
         """Generate PyInstaller spec file content."""
         executable_name = self.get_executable_name()
-        
+
         # Basic analysis configuration
         analysis_config = f"""# -*- mode: python ; coding: utf-8 -*-
 
@@ -150,7 +149,7 @@ a = Analysis(
     datas={self.get_data_files()},
     hiddenimports=[
         "PySide6.QtCore",
-        "PySide6.QtWidgets", 
+        "PySide6.QtWidgets",
         "PySide6.QtGui",
         "sqlmodel",
         "sqlalchemy",
@@ -170,10 +169,10 @@ a = Analysis(
     noarchive=False,
 )
 """
-        
+
         # Platform-specific configurations
         if self.is_windows:
-            analysis_config += f"""
+            analysis_config += """
 # Windows-specific configuration
 a.datas += Tree(str(SRC_DIR / "media_manager"), prefix="media_manager", excludes=["__pycache__"])
 
@@ -183,7 +182,7 @@ qt_plugins_path = Path(PySide6.__file__).parent / "Qt" / "plugins"
 if qt_plugins_path.exists():
     a.datas += Tree(str(qt_plugins_path), prefix="qt6/plugins", excludes=["__pycache__"])
 """
-        
+
         # PYZ and EXE/APP configuration
         spec_content = analysis_config + f"""
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
@@ -207,7 +206,7 @@ exe = EXE(
     entitlements_file=None,
 )
 """
-        
+
         # macOS app bundle configuration
         if self.is_macos:
             spec_content += f"""
@@ -227,9 +226,9 @@ app = BUNDLE(
     }}
 )
 """
-        
+
         return spec_content
-    
+
     def _get_exe_options(self) -> str:
         """Get platform-specific EXE options."""
         if self.is_windows:
@@ -254,26 +253,26 @@ app = BUNDLE(
     a.datas,
     [],
 """
-    
+
     def create_spec_file(self) -> Path:
         """Create the PyInstaller spec file."""
         spec_file = PROJECT_ROOT / f"{PROJECT_NAME}.spec"
-        
+
         with open(spec_file, "w", encoding="utf-8") as f:
             f.write(self.get_spec_file_content())
-        
+
         return spec_file
-    
+
     def validate_environment(self) -> bool:
         """Validate that the build environment is properly set up."""
         print(f"Validating {self.platform_name} build environment...")
-        
+
         # Check if main script exists
         main_script = SRC_DIR / "media_manager" / "main.py"
         if not main_script.exists():
             print(f"ERROR: Main script not found at {main_script}")
             return False
-        
+
         # Check if PyInstaller is available
         try:
             import PyInstaller
@@ -281,7 +280,7 @@ app = BUNDLE(
         except ImportError:
             print("ERROR: PyInstaller not installed. Install with: pip install pyinstaller")
             return False
-        
+
         # Check platform-specific requirements
         if self.is_macos:
             # Check for code signing tools (optional)
@@ -290,7 +289,7 @@ app = BUNDLE(
                 print("Code signing tools available")
             except (subprocess.CalledProcessError, FileNotFoundError):
                 print("WARNING: Code signing tools not found. App will be unsigned.")
-        
+
         print("Environment validation passed")
         return True
 
@@ -303,19 +302,19 @@ def get_build_config(platform_name: Optional[str] = None) -> BuildConfig:
 def run_command(cmd: List[str], cwd: Optional[Path] = None, check: bool = True) -> "subprocess.CompletedProcess":
     """Run a command and return the result."""
     import subprocess
-    
+
     print(f"Running: {' '.join(cmd)}")
     if cwd:
         print(f"Working directory: {cwd}")
-    
+
     result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
-    
+
     if result.stdout:
         print(f"STDOUT:\n{result.stdout}")
     if result.stderr:
         print(f"STDERR:\n{result.stderr}")
-    
+
     if check and result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, cmd)
-    
+
     return result

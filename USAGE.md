@@ -1,4 +1,4 @@
-# Media Manager - User Guide
+# 影藏·媒体管理器 - User Guide
 
 ## Table of Contents
 
@@ -446,7 +446,7 @@ MEDIA_MANAGER_CONFIG=/custom/path/settings.json media-manager
 
 ### Python API Usage
 
-For developers integrating Media Manager:
+For developers integrating 影藏·媒体管理器:
 
 ```python
 from media_manager.scanner import Scanner, ScanConfig

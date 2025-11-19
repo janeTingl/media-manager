@@ -1,1 +1,1 @@
-"""Performance testing package for Media Manager."""
+"""Performance testing package for 影藏·媒体管理器."""

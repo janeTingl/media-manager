@@ -1,7 +1,7 @@
 # Tags, Favorites, and Collections Implementation
 
 ## Overview
-This document describes the implementation of media categorization features including tags, favorites, and user-defined collections (Watchlist, Kids, etc.) for the Media Manager application.
+This document describes the implementation of media categorization features including tags, favorites, and user-defined collections (Watchlist, Kids, etc.) for the 影藏·媒体管理器 application.
 
 ## Database Schema
 

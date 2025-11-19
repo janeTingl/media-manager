@@ -59,19 +59,19 @@ Once built on Windows, these files will be generated:
 
 ### Core Executable
 ```
-dist/media-manager.exe (80-120 MB)
+dist/影藏·媒体管理器.exe (80-120 MB)
 ```
 
 ### Distribution Packages
 ```
 package/
 ├── media-manager-portable-0.1.0/
-│   ├── media-manager.exe
+│   ├── 影藏·媒体管理器.exe
 │   ├── README.txt
 │   └── start.bat
 ├── media-manager-installer-0.1.0/
 │   ├── files/
-│   │   ├── media-manager.exe
+│   │   ├── 影藏·媒体管理器.exe
 │   │   └── README.txt
 │   ├── install.bat
 │   └── uninstall.bat
@@ -108,27 +108,27 @@ python create_windows_release.py
 # Quick build (no packaging)
 pip install pyinstaller
 pyinstaller --clean --noconfirm --onefile --windowed media-manager.spec
-# Output: dist/media-manager.exe
+# Output: dist/影藏·媒体管理器.exe
 ```
 
 ## 📋 GitHub Release Preparation
 
 ### Files to Upload
-1. **media-manager.exe** - Main executable
+1. **影藏·媒体管理器.exe** - Main executable
 2. **media-manager-portable-0.1.0.zip** - Portable package
 3. **media-manager-installer-0.1.0.zip** - Installer package
 4. **RELEASE_INFO.txt** - File hashes and information
 
 ### Release Notes Template
 ```markdown
-## Media Manager v0.1.0
+## 影藏·媒体管理器 v0.1.0
 
 ### 🚀 Installation
 
 **Portable (No installation required):**
 1. Download `media-manager-portable-0.1.0.zip`
 2. Extract to any folder
-3. Run `media-manager.exe`
+3. Run `影藏·媒体管理器.exe`
 
 **Installer (System integration):**
 1. Download `media-manager-installer-0.1.0.zip`
@@ -142,7 +142,7 @@ pyinstaller --clean --noconfirm --onefile --windowed media-manager.spec
 
 ### ✅ Verification
 ```
-certutil -hashfile media-manager.exe SHA256
+certutil -hashfile 影藏·媒体管理器.exe SHA256
 certutil -hashfile media-manager-portable-0.1.0.zip SHA256
 certutil -hashfile media-manager-installer-0.1.0.zip SHA256
 ```

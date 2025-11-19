@@ -13,12 +13,11 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QTabWidget,
     QToolBar,
-    QToolButton,
-    QTreeWidget,
     QVBoxLayout,
     QWidget,
 )
 
+from . import APP_DISPLAY_NAME, __version__
 from .batch_operations_dialog import BatchOperationsDialog
 from .dashboard_widget import DashboardWidget
 from .detail_panel import DetailPanel
@@ -56,7 +55,7 @@ class MainWindow(QMainWindow):
         self._current_library = None
         self._library_repository = LibraryRepository()
 
-        self.setWindowTitle("Media Manager")
+        self.setWindowTitle(APP_DISPLAY_NAME)
         self.setMinimumSize(1200, 800)
 
         # Initialize components
@@ -69,7 +68,7 @@ class MainWindow(QMainWindow):
 
         # Load saved geometry if available
         self._load_window_state()
-        
+
         # Restore last active library
         self._restore_last_active_library()
 
@@ -85,16 +84,16 @@ class MainWindow(QMainWindow):
 
         # Create library view model
         self.library_view_model = LibraryViewModel(self)
-        
+
         # Create new media views
         self.media_grid_view = MediaGridView(self)
         self.media_table_view = MediaTableView(self)
         self.detail_panel = DetailPanel(self)
-        
+
         # Set up the view model with the views
         self.media_grid_view.set_model(self.library_view_model)
         self.media_table_view.set_model(self.library_view_model)
-        
+
         # Create UI widgets
         self.scan_queue_widget = ScanQueueWidget(self)
         self.match_resolution_widget = MatchResolutionWidget(self)
@@ -145,51 +144,51 @@ class MainWindow(QMainWindow):
         """Create the center content area with tabs."""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        
+
         # Create toolbar for view switching
         toolbar = QToolBar()
         toolbar.setMovable(False)
-        
+
         # View mode buttons
         self.grid_action = QAction("Grid View", self)
         self.grid_action.setCheckable(True)
         self.grid_action.setChecked(True)
         self.grid_action.triggered.connect(lambda: self._switch_view("grid"))
         toolbar.addAction(self.grid_action)
-        
+
         self.table_action = QAction("Table View", self)
         self.table_action.setCheckable(True)
         self.table_action.triggered.connect(lambda: self._switch_view("table"))
         toolbar.addAction(self.table_action)
-        
+
         toolbar.addSeparator()
-        
+
         # Thumbnail size controls
         toolbar.addWidget(QLabel("Thumbnail Size:"))
         for size in ["small", "medium", "large", "extra_large"]:
             action = QAction(size.capitalize(), self)
             action.triggered.connect(lambda checked, s=size: self.media_grid_view.set_thumbnail_size(s))
             toolbar.addAction(action)
-        
+
         toolbar.addSeparator()
-        
+
         # Filter controls
         self.filter_all_action = QAction("All", self)
         self.filter_all_action.setCheckable(True)
         self.filter_all_action.setChecked(True)
         self.filter_all_action.triggered.connect(lambda: self._set_media_filter("all"))
         toolbar.addAction(self.filter_all_action)
-        
+
         self.filter_movies_action = QAction("Movies", self)
         self.filter_movies_action.setCheckable(True)
         self.filter_movies_action.triggered.connect(lambda: self._set_media_filter("movie"))
         toolbar.addAction(self.filter_movies_action)
-        
+
         self.filter_tv_action = QAction("TV Shows", self)
         self.filter_tv_action.setCheckable(True)
         self.filter_tv_action.triggered.connect(lambda: self._set_media_filter("tv"))
         toolbar.addAction(self.filter_tv_action)
-        
+
         layout.addWidget(toolbar)
 
         # Tab widget for different views
@@ -198,22 +197,22 @@ class MainWindow(QMainWindow):
         # Library tab with media views
         library_widget = QWidget()
         library_layout = QVBoxLayout(library_widget)
-        
+
         # Create stacked widget for view switching
         from PySide6.QtWidgets import QStackedWidget
         self.view_stack = QStackedWidget()
         self.view_stack.addWidget(self.media_grid_view)
         self.view_stack.addWidget(self.media_table_view)
         library_layout.addWidget(self.view_stack)
-        
+
         self.tab_widget.addTab(library_widget, "Library")
-        
+
         # Add dashboard tab
         self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
-        
+
         # Add search tab
         self.tab_widget.addTab(self.search_tab_widget, "Search")
-        
+
         # Add other tabs (keeping existing structure)
         self.tab_widget.addTab(QListWidget(), "Recent")
         self.tab_widget.addTab(QListWidget(), "Favorites")
@@ -222,7 +221,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self._create_matching_tab(), "Matching")
 
         layout.addWidget(self.tab_widget)
-        
+
         return widget
 
     def _create_matching_tab(self) -> QWidget:
@@ -242,10 +241,10 @@ class MainWindow(QMainWindow):
         """Create the right properties/info pane."""
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        
+
         # Add the new detail panel
         layout.addWidget(self.detail_panel)
-        
+
         # Add metadata editor widget (keep existing functionality)
         layout.addWidget(self.metadata_editor_widget)
 
@@ -256,23 +255,23 @@ class MainWindow(QMainWindow):
         # Library view model signals
         self.library_view_model.data_loaded.connect(self._on_data_loaded)
         self.library_view_model.error_occurred.connect(self.update_status)
-        
+
         # Media grid view signals
         self.media_grid_view.item_selected.connect(self._on_item_selected)
         self.media_grid_view.item_activated.connect(self._on_item_activated)
         self.media_grid_view.context_menu_requested.connect(self._on_context_menu_requested)
-        
+
         # Media table view signals
         self.media_table_view.item_selected.connect(self._on_item_selected)
         self.media_table_view.item_activated.connect(self._on_item_activated)
         self.media_table_view.context_menu_requested.connect(self._on_context_menu_requested)
         self.media_table_view.selection_changed.connect(self._on_selection_changed)
-        
+
         # Detail panel signals
         self.detail_panel.edit_requested.connect(self._on_edit_requested)
         self.detail_panel.play_requested.connect(self._on_play_requested)
         self.detail_panel.poster_download_requested.connect(self._on_poster_download_requested)
-        
+
         # Scan queue signals
         self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
         self.scan_queue_widget.start_matching.connect(self._on_start_matching)
@@ -291,11 +290,11 @@ class MainWindow(QMainWindow):
         # Metadata editor signals
         self.metadata_editor_widget.match_updated.connect(self.match_manager.update_match)
         self.metadata_editor_widget.validation_error.connect(self.update_status)
-        
+
         # Search tab signals
         self.search_tab_widget.item_selected.connect(self._on_item_selected)
         self.search_tab_widget.item_activated.connect(self._on_item_activated)
-        
+
         # Dashboard signals
         self.match_manager.matches_updated.connect(self.dashboard_widget.on_data_mutation)
         self.library_view_model.data_loaded.connect(self.dashboard_widget.on_data_mutation)
@@ -482,8 +481,8 @@ class MainWindow(QMainWindow):
 
         QMessageBox.about(
             self,
-            "About Media Manager",
-            "Media Manager v0.1.0\n\n"
+            f"About {APP_DISPLAY_NAME}",
+            f"{APP_DISPLAY_NAME} v{__version__}\n\n"
             "A PySide6-based media management application.\n\n"
             "Built with Python and PySide6.\n"
             "Author: janeT",
@@ -510,7 +509,7 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event: Any) -> None:
         """Handle key press events for context-sensitive help."""
         from PySide6.QtCore import Qt
-        
+
         if event.key() == Qt.Key.Key_F1:
             # Context-sensitive help
             self._open_context_help()
@@ -522,17 +521,17 @@ class MainWindow(QMainWindow):
         """Open help center with context-appropriate topic."""
         # Determine current context and show relevant help
         current_tab_index = self.tab_widget.currentIndex()
-        
+
         topic_map = {
             0: "library-setup",      # Library tab
-            1: "search",              # Search tab  
+            1: "search",              # Search tab
             2: "dashboard",           # Dashboard tab (fallback to welcome)
             3: "metadata-editing",    # Metadata editor tab
             4: "scanning",            # Matching/scan queue tab
         }
-        
+
         topic = topic_map.get(current_tab_index, "welcome")
-        
+
         dialog = HelpCenterDialog(self, initial_topic=topic)
         dialog.exec()
 
@@ -559,7 +558,7 @@ class MainWindow(QMainWindow):
         self.filter_all_action.setChecked(media_type == "all")
         self.filter_movies_action.setChecked(media_type == "movie")
         self.filter_tv_action.setChecked(media_type == "tv")
-        
+
         # Apply filter to model
         self.library_view_model.set_media_type_filter(media_type)
 
@@ -571,7 +570,7 @@ class MainWindow(QMainWindow):
     def _on_item_selected(self, item) -> None:
         """Handle item selection in any view."""
         self.detail_panel.set_media_item(item)
-        
+
         # Synchronize selection between views
         self._synchronize_selection(item)
 
@@ -609,9 +608,7 @@ class MainWindow(QMainWindow):
 
             # Quick tags submenu
             tags_menu = menu.addMenu("Quick Tags")
-            from .persistence.models import Tag, Favorite
             from .search_service import SearchService
-            from .persistence.repositories import transactional_context
 
             search_service = SearchService()
             available_tags = search_service.get_available_tags()
@@ -710,11 +707,11 @@ class MainWindow(QMainWindow):
         """Synchronize selection between grid and table views."""
         if not item:
             return
-        
+
         # Clear selections in both views
         self.media_grid_view.clearSelection()
         self.media_table_view.clearSelection()
-        
+
         # Find and select the item in both views
         # This is a simplified implementation - in practice you'd need to map items to indices
         pass
@@ -747,11 +744,11 @@ class MainWindow(QMainWindow):
     def _on_library_selected(self, library, media_type_filter: str) -> None:
         """Handle library selection from tree widget."""
         self._current_library = library
-        
+
         # Save the last active library
         self._settings.set_last_active_library_id(library.id)
         self._settings.save_settings()
-        
+
         # Update the view model to filter by library and media type
         if media_type_filter == "all":
             self.library_view_model.set_library_filter(library.id)
@@ -764,10 +761,10 @@ class MainWindow(QMainWindow):
             # Selected a specific media type under the library
             self.library_view_model.set_library_filter(library.id)
             self.library_view_model.set_media_type_filter(media_type_filter)
-        
+
         # Update scan queue widget with the current library
         self.scan_queue_widget.set_target_library(library.id)
-        
+
         # Update status
         media_type_text = media_type_filter.title() if media_type_filter != "all" else "All"
         self.update_status(f"Viewing {library.name} - {media_type_text}")
@@ -788,23 +785,23 @@ class MainWindow(QMainWindow):
     def _on_library_updated(self, library) -> None:
         """Handle library updated event."""
         self.library_tree_widget.load_libraries()
-        
+
         # Reload data if this is the current library
         if self._current_library and self._current_library.id == library.id:
             self._current_library = library
             self.library_view_model.load_data()
-        
+
         self.update_status(f"Library '{library.name}' updated")
 
     def _on_library_deleted(self, library_id: int) -> None:
         """Handle library deleted event."""
         self.library_tree_widget.load_libraries()
-        
+
         # Clear view if the deleted library was active
         if self._current_library and self._current_library.id == library_id:
             self._current_library = None
             self.library_view_model.clear_filters()
-        
+
         self.update_status("Library deleted")
 
     def _restore_last_active_library(self) -> None:
@@ -815,7 +812,7 @@ class MainWindow(QMainWindow):
             if library and library.is_active:
                 self.library_tree_widget.select_library(library_id)
                 return
-        
+
         # If no saved library or it's invalid, select the first active library
         libraries = self._library_repository.get_active()
         if libraries:
@@ -831,20 +828,20 @@ class MainWindow(QMainWindow):
     def _toggle_tag_on_item(self, item, tag) -> None:
         """Toggle a tag on a media item."""
         from .persistence.repositories import transactional_context
-        
+
         try:
             with transactional_context() as uow:
-                from .persistence.models import Tag, MediaItem
+                from .persistence.models import MediaItem
                 repo = uow.get_repository(MediaItem)
                 current_item = repo.read(item.id)
-                
+
                 if tag in current_item.tags:
                     current_item.tags.remove(tag)
                     self.update_status(f"Removed tag '{tag.name}' from {item.title}")
                 else:
                     current_item.tags.append(tag)
                     self.update_status(f"Added tag '{tag.name}' to {item.title}")
-                
+
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:
@@ -854,31 +851,32 @@ class MainWindow(QMainWindow):
     def _create_new_tag_for_item(self, item) -> None:
         """Create a new tag and add it to the item."""
         from PySide6.QtWidgets import QInputDialog
+
         from .persistence.models import Tag
         from .persistence.repositories import transactional_context
-        
+
         tag_name, ok = QInputDialog.getText(
             self, "New Tag", "Enter tag name:"
         )
-        
+
         if ok and tag_name.strip():
             try:
                 with transactional_context() as uow:
                     tag_repo = uow.get_repository(Tag)
                     from .persistence.models import MediaItem
                     media_repo = uow.get_repository(MediaItem)
-                    
+
                     existing = tag_repo.filter_by(name=tag_name.strip())
                     if existing:
                         tag = existing[0]
                     else:
                         tag = Tag(name=tag_name.strip())
                         tag_repo.create(tag)
-                    
+
                     current_item = media_repo.read(item.id)
                     if tag not in current_item.tags:
                         current_item.tags.append(tag)
-                    
+
                     uow.commit()
                     self.update_status(f"Created and added tag '{tag.name}' to {item.title}")
                     self.library_view_model.refresh()
@@ -890,15 +888,15 @@ class MainWindow(QMainWindow):
         """Toggle favorite status for a media item."""
         from .persistence.models import Favorite, MediaItem
         from .persistence.repositories import transactional_context
-        
+
         try:
             with transactional_context() as uow:
                 media_repo = uow.get_repository(MediaItem)
                 favorite_repo = uow.get_repository(Favorite)
-                
+
                 current_item = media_repo.read(item.id)
                 existing_favorite = favorite_repo.filter_by(media_item_id=item.id)
-                
+
                 if existing_favorite:
                     favorite_repo.delete(existing_favorite[0].id)
                     self.update_status(f"Removed {item.title} from favorites")
@@ -906,7 +904,7 @@ class MainWindow(QMainWindow):
                     favorite = Favorite(media_item_id=item.id)
                     favorite_repo.create(favorite)
                     self.update_status(f"Added {item.title} to favorites")
-                
+
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:

@@ -1,8 +1,8 @@
-# Media Manager Windows Executable - Build Package Summary
+# 影藏·媒体管理器 Windows Executable - Build Package Summary
 
 ## 📦 Deliverables Overview
 
-This build package provides everything needed to create a Windows executable (.exe) for the Media Manager application using PyInstaller.
+This build package provides everything needed to create a Windows executable (.exe) for the 影藏·媒体管理器 application using PyInstaller.
 
 ## 🎯 Package Contents
 
@@ -75,14 +75,14 @@ pyinstaller media-manager.spec
 ### Generated Files
 ```
 package/
-├── media-manager.exe                    # Main executable (80-120MB)
+├── 影藏·媒体管理器.exe                    # Main executable (80-120MB)
 ├── media-manager-portable-0.1.0/        # Portable package
-│   ├── media-manager.exe
+│   ├── 影藏·媒体管理器.exe
 │   ├── README.txt
 │   └── start.bat
 ├── media-manager-installer-0.1.0/       # Installer package
 │   ├── files/
-│   │   └── media-manager.exe
+│   │   └── 影藏·媒体管理器.exe
 │   ├── install.bat
 │   └── uninstall.bat
 ├── media-manager-portable-0.1.0.zip     # Portable archive
@@ -215,7 +215,7 @@ The `verify_build.py` script checks:
 
 When the build process completes successfully:
 
-1. ✅ **Executable Created**: `dist/media-manager.exe`
+1. ✅ **Executable Created**: `dist/影藏·媒体管理器.exe`
 2. ✅ **Portable Package**: `package/media-manager-portable-0.1.0/`
 3. ✅ **Installer Package**: `package/media-manager-installer-0.1.0/`
 4. ✅ **ZIP Archives**: Both packages compressed
@@ -247,7 +247,7 @@ When the build process completes successfully:
 
 ## 🎯 Summary
 
-This build package provides a complete, production-ready solution for creating Windows executables for the Media Manager application. With multiple build options, comprehensive documentation, and thorough verification, it enables reliable distribution of the application to Windows users.
+This build package provides a complete, production-ready solution for creating Windows executables for the 影藏·媒体管理器 application. With multiple build options, comprehensive documentation, and thorough verification, it enables reliable distribution of the application to Windows users.
 
 The build system is designed to be:
 - **Reliable**: Thoroughly tested configuration

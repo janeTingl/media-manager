@@ -1,8 +1,8 @@
-# Media Manager - Architecture Guide
+# 影藏·媒体管理器 - Architecture Guide
 
 ## Overview
 
-The Media Manager is a modular, event-driven application built with PySide6 (Qt6) for managing media libraries. This document describes the overall architecture, design patterns, and component interactions.
+The 影藏·媒体管理器 is a modular, event-driven application built with PySide6 (Qt6) for managing media libraries. This document describes the overall architecture, design patterns, and component interactions.
 
 ## Table of Contents
 

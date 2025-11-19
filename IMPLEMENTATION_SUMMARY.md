@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the implementation of true multi-library management for the Media Manager application.
+This document summarizes the implementation of true multi-library management for the 影藏·媒体管理器 application.
 
 ## Files Created
 

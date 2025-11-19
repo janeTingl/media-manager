@@ -1,4 +1,4 @@
-# Media Manager Windows Build Script (PowerShell)
+# 影藏·媒体管理器 Windows Build Script (PowerShell)
 # This script provides a PowerShell interface for building the Windows executable
 
 param(
@@ -43,7 +43,7 @@ function Test-Python {
 # Function to show menu
 function Show-Menu {
     Clear-Host
-    Write-ColorOutput "Media Manager Windows Build Script (PowerShell)" "Cyan"
+    Write-ColorOutput "影藏·媒体管理器 Windows Build Script (PowerShell)" "Cyan"
     Write-ColorOutput "================================================" "Cyan"
     Write-Host ""
     
@@ -119,7 +119,7 @@ function Invoke-QuickBuild {
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""
             Write-ColorOutput "Quick build completed!" "Green"
-            Write-ColorOutput "Executable: dist\media-manager.exe" "Cyan"
+            Write-ColorOutput "Executable: dist\影藏·媒体管理器.exe" "Cyan"
         } else {
             Write-Host ""
             Write-ColorOutput "Build failed! Check the error messages above." "Red"
@@ -214,7 +214,7 @@ function Invoke-Test {
     Write-ColorOutput "Testing executable..." "Yellow"
     Write-Host ""
     
-    $exePath = "dist\media-manager.exe"
+    $exePath = "dist\影藏·媒体管理器.exe"
     
     if (Test-Path $exePath) {
         Write-ColorOutput "Running basic test..." "Cyan"
@@ -250,11 +250,11 @@ function Invoke-Test {
 # Function to show build information
 function Show-Info {
     Write-Host ""
-    Write-ColorOutput "Media Manager Build Information" "Cyan"
+    Write-ColorOutput "影藏·媒体管理器 Build Information" "Cyan"
     Write-ColorOutput "===============================" "Cyan"
     Write-Host ""
     
-    Write-Host "Project: Media Manager"
+    Write-Host "Project: 影藏·媒体管理器"
     Write-Host "Version: 0.1.0"
     Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
     Write-Host ""
@@ -280,7 +280,7 @@ function Show-Info {
     Write-Host ""
     
     Write-Host "Output Files:"
-    $exePath = "dist\media-manager.exe"
+    $exePath = "dist\影藏·媒体管理器.exe"
     if (Test-Path $exePath) {
         $fileInfo = Get-Item $exePath
         Write-Host "  Executable: $exePath"
@@ -304,10 +304,10 @@ function Show-Info {
 # Function to show help
 function Show-Help {
     Write-Host ""
-    Write-ColorOutput "Media Manager Build Script Help (PowerShell)" "Cyan"
+    Write-ColorOutput "影藏·媒体管理器 Build Script Help (PowerShell)" "Cyan"
     Write-ColorOutput "=============================================" "Cyan"
     Write-Host ""
-    Write-Host "This script helps you build the Media Manager Windows executable."
+    Write-Host "This script helps you build the 影藏·媒体管理器 Windows executable."
     Write-Host ""
     Write-Host "Usage:"
     Write-Host "  .\build.ps1                    # Show interactive menu"
@@ -333,7 +333,7 @@ function Show-Help {
     Write-Host ""
     Write-Host "Output Files:"
     Write-Host "-------------"
-    Write-Host "- Executable: dist\media-manager.exe"
+    Write-Host "- Executable: dist\影藏·媒体管理器.exe"
     Write-Host "- Portable package: package\media-manager-portable-0.1.0\"
     Write-Host "- Installer package: package\media-manager-installer-0.1.0\"
     Write-Host "- ZIP files: package\*.zip"

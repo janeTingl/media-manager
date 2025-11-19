@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 
 from PySide6.QtCore import QObject, Signal
 
+from . import APP_USER_AGENT
 from .logging import get_logger
 from .models import DownloadStatus, PosterInfo, PosterSize, PosterType
 
@@ -131,7 +132,7 @@ class PosterDownloader(QObject):
 
             try:
                 # Create request with user agent
-                req = Request(url, headers={"User-Agent": "MediaManager/1.0"})
+                req = Request(url, headers={"User-Agent": APP_USER_AGENT})
 
                 with urlopen(req, timeout=self._timeout) as response:
                     content_type = response.headers.get("content-type", "")

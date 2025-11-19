@@ -1,6 +1,6 @@
 # Multi-Library Management Guide
 
-This guide explains how to use the multi-library management feature in Media Manager.
+This guide explains how to use the multi-library management feature in 影藏·媒体管理器.
 
 ## Overview
 
@@ -26,7 +26,7 @@ This will add the new multi-library fields to your database.
 
 ### 2. Creating Your First Library
 
-1. Launch Media Manager
+1. Launch 影藏·媒体管理器
 2. Go to **File > Manage Libraries** (or press `Ctrl+L`)
 3. Click **New** in the Library Manager dialog
 4. Fill in the library details:
@@ -155,7 +155,7 @@ The scan queue automatically selects the currently active library.
 
 ## Settings Persistence
 
-Media Manager remembers:
+影藏·媒体管理器 remembers:
 
 - **Last active library**: Automatically selected when you restart the app
 - **Default library**: Used for new scan operations

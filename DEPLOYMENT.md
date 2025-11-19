@@ -1,6 +1,6 @@
-# Media Manager v0.1.0 Deployment Guide
+# 影藏·媒体管理器 v0.1.0 Deployment Guide
 
-This guide covers various deployment options for Media Manager v0.1.0.
+This guide covers various deployment options for 影藏·媒体管理器 v0.1.0.
 
 ## Table of Contents
 
@@ -148,7 +148,7 @@ cat > ~/.local/share/applications/media-manager.desktop << 'EOF'
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Media Manager
+Name=影藏·媒体管理器
 Comment=A modern media management application
 Exec=media-manager-demo
 Icon=media-manager
@@ -165,7 +165,7 @@ update-desktop-database ~/.local/share/applications/
 ```ini
 # /etc/systemd/system/media-manager.service
 [Unit]
-Description=Media Manager
+Description=影藏·媒体管理器
 After=graphical-session.target
 
 [Service]
@@ -192,8 +192,8 @@ sudo systemctl start media-manager
 
 ```bash
 # Create Homebrew formula
-cat > media-manager.rb << 'EOF'
-class MediaManager < Formula
+cat > yingcang-media-manager.rb << 'EOF'
+class YingcangMediaManager < Formula
   desc "A modern media management application"
   homepage "https://github.com/your-org/media-manager"
   url "https://pypi.org/packages/source/m/media-manager/media-manager-0.1.0.tar.gz"
@@ -212,7 +212,7 @@ end
 EOF
 
 # Install
-brew install media-manager.rb
+brew install yingcang-media-manager.rb
 ```
 
 ### Windows
@@ -222,10 +222,10 @@ brew install media-manager.rb
 ```powershell
 # install-media-manager.ps1
 param(
-    [string]$InstallPath = "$env:LOCALAPPDATA\MediaManager"
+    [string]$InstallPath = "$env:LOCALAPPDATA\影藏·媒体管理器"
 )
 
-Write-Host "Installing Media Manager to $InstallPath"
+Write-Host "Installing 影藏·媒体管理器 to $InstallPath"
 
 # Create directory
 New-Item -ItemType Directory -Path $InstallPath -Force
@@ -236,7 +236,7 @@ Invoke-WebRequest -Uri "https://pypi.org/pypi/media-manager/0.1.0/json" -OutFile
 
 # Create shortcut
 $WshShell = New-Object -comObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut("$env:PUBLIC\Desktop\Media Manager.lnk")
+$Shortcut = $WshShell.CreateShortcut("$env:PUBLIC\Desktop\影藏·媒体管理器.lnk")
 $Shortcut.TargetPath = "$InstallPath\Scripts\media-manager-demo.exe"
 $Shortcut.Save()
 
@@ -248,8 +248,8 @@ Write-Host "Installation complete!"
 ### Default Configuration Files
 
 - **Linux**: `~/.config/media-manager/settings.json`
-- **macOS**: `~/Library/Application Support/Media Manager/settings.json`
-- **Windows**: `%APPDATA%\Media Manager\settings.json`
+- **macOS**: `~/Library/Application Support/影藏·媒体管理器/settings.json`
+- **Windows**: `%APPDATA%\影藏·媒体管理器\settings.json`
 
 ### Environment Variables
 
@@ -346,8 +346,8 @@ docker run -it --rm media-manager:0.1.0 /bin/bash
 
 Logs are located at:
 - **Linux**: `~/.local/share/media-manager/logs/`
-- **macOS**: `~/Library/Logs/Media Manager/`
-- **Windows**: `%LOCALAPPDATA%\Media Manager\logs\`
+- **macOS**: `~/Library/Logs/影藏·媒体管理器/`
+- **Windows**: `%LOCALAPPDATA%\影藏·媒体管理器\logs\`
 
 Key log files:
 - `app.log`: Main application log

@@ -1,18 +1,18 @@
-# Media Manager - Windows Executable
+# 影藏·媒体管理器 - Windows Executable
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-Media Manager is a comprehensive media organization tool that helps you scan, organize, and manage your media files with automatic metadata matching, poster downloading, subtitle management, and NFO file generation.
+影藏·媒体管理器 is a comprehensive media organization tool that helps you scan, organize, and manage your media files with automatic metadata matching, poster downloading, subtitle management, and NFO file generation.
 
 ## 🚀 Quick Start
 
 ### Option 1: Portable Version (Recommended)
 
 1. **Download** `media-manager-portable-0.1.0.zip`
-2. **Extract** to any folder (e.g., `C:\MediaManager`)
-3. **Run** `media-manager.exe` or `start.bat`
+2. **Extract** to any folder (e.g., `C:\影藏·媒体管理器`)
+3. **Run** `影藏·媒体管理器.exe` or `start.bat`
 
 No installation required! The application creates all necessary files in your user profile.
 
@@ -124,8 +124,8 @@ No installation required! The application creates all necessary files in your us
 ## ⚙️ Configuration
 
 ### Preferences Location
-- **Portable**: `%APPDATA%\Media Manager\preferences.json`
-- **Installed**: `%APPDATA%\Media Manager\preferences.json`
+- **Portable**: `%APPDATA%\影藏·媒体管理器\preferences.json`
+- **Installed**: `%APPDATA%\影藏·媒体管理器\preferences.json`
 
 ### Key Settings
 
@@ -218,13 +218,13 @@ Application logs are stored in:
 
 ### Application Files
 - **Portable**: Extracted location
-- **Installed**: `C:\Program Files\Media Manager\`
+- **Installed**: `C:\Program Files\影藏·媒体管理器\`
 
 ### User Data
 - **Configuration**: `%USERPROFILE%\.media-manager\`
 - **Cache**: `%USERPROFILE%\.media-manager\cache\`
 - **Logs**: `%USERPROFILE%\.media-manager\logs\`
-- **Settings**: `%APPDATA%\Media Manager\`
+- **Settings**: `%APPDATA%\影藏·媒体管理器\`
 
 ### Temporary Files
 - **Extraction**: `%TEMP%\_MEIxxxxx\` (during runtime)
@@ -235,7 +235,7 @@ Application logs are stored in:
 ### File Integrity
 Verify downloaded files using the SHA-256 hashes provided in `RELEASE_INFO.txt`:
 ```cmd
-certutil -hashfile media-manager.exe SHA256
+certutil -hashfile 影藏·媒体管理器.exe SHA256
 ```
 
 ### Privacy
@@ -280,7 +280,7 @@ If your antivirus flags the application:
 
 ## 📄 License
 
-Media Manager is released under the MIT License. See the LICENSE file for details.
+影藏·媒体管理器 is released under the MIT License. See the LICENSE file for details.
 
 ## 🤝 Contributing
 
@@ -308,6 +308,6 @@ When reporting issues, please include:
 
 ---
 
-**Thank you for using Media Manager!** 
+**Thank you for using 影藏·媒体管理器!** 
 
 We hope this application helps you organize and enjoy your media collection. If you find the software useful, please consider rating it or contributing to the project.

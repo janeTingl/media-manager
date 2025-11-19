@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the implementation of the rich metadata editor widget for the Media Manager application. The metadata editor provides a comprehensive UI for editing media item information with full database persistence, validation, and signal integration.
+This document describes the implementation of the rich metadata editor widget for the 影藏·媒体管理器 application. The metadata editor provides a comprehensive UI for editing media item information with full database persistence, validation, and signal integration.
 
 ## Components
 

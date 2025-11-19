@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Windows Release Creation Script for Media Manager
+Windows Release Creation Script for 影藏·媒体管理器
 
 This script creates the complete release package structure for Windows.
 It should be run on a Windows system with Python and all dependencies installed.
@@ -10,25 +10,25 @@ Usage:
 
 This script will:
 1. Build the Windows executable
-2. Create portable and installer packages  
+2. Create portable and installer packages
 3. Generate checksums and documentation
 4. Prepare files for GitHub Release upload
 """
 
+import hashlib
 import os
-import sys
 import shutil
 import subprocess
-import hashlib
+import sys
 import zipfile
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Configuration
 PROJECT_NAME = "media-manager"
 VERSION = "0.1.0"
-APP_NAME = "Media Manager"
-EXECUTABLE_NAME = "media-manager.exe"
+APP_NAME = "影藏·媒体管理器"
+EXECUTABLE_NAME = "影藏·媒体管理器.exe"
 
 # Paths
 PROJECT_ROOT = Path(__file__).parent.absolute()
@@ -40,17 +40,17 @@ def run_command(cmd, cwd=None, check=True):
     print(f"Running: {' '.join(cmd)}")
     if cwd:
         print(f"Working directory: {cwd}")
-    
+
     result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
-    
+
     if result.stdout:
         print(f"STDOUT:\n{result.stdout}")
     if result.stderr:
         print(f"STDERR:\n{result.stderr}")
-    
+
     if check and result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, cmd)
-    
+
     return result
 
 def verify_windows_environment():
@@ -62,52 +62,52 @@ def verify_windows_environment():
         print("  - Cross-compilation tools")
         print("  - GitHub Actions with Windows runner")
         return False
-    
+
     # Check Python version
     if sys.version_info < (3, 8):
         print("ERROR: Python 3.8 or higher required")
         return False
-    
+
     # Check if PyInstaller is available
     try:
-        subprocess.run([sys.executable, "-m", "PyInstaller", "--version"], 
+        subprocess.run([sys.executable, "-m", "PyInstaller", "--version"],
                       capture_output=True, check=True)
     except subprocess.CalledProcessError:
         print("ERROR: PyInstaller not found. Install with: pip install pyinstaller")
         return False
-    
+
     print("✅ Windows environment verified")
     return True
 
 def build_executable():
     """Build the Windows executable."""
     print("\n🔨 Building Windows executable...")
-    
+
     # Clean previous builds
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
     if PROJECT_ROOT / "build".exists():
         shutil.rmtree(PROJECT_ROOT / "build")
-    
+
     # Build using PyInstaller with the spec file
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--clean", "--noconfirm",
         str(PROJECT_ROOT / "media-manager.spec")
     ]
-    
+
     try:
         run_command(cmd)
     except subprocess.CalledProcessError as e:
         print(f"❌ Build failed: {e}")
         return None
-    
+
     # Check if executable was created
     exe_path = DIST_DIR / EXECUTABLE_NAME
     if not exe_path.exists():
         print(f"❌ ERROR: Executable not found at {exe_path}")
         return None
-    
+
     print(f"✅ Successfully built: {exe_path}")
     print(f"📊 Size: {exe_path.stat().st_size:,} bytes ({exe_path.stat().st_size / 1024 / 1024:.1f} MB)")
     return exe_path
@@ -123,16 +123,16 @@ def calculate_file_hash(file_path):
 def create_portable_package(exe_path):
     """Create portable package with the executable."""
     print("\n📦 Creating portable package...")
-    
+
     portable_dir = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}"
     if portable_dir.exists():
         shutil.rmtree(portable_dir)
-    
+
     portable_dir.mkdir(parents=True)
-    
+
     # Copy executable
     shutil.copy2(exe_path, portable_dir / EXECUTABLE_NAME)
-    
+
     # Create README
     readme_content = f"""{APP_NAME} v{VERSION} - Portable Version
 {'=' * 50}
@@ -141,7 +141,7 @@ This is a portable version of {APP_NAME}. No installation is required.
 
 System Requirements:
 - Windows 7 or higher
-- 64-bit operating system  
+- 64-bit operating system
 - 500MB free disk space
 - .NET Framework 4.5 or higher (usually pre-installed)
 
@@ -165,10 +165,10 @@ Version: {VERSION}
 Build Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 Build System: {os.name}
 """
-    
+
     with open(portable_dir / "README.txt", "w", encoding="utf-8") as f:
         f.write(readme_content)
-    
+
     # Create batch file for easy launching
     batch_content = f"""@echo off
 title {APP_NAME}
@@ -181,26 +181,26 @@ if errorlevel 1 (
     pause
 )
 """
-    
+
     with open(portable_dir / "start.bat", "w", encoding="utf-8") as f:
         f.write(batch_content)
-    
+
     print(f"✅ Portable package created: {portable_dir}")
     return portable_dir
 
 def create_installer_package(portable_dir):
     """Create installer package structure."""
     print("\n📦 Creating installer package...")
-    
+
     installer_dir = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}"
     if installer_dir.exists():
         shutil.rmtree(installer_dir)
-    
+
     installer_dir.mkdir(parents=True)
-    
+
     # Copy portable contents
     shutil.copytree(portable_dir, installer_dir / "files", dirs_exist_ok=True)
-    
+
     # Create installation script
     install_script = f"""@echo off
 title {APP_NAME} Installer v{VERSION}
@@ -237,10 +237,10 @@ echo - Directly from: %INSTALL_DIR%\\{EXECUTABLE_NAME}
 echo.
 pause
 """
-    
+
     with open(installer_dir / "install.bat", "w", encoding="utf-8") as f:
         f.write(install_script)
-    
+
     # Create uninstaller script
     uninstall_script = f"""@echo off
 title {APP_NAME} Uninstaller
@@ -266,17 +266,17 @@ echo {APP_NAME} has been uninstalled successfully.
 echo.
 pause
 """
-    
+
     with open(installer_dir / "uninstall.bat", "w", encoding="utf-8") as f:
         f.write(uninstall_script)
-    
+
     print(f"✅ Installer package created: {installer_dir}")
     return installer_dir
 
 def create_release_archives(portable_dir, installer_dir):
     """Create ZIP archives for distribution."""
     print("\n🗜️ Creating distribution archives...")
-    
+
     # Create portable ZIP
     portable_zip = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}.zip"
     with zipfile.ZipFile(portable_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -284,7 +284,7 @@ def create_release_archives(portable_dir, installer_dir):
             if file_path.is_file():
                 arcname = file_path.relative_to(portable_dir)
                 zf.write(file_path, arcname)
-    
+
     # Create installer ZIP
     installer_zip = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}.zip"
     with zipfile.ZipFile(installer_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -292,21 +292,21 @@ def create_release_archives(portable_dir, installer_dir):
             if file_path.is_file():
                 arcname = file_path.relative_to(installer_dir)
                 zf.write(file_path, arcname)
-    
-    print(f"✅ Created archives:")
+
+    print("✅ Created archives:")
     print(f"   Portable: {portable_zip.name} ({portable_zip.stat().st_size:,} bytes)")
     print(f"   Installer: {installer_zip.name} ({installer_zip.stat().st_size:,} bytes)")
-    
+
     return portable_zip, installer_zip
 
 def create_release_info(exe_path, portable_zip, installer_zip):
     """Create comprehensive release information."""
     print("\n📋 Creating release information...")
-    
+
     exe_hash = calculate_file_hash(exe_path)
     portable_hash = calculate_file_hash(portable_zip)
     installer_hash = calculate_file_hash(installer_zip)
-    
+
     release_info = f"""{APP_NAME} Release Information v{VERSION}
 {'=' * 60}
 
@@ -377,7 +377,7 @@ Release Notes Template:
 **Option 1: Portable (No installation required)**
 1. Download `{portable_zip.name}`
 2. Extract to any folder
-3. Run `media-manager.exe`
+3. Run `影藏·媒体管理器.exe`
 
 **Option 2: Installer (System integration)**
 1. Download `{installer_zip.name}`
@@ -393,7 +393,7 @@ Release Notes Template:
 Verify file integrity with SHA-256 hashes:
 ```
 certutil -hashfile {EXECUTABLE_NAME} SHA256
-certutil -hashfile {portable_zip.name} SHA256  
+certutil -hashfile {portable_zip.name} SHA256
 certutil -hashfile {installer_zip.name} SHA256
 ```
 
@@ -414,10 +414,10 @@ v{VERSION} - Initial release
 - Windows executable with PyInstaller
 - Portable and installer packages included
 """
-    
+
     with open(PACKAGE_DIR / "RELEASE_INFO.txt", "w", encoding="utf-8") as f:
         f.write(release_info)
-    
+
     print("✅ Release information created")
     return release_info
 
@@ -425,7 +425,7 @@ def main():
     """Main release creation process."""
     print(f"🎯 Creating {APP_NAME} v{VERSION} Windows Release")
     print("=" * 60)
-    
+
     try:
         # Verify environment
         if not verify_windows_environment():
@@ -436,22 +436,22 @@ def main():
             print("3. Run this script on Windows")
             print("4. Upload the generated files to GitHub Release")
             return False
-        
+
         # Build executable
         exe_path = build_executable()
         if not exe_path:
             return False
-        
+
         # Create packages
         portable_dir = create_portable_package(exe_path)
         installer_dir = create_installer_package(portable_dir)
-        
+
         # Create archives
         portable_zip, installer_zip = create_release_archives(portable_dir, installer_dir)
-        
+
         # Create release information
         release_info = create_release_info(exe_path, portable_zip, installer_zip)
-        
+
         print("\n" + "=" * 60)
         print("🎉 WINDOWS RELEASE CREATED SUCCESSFULLY!")
         print("=" * 60)
@@ -461,10 +461,10 @@ def main():
         print(f"  1. {EXECUTABLE_NAME}")
         print(f"  2. {portable_zip.name}")
         print(f"  3. {installer_zip.name}")
-        print(f"  4. RELEASE_INFO.txt")
-        
+        print("  4. RELEASE_INFO.txt")
+
         return True
-        
+
     except Exception as e:
         print(f"\n❌ RELEASE CREATION FAILED: {e}")
         return False

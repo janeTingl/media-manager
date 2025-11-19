@@ -1,8 +1,8 @@
 @echo off
-title Media Manager
-echo Starting Media Manager...
+title 影藏·媒体管理器
+echo Starting 影藏·媒体管理器...
 echo.
-"media-manager.exe"
+"影藏·媒体管理器.exe"
 if errorlevel 1 (
     echo.
     echo Application exited with an error.

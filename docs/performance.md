@@ -1,6 +1,6 @@
 # Performance Testing
 
-This directory contains automated performance benchmarks for the Media Manager application using pytest-benchmark.
+This directory contains automated performance benchmarks for the 影藏·媒体管理器 application using pytest-benchmark.
 
 ## Overview
 

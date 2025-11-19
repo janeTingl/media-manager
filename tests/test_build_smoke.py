@@ -1,20 +1,18 @@
-"""Smoke tests for built Media Manager executables."""
+"""Smoke tests for built 影藏·媒体管理器 executables."""
 
 import os
-import sys
-import subprocess
-import tempfile
-import time
 import platform
+import subprocess
+import sys
+import time
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from build_config import PROJECT_ROOT, DIST_DIR, PACKAGE_DIR, get_build_config
+from build_config import APP_NAME, DIST_DIR, PACKAGE_DIR, get_build_config
 
 
 class TestBuildSmoke:
@@ -27,21 +25,21 @@ class TestBuildSmoke:
             pytest.skip("Windows build test requires Windows environment")
         if request.param == "macos" and platform.system() != "Darwin":
             pytest.skip("macOS build test requires macOS environment")
-        
+
         return get_build_config(request.param)
 
     @pytest.fixture
     def executable_path(self, platform_config):
         """Get path to the built executable."""
         if platform_config.is_windows:
-            exe_name = "media-manager.exe"
+            exe_name = platform_config.get_executable_name()
         else:
-            exe_name = "media-manager"
-        
+            exe_name = APP_NAME
+
         exe_path = DIST_DIR / exe_name
         if not exe_path.exists():
             pytest.skip(f"Executable not found: {exe_path}")
-        
+
         return exe_path
 
     @pytest.fixture
@@ -49,18 +47,18 @@ class TestBuildSmoke:
         """Get path to the macOS app bundle."""
         if not platform_config.is_macos:
             pytest.skip("App bundle test only applies to macOS")
-        
-        app_path = DIST_DIR / "Media Manager.app"
+
+        app_path = DIST_DIR / "影藏·媒体管理器.app"
         if not app_path.exists():
             pytest.skip(f"App bundle not found: {app_path}")
-        
+
         return app_path
 
     def test_executable_exists(self, executable_path):
         """Test that the executable exists and is executable."""
         assert executable_path.exists()
         assert executable_path.is_file()
-        
+
         # Check if it's executable
         if platform.system() != "Windows":
             assert os.access(executable_path, os.X_OK)
@@ -68,10 +66,10 @@ class TestBuildSmoke:
     def test_executable_size(self, executable_path):
         """Test that the executable has reasonable size."""
         size = executable_path.stat().st_size
-        
+
         # Should be at least 10MB (bundled Python + dependencies)
         assert size > 10 * 1024 * 1024, f"Executable too small: {size} bytes"
-        
+
         # Should not be excessively large (more than 200MB might indicate issues)
         assert size < 200 * 1024 * 1024, f"Executable too large: {size} bytes"
 
@@ -94,7 +92,7 @@ class TestBuildSmoke:
         """Test that the executable can launch without GUI."""
         # For GUI applications, we can test basic startup in headless mode
         # using virtual display if available, or by testing help/version flags
-        
+
         try:
             # Try to get version/help
             result = subprocess.run(
@@ -103,17 +101,17 @@ class TestBuildSmoke:
                 text=True,
                 timeout=10
             )
-            
+
             # Some apps don't support --version, that's okay
             if result.returncode == 0:
-                assert "0.1.0" in result.stdout or "Media Manager" in result.stdout
-            
+                assert "0.1.0" in result.stdout or "影藏·媒体管理器" in result.stdout
+
         except (subprocess.TimeoutExpired, FileNotFoundError):
             # Try a different approach - launch briefly and terminate
             try:
                 if platform.system() == "Darwin":
                     # On macOS, we can launch the app bundle
-                    app_bundle = DIST_DIR / "Media Manager.app"
+                    app_bundle = DIST_DIR / "影藏·媒体管理器.app"
                     if app_bundle.exists():
                         proc = subprocess.Popen([
                             "open", str(app_bundle)
@@ -122,13 +120,13 @@ class TestBuildSmoke:
                         proc.terminate()
                         proc.wait(timeout=5)
                         return
-                
+
                 # Fallback: try to launch executable directly
                 proc = subprocess.Popen([str(executable_path)])
                 time.sleep(3)  # Give it time to start
                 proc.terminate()
                 proc.wait(timeout=5)
-                
+
             except Exception as e:
                 pytest.skip(f"Could not test executable launch: {e}")
 
@@ -137,21 +135,21 @@ class TestBuildSmoke:
         """Test macOS app bundle structure."""
         if not app_bundle_path.exists():
             pytest.skip("App bundle not found")
-        
+
         # Check app bundle structure
         contents_dir = app_bundle_path / "Contents"
         assert contents_dir.exists(), "Contents directory missing"
-        
+
         # Check Info.plist
         info_plist = contents_dir / "Info.plist"
         assert info_plist.exists(), "Info.plist missing"
-        
+
         # Check MacOS directory
         macos_dir = contents_dir / "MacOS"
         assert macos_dir.exists(), "MacOS directory missing"
-        
+
         # Check executable
-        executable = macos_dir / "media-manager"
+        executable = macos_dir / APP_NAME
         assert executable.exists(), "Executable missing"
         assert os.access(executable, os.X_OK), "Executable not executable"
 
@@ -160,31 +158,31 @@ class TestBuildSmoke:
         """Test macOS app bundle Info.plist contents."""
         if not app_bundle_path.exists():
             pytest.skip("App bundle not found")
-        
+
         info_plist = app_bundle_path / "Contents" / "Info.plist"
-        
+
         # Try to read the plist
         try:
             import plistlib
             with open(info_plist, "rb") as f:
                 plist_data = plistlib.load(f)
-            
+
             # Check required keys
-            assert plist_data.get("CFBundleName") == "Media Manager"
+            assert plist_data.get("CFBundleName") == "影藏·媒体管理器"
             assert plist_data.get("CFBundleIdentifier") == "com.mediamanager.media-manager"
             assert plist_data.get("CFBundleVersion") == "0.1.0"
-            
+
         except ImportError:
             # Fallback: just check if file contains expected strings
             content = info_plist.read_text()
-            assert "Media Manager" in content
+            assert "影藏·媒体管理器" in content
             assert "com.mediamanager.media-manager" in content
 
     def test_package_files_created(self):
         """Test that package files are created."""
         if not PACKAGE_DIR.exists():
             pytest.skip("Package directory not found")
-        
+
         # Check for release info files
         release_files = list(PACKAGE_DIR.glob("RELEASE_INFO*.txt"))
         assert len(release_files) > 0, "No release info files found"
@@ -193,14 +191,14 @@ class TestBuildSmoke:
         """Test Windows-specific package files."""
         if platform.system() != "Windows":
             pytest.skip("Windows package test only on Windows")
-        
+
         if not PACKAGE_DIR.exists():
             pytest.skip("Package directory not found")
-        
+
         # Look for Windows-specific packages
         portable_zip = list(PACKAGE_DIR.glob("media-manager-portable-*.zip"))
         installer_zip = list(PACKAGE_DIR.glob("media-manager-installer-*.zip"))
-        
+
         # At least one should exist if Windows build was run
         assert len(portable_zip) > 0 or len(installer_zip) > 0, \
             "No Windows package files found"
@@ -209,13 +207,13 @@ class TestBuildSmoke:
         """Test macOS-specific package files."""
         if platform.system() != "Darwin":
             pytest.skip("macOS package test only on macOS")
-        
+
         if not PACKAGE_DIR.exists():
             pytest.skip("Package directory not found")
-        
+
         # Look for DMG files
         dmg_files = list(PACKAGE_DIR.glob("*.dmg"))
-        
+
         if dmg_files:
             # Check DMG file size
             for dmg_file in dmg_files:
@@ -226,7 +224,7 @@ class TestBuildSmoke:
         """Test that executable dependencies are properly bundled."""
         if platform.system() == "Linux":
             pytest.skip("Dependency test not implemented for Linux")
-        
+
         try:
             # Check if executable runs without import errors
             # This is a basic smoke test
@@ -236,12 +234,12 @@ class TestBuildSmoke:
                 text=True,
                 timeout=10
             )
-            
+
             # Even if --version isn't supported, we shouldn't see import errors
             stderr = result.stderr.lower()
             assert "modulenotfounderror" not in stderr
             assert "importerror" not in stderr
-            
+
         except subprocess.TimeoutExpired:
             # Timeout is okay - means it started but didn't exit quickly
             pass
@@ -265,7 +263,7 @@ class TestBuildConfiguration:
     def test_platform_detection(self):
         """Test platform detection in build config."""
         config = get_build_config()
-        
+
         if platform.system() == "Windows":
             assert config.is_windows
             assert not config.is_macos
@@ -280,29 +278,29 @@ class TestBuildConfiguration:
         """Test executable name generation."""
         windows_config = get_build_config("windows")
         macos_config = get_build_config("macos")
-        
-        assert windows_config.get_executable_name() == "media-manager.exe"
-        assert macos_config.get_executable_name() == "media-manager"
+
+        assert windows_config.get_executable_name() == "影藏·媒体管理器.exe"
+        assert macos_config.get_executable_name() == APP_NAME
 
     def test_pyinstaller_args_generation(self):
         """Test PyInstaller arguments generation."""
         config = get_build_config("windows")
         args = config.get_pyinstaller_args()
-        
+
         assert isinstance(args, list)
         assert "--name" in args
-        assert "media-manager" in args
+        assert APP_NAME in args
         assert "--onefile" in args
 
     def test_spec_file_content_generation(self):
         """Test PyInstaller spec file content generation."""
         config = get_build_config("windows")
         content = config.get_spec_file_content()
-        
+
         assert isinstance(content, str)
         assert "Analysis(" in content
         assert "EXE(" in content
-        assert "media-manager" in content
+        assert APP_NAME in content
 
 
 if __name__ == "__main__":

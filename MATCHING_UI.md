@@ -1,6 +1,6 @@
 # Matching UI Implementation
 
-This document describes the matching UI implementation for the Media Manager application.
+This document describes the matching UI implementation for the 影藏·媒体管理器 application.
 
 ## Overview
 

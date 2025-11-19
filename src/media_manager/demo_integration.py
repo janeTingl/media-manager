@@ -103,7 +103,7 @@ def run_demo_scan(main_window: MainWindow) -> None:
 def show_demo_instructions(main_window: MainWindow) -> None:
     """Show demo instructions to the user."""
     instructions = (
-        "Welcome to the Media Manager Demo!\n\n"
+        "Welcome to the 影藏·媒体管理器 Demo!\n\n"
         "This demo showcases the scan-to-match workflow:\n\n"
         "1. Click 'Demo Scan' to scan a directory for video files\n"
         "2. View the results in the 'Matching' tab\n"
