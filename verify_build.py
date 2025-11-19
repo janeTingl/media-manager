@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Build verification script for Media Manager Windows executable.
+Build verification script for 影藏·媒体管理器 Windows executable.
 
 This script verifies that all necessary files and configurations are in place
 for building the Windows executable.
 """
 
-import os
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
+
 
 def check_file_exists(filepath: Path, description: str) -> bool:
     """Check if a file exists and report status."""
@@ -24,7 +24,7 @@ def check_python_version() -> bool:
     """Check Python version compatibility."""
     version = sys.version_info
     print(f"\nPython Version: {version.major}.{version.minor}.{version.micro}")
-    
+
     if version >= (3, 8):
         print("✓ Python version is compatible (3.8+)")
         return True
@@ -47,10 +47,10 @@ def check_spec_file() -> bool:
     spec_file = Path("media-manager.spec")
     if not spec_file.exists():
         return False
-    
+
     # Try to compile the spec file
     try:
-        with open(spec_file, 'r') as f:
+        with open(spec_file) as f:
             spec_content = f.read()
         compile(spec_content, str(spec_file), 'exec')
         print("✓ Spec file syntax is valid")
@@ -70,13 +70,13 @@ def check_source_files() -> bool:
         "models.py",
         "settings.py",
     ]
-    
+
     all_exist = True
     for file_name in required_files:
         file_path = src_dir / file_name
         if not check_file_exists(file_path, f"Source file {file_name}"):
             all_exist = False
-    
+
     return all_exist
 
 def check_build_files() -> bool:
@@ -92,19 +92,19 @@ def check_build_files() -> bool:
         ("PACKAGING_GUIDE.md", "Packaging guide"),
         ("README_WINDOWS.md", "Windows README"),
     ]
-    
+
     all_exist = True
     for file_name, description in build_files:
         file_path = Path(file_name)
         if not check_file_exists(file_path, description):
             all_exist = False
-    
+
     return all_exist
 
 def check_pyinstaller_availability() -> bool:
     """Check if PyInstaller is available."""
     try:
-        result = subprocess.run([sys.executable, "-m", "PyInstaller", "--version"], 
+        result = subprocess.run([sys.executable, "-m", "PyInstaller", "--version"],
                               capture_output=True, text=True)
         if result.returncode == 0:
             version = result.stdout.strip()
@@ -120,7 +120,7 @@ def check_pyinstaller_availability() -> bool:
 def check_pyside6_availability() -> bool:
     """Check if PySide6 is available."""
     try:
-        result = subprocess.run([sys.executable, "-c", "import PySide6; print(PySide6.__version__)"], 
+        result = subprocess.run([sys.executable, "-c", "import PySide6; print(PySide6.__version__)"],
                               capture_output=True, text=True)
         if result.returncode == 0:
             version = result.stdout.strip()
@@ -150,7 +150,7 @@ def check_directory_structure() -> bool:
         ("src/media_manager", "Main package directory"),
         ("tests", "Tests directory"),
     ]
-    
+
     all_exist = True
     for dir_name, description in required_dirs:
         dir_path = Path(dir_name)
@@ -159,41 +159,41 @@ def check_directory_structure() -> bool:
         else:
             print(f"✗ {description}: {dir_name} (MISSING)")
             all_exist = False
-    
+
     return all_exist
 
 def verify_entry_points() -> bool:
     """Verify that entry points are properly defined."""
     main_file = Path("src/media_manager/main.py")
     demo_file = Path("src/media_manager/demo_integration.py")
-    
+
     # Check main function exists
     if main_file.exists():
-        with open(main_file, 'r') as f:
+        with open(main_file) as f:
             content = f.read()
             if "def main()" in content:
                 print("✓ Main entry point exists in main.py")
             else:
                 print("✗ Main entry point missing in main.py")
                 return False
-    
+
     # Check demo function exists
     if demo_file.exists():
-        with open(demo_file, 'r') as f:
+        with open(demo_file) as f:
             content = f.read()
             if "def main()" in content:
                 print("✓ Demo entry point exists in demo_integration.py")
             else:
                 print("✗ Demo entry point missing in demo_integration.py")
                 return False
-    
+
     return True
 
 def main():
     """Run all verification checks."""
-    print("Media Manager Windows Build Verification")
+    print("影藏·媒体管理器 Windows Build Verification")
     print("=" * 50)
-    
+
     checks = [
         ("Python Version", check_python_version),
         ("Directory Structure", check_directory_structure),
@@ -205,31 +205,31 @@ def main():
         ("PySide6", check_pyside6_availability),
         ("PyInstaller", check_pyinstaller_availability),
     ]
-    
+
     results = []
     for check_name, check_func in checks:
         print(f"\n{check_name}:")
         print("-" * len(check_name))
         result = check_func()
         results.append((check_name, result))
-    
+
     # Summary
     print("\n" + "=" * 50)
     print("VERIFICATION SUMMARY")
     print("=" * 50)
-    
+
     passed = 0
     total = len(results)
-    
+
     for check_name, result in results:
         status = "PASS" if result else "FAIL"
         symbol = "✓" if result else "✗"
         print(f"{symbol} {check_name}: {status}")
         if result:
             passed += 1
-    
+
     print(f"\nOverall: {passed}/{total} checks passed")
-    
+
     if passed == total:
         print("\n🎉 All checks passed! Ready to build.")
         print("\nNext steps:")

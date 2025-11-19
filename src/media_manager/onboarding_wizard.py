@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -37,7 +36,7 @@ class OnboardingWizard(QWizard):
         self._settings = settings
         self._library_repo = LibraryRepository()
 
-        self.setWindowTitle("Welcome to Media Manager")
+        self.setWindowTitle("Welcome to 影藏·媒体管理器")
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setMinimumSize(700, 550)
         self.setOption(QWizard.WizardOption.NoBackButtonOnStartPage, True)
@@ -64,11 +63,11 @@ class OnboardingWizard(QWizard):
 
 
 class WelcomePage(QWizardPage):
-    """Welcome page with introduction to Media Manager."""
+    """Welcome page with introduction to 影藏·媒体管理器."""
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setTitle("Welcome to Media Manager")
+        self.setTitle("Welcome to 影藏·媒体管理器")
         self.setSubTitle("Let's get you set up in just a few steps")
 
         layout = QVBoxLayout()
@@ -90,8 +89,8 @@ class WelcomePage(QWizardPage):
         </head>
         <body>
             <h2>Welcome!</h2>
-            <p>Media Manager helps you organize, manage, and track your media library with ease.</p>
-            
+            <p>影藏·媒体管理器 helps you organize, manage, and track your media library with ease.</p>
+
             <h3>What You Can Do:</h3>
             <ul>
                 <li>Automatically fetch metadata from online databases</li>
@@ -101,14 +100,14 @@ class WelcomePage(QWizardPage):
                 <li>Search and filter your media collection</li>
                 <li>Export and backup your library data</li>
             </ul>
-            
+
             <h3>This Setup Wizard Will Help You:</h3>
             <ul>
                 <li><span class="highlight">Create your first library</span> - Point to your media files</li>
                 <li><span class="highlight">Configure metadata providers</span> - Get API keys for automatic metadata</li>
                 <li><span class="highlight">Learn about key features</span> - Quick tour of what's available</li>
             </ul>
-            
+
             <p><strong>Ready to begin?</strong> Click <em>Next</em> to continue.</p>
         </body>
         </html>
@@ -311,7 +310,7 @@ class FeatureTourPage(QWizardPage):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setTitle("Key Features Overview")
-        self.setSubTitle("Here's what you can do with Media Manager")
+        self.setSubTitle("Here's what you can do with 影藏·媒体管理器")
 
         layout = QVBoxLayout()
 
@@ -333,32 +332,32 @@ class FeatureTourPage(QWizardPage):
                 <div class="feature-title">📚 Libraries</div>
                 <p>Organize different collections separately. Create libraries for movies, TV shows, or any category you want.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-title">🔍 Search & Filter</div>
                 <p>Find media quickly with powerful search and filtering. Search by title, genre, year, cast, and more.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-title">✏️ Metadata Editor</div>
                 <p>Edit and customize information about your media. Add your own descriptions, ratings, and details.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-title">⚡ Batch Operations</div>
                 <p>Edit multiple items at once. Perfect for organizing large collections efficiently.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-title">🏷️ Tags & Favorites</div>
                 <p>Create custom tags and mark favorites. Build collections that match your viewing preferences.</p>
             </div>
-            
+
             <div class="feature">
                 <div class="feature-title">💾 Import & Export</div>
                 <p>Backup your library data or migrate to a new system. Your data is portable and safe.</p>
             </div>
-            
+
             <p style="margin-top: 20px;"><strong>Tip:</strong> Press <strong>F1</strong> anytime to access context-sensitive help!</p>
         </body>
         </html>
@@ -394,8 +393,8 @@ class CompletionPage(QWizardPage):
         </head>
         <body>
             <h2>🎉 You're Ready to Go!</h2>
-            <p>Media Manager is now configured and ready to use.</p>
-            
+            <p>影藏·媒体管理器 is now configured and ready to use.</p>
+
             <div class="next-steps">
                 <h3>Next Steps:</h3>
                 <ul>
@@ -406,15 +405,15 @@ class CompletionPage(QWizardPage):
                     <li>Check out Preferences (Edit → Preferences) to customize settings</li>
                 </ul>
             </div>
-            
+
             <h3>Need Help?</h3>
             <ul>
                 <li>Press <strong>F1</strong> for context-sensitive help</li>
                 <li>Access <strong>Help → Help Center</strong> from the menu</li>
                 <li>Check the troubleshooting guide if you encounter issues</li>
             </ul>
-            
-            <p><strong>Enjoy using Media Manager!</strong></p>
+
+            <p><strong>Enjoy using 影藏·媒体管理器!</strong></p>
         </body>
         </html>
         """)

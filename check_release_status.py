@@ -13,6 +13,7 @@ import os
 import sys
 from pathlib import Path
 
+
 def check_file_exists(path, description):
     """Check if a file exists and return status."""
     if path.exists():
@@ -31,18 +32,18 @@ def check_directory_exists(path, description):
 
 def main():
     """Check release status and provide next steps."""
-    print("🔍 Media Manager Windows Release Status Check")
+    print("🔍 影藏·媒体管理器 Windows Release Status Check")
     print("=" * 60)
-    
+
     project_root = Path(__file__).parent
-    
+
     # Check essential files
     print("\n📁 Essential Files:")
     print(check_file_exists(project_root / "media-manager.spec", "PyInstaller spec"))
     print(check_file_exists(project_root / "build_windows.py", "Build script"))
     print(check_file_exists(project_root / "create_windows_release.py", "Release creator"))
     print(check_file_exists(project_root / "build-requirements.txt", "Build requirements"))
-    
+
     # Check package structure
     print("\n📦 Package Structure:")
     package_dir = project_root / "package"
@@ -50,11 +51,11 @@ def main():
     print(check_file_exists(package_dir / "RELEASE_INFO.txt", "Release info"))
     print(check_file_exists(package_dir / "media-manager-portable-0.1.0.zip", "Portable ZIP"))
     print(check_file_exists(package_dir / "media-manager-installer-0.1.0.zip", "Installer ZIP"))
-    
+
     # Check Windows executable
     print("\n🎯 Windows Executable:")
     dist_dir = project_root / "dist"
-    exe_path = dist_dir / "media-manager.exe"
+    exe_path = dist_dir / "影藏·媒体管理器.exe"
     if exe_path.exists():
         size = exe_path.stat().st_size
         print(f"✅ Windows executable: {exe_path} ({size:,} bytes)")
@@ -62,12 +63,12 @@ def main():
     else:
         print(f"❌ Windows executable: {exe_path} (MISSING)")
         print("⚠️  Requires Windows environment to build")
-    
+
     # Check GitHub Actions
     print("\n🤖 Automation:")
     github_actions = project_root / ".github" / "workflows" / "build-windows-release.yml"
     print(check_file_exists(github_actions, "GitHub Actions workflow"))
-    
+
     # Documentation
     print("\n📚 Documentation:")
     docs = [
@@ -78,22 +79,22 @@ def main():
     ]
     for doc, desc in docs:
         print(check_file_exists(project_root / doc, desc))
-    
+
     # Current platform
     print(f"\n💻 Current Platform: {os.name}")
     if os.name == 'nt':
         print("✅ Running on Windows - can build executable now!")
     else:
         print("⚠️  Not on Windows - cannot build Windows executable")
-    
+
     # Next steps
     print("\n🚀 Next Steps:")
     exe_exists = exe_path.exists()
-    
+
     if exe_exists:
         print("1. ✅ Windows executable is ready!")
         print("2. 📤 Upload files to GitHub Release:")
-        print("   - media-manager.exe")
+        print("   - 影藏·媒体管理器.exe")
         print("   - media-manager-portable-0.1.0.zip")
         print("   - media-manager-installer-0.1.0.zip")
         print("   - RELEASE_INFO.txt")
@@ -113,9 +114,9 @@ def main():
         print("")
         print("3. 📤 Upload to GitHub Release")
         print("4. 🐍 Publish to PyPI")
-    
+
     print("\n" + "=" * 60)
-    
+
     if exe_exists:
         print("🎉 STATUS: RELEASE READY")
         return 0

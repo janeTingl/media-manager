@@ -1,6 +1,6 @@
-# Media Manager Windows Executable Packaging Guide
+# 影藏·媒体管理器 Windows Executable Packaging Guide
 
-This document provides comprehensive instructions for packaging the Media Manager application as a Windows executable (.exe) file using PyInstaller.
+This document provides comprehensive instructions for packaging the 影藏·媒体管理器 application as a Windows executable (.exe) file using PyInstaller.
 
 ## Overview
 
@@ -108,14 +108,14 @@ exe = EXE(
 The build process generates the following files in the `package/` directory:
 
 ### 1. Executable
-- **File**: `media-manager.exe`
-- **Location**: `dist/media-manager.exe`
+- **File**: `影藏·媒体管理器.exe`
+- **Location**: `dist/影藏·媒体管理器.exe`
 - **Size**: ~80-120 MB (varies with UPX)
 
 ### 2. Portable Package
 - **Directory**: `media-manager-portable-0.1.0/`
 - **Contents**:
-  - `media-manager.exe` - Main executable
+  - `影藏·媒体管理器.exe` - Main executable
   - `README.txt` - User instructions
   - `start.bat` - Launch script
 
@@ -139,7 +139,7 @@ The build process generates the following files in the `package/` directory:
 
 1. **Download**: `media-manager-portable-0.1.0.zip`
 2. **Extract**: To any folder
-3. **Run**: Double-click `media-manager.exe` or `start.bat`
+3. **Run**: Double-click `影藏·媒体管理器.exe` or `start.bat`
 
 **Advantages:**
 - No installation required
@@ -305,7 +305,7 @@ Edit `version_info.txt` to update:
 
 Use the SHA-256 hashes in `RELEASE_INFO.txt`:
 ```cmd
-certutil -hashfile media-manager.exe SHA256
+certutil -hashfile 影藏·媒体管理器.exe SHA256
 ```
 
 ### Functional Testing
@@ -389,7 +389,7 @@ For production distribution:
 1. **Obtain code signing certificate**
 2. **Sign the executable:**
    ```cmd
-   signtool sign /f certificate.p12 /p password media-manager.exe
+   signtool sign /f certificate.p12 /p password 影藏·媒体管理器.exe
    ```
 3. **Timestamp the signature**
 4. **Verify signature**
@@ -404,6 +404,6 @@ For production distribution:
 
 ## Conclusion
 
-This packaging system provides a complete solution for distributing Media Manager as a Windows executable. The automated build script handles all complexity while allowing customization for specific needs.
+This packaging system provides a complete solution for distributing 影藏·媒体管理器 as a Windows executable. The automated build script handles all complexity while allowing customization for specific needs.
 
 For support or questions about the packaging process, please refer to the project documentation or create an issue in the project repository.

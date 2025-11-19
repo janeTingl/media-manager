@@ -39,7 +39,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
 
-    name='MediaManager',
+    name='影藏·媒体管理器',
     console=False,         # GUI 程序必须 False
     icon=None,             # 若需要图标：icon='icon.ico'
 
@@ -58,5 +58,5 @@ coll = COLLECT(
     a.datas,
     strip=False,
     upx=False,
-    name='MediaManager'
+    name='影藏·媒体管理器'
 )

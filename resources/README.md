@@ -1,6 +1,6 @@
 # Resources Directory
 
-This directory contains resources used by the Media Manager application and build process.
+This directory contains resources used by the 影藏·媒体管理器 application and build process.
 
 ## Icons
 

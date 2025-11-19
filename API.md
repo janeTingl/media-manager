@@ -1,8 +1,8 @@
-# Media Manager - API Reference
+# 影藏·媒体管理器 - API Reference
 
 ## Overview
 
-This document provides comprehensive API reference for the Media Manager library. It covers the main classes, methods, and data structures used throughout the application.
+This document provides comprehensive API reference for the 影藏·媒体管理器 library. It covers the main classes, methods, and data structures used throughout the application.
 
 ## Table of Contents
 
@@ -637,7 +637,7 @@ def my_function(settings):
 
 ```python
 #!/usr/bin/env python3
-"""Complete example of using Media Manager API."""
+"""Complete example of using 影藏·媒体管理器 API."""
 
 from pathlib import Path
 from media_manager.scanner import Scanner, ScanConfig

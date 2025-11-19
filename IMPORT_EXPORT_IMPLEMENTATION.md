@@ -4,7 +4,7 @@ This document summarizes the implementation of the data portability feature.
 
 ## Overview
 
-The import/export feature provides comprehensive data portability for Media Manager, allowing users to backup, restore, migrate, and share their media library metadata.
+The import/export feature provides comprehensive data portability for 影藏·媒体管理器, allowing users to backup, restore, migrate, and share their media library metadata.
 
 ## Components Implemented
 
@@ -227,4 +227,4 @@ Tests cover:
 
 ## Conclusion
 
-The import/export feature provides a robust, user-friendly solution for data portability in Media Manager. It supports multiple formats, handles conflicts intelligently, validates data thoroughly, and integrates seamlessly with the existing application architecture.
+The import/export feature provides a robust, user-friendly solution for data portability in 影藏·媒体管理器. It supports multiple formats, handles conflicts intelligently, validates data thoroughly, and integrates seamlessly with the existing application architecture.

@@ -64,7 +64,7 @@ docs/
 **index.json structure:**
 ```json
 {
-  "title": "Media Manager 帮助",
+  "title": "影藏·媒体管理器 帮助",
   "version": "1.0",
   "locale": "zh-CN",
   "topics": [

@@ -26,7 +26,7 @@ class TestApplicationSmoke:
         """Test that QApplication can be created."""
         app = create_application()
         assert app is not None
-        assert app.applicationName() == "Media Manager"
+        assert app.applicationName() == "影藏·媒体管理器"
         assert app.applicationVersion() == "0.1.0"
 
     @pytest.mark.gui
@@ -34,7 +34,7 @@ class TestApplicationSmoke:
         """Test that main window can be instantiated."""
         window = MainWindow(temp_settings)
         assert window is not None
-        assert window.windowTitle() == "Media Manager"
+        assert window.windowTitle() == "影藏·媒体管理器"
         assert window.minimumWidth() == 1000
         assert window.minimumHeight() == 700
 

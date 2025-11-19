@@ -7,6 +7,11 @@ from typing import Optional
 from PySide6.QtCore import QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
+from media_manager import (
+    APP_DISPLAY_NAME,
+    APP_ORGANIZATION_DOMAIN,
+    APP_ORGANIZATION_NAME,
+)
 from media_manager.logging import get_logger, setup_logging
 from media_manager.main_window import MainWindow
 from media_manager.persistence.database import init_database_service
@@ -14,16 +19,16 @@ from media_manager.services import get_service_registry
 from media_manager.settings import get_settings
 
 
-
 def create_application() -> QApplication:
     """Create and configure the Qt application."""
     app = QApplication(sys.argv)
 
     # Set application properties
-    app.setApplicationName("Media Manager")
+    app.setApplicationName(APP_DISPLAY_NAME)
+    app.setApplicationDisplayName(APP_DISPLAY_NAME)
     app.setApplicationVersion("0.1.0")
-    app.setOrganizationName("Media Manager Team")
-    app.setOrganizationDomain("media-manager.local")
+    app.setOrganizationName(APP_ORGANIZATION_NAME)
+    app.setOrganizationDomain(APP_ORGANIZATION_DOMAIN)
 
     return app
 
@@ -38,7 +43,7 @@ def _install_translator(app: QApplication, language: Optional[str] = None) -> No
     locale = _resolve_locale(language)
     if translator.load(locale, "media_manager", "_", str(translations_path)):
         app.installTranslator(translator)
-        setattr(app, "_installed_translator", translator)
+        app._installed_translator = translator
 
 
 def _resolve_locale(language: Optional[str]) -> QLocale:

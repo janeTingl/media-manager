@@ -1,10 +1,10 @@
 @echo off
-REM Media Manager Windows Build Script
+REM 影藏·媒体管理器 Windows Build Script
 REM This script provides a simple interface for building the Windows executable
 
 setlocal enabledelayedexpansion
 
-echo Media Manager Windows Build Script
+echo 影藏·媒体管理器 Windows Build Script
 echo ==================================
 echo.
 
@@ -80,7 +80,7 @@ if errorlevel 1 (
 ) else (
     echo.
     echo Quick build completed!
-    echo Executable: dist\media-manager.exe
+    echo Executable: dist\影藏·媒体管理器.exe
     pause
     goto menu
 )
@@ -151,16 +151,16 @@ goto menu
 echo.
 echo Testing executable...
 echo.
-if exist dist\media-manager.exe (
+if exist dist\影藏·媒体管理器.exe (
     echo Running basic test...
-    dist\media-manager.exe --help
+    dist\影藏·媒体管理器.exe --help
     if errorlevel 1 (
         echo Note: --help option not supported (this is normal)
         echo Running basic startup test...
         timeout /t 2 >nul
-        start "" /B dist\media-manager.exe
+        start "" /B dist\影藏·媒体管理器.exe
         timeout /t 5 >nul
-        taskkill /f /im media-manager.exe >nul 2>&1
+        taskkill /f /im 影藏·媒体管理器.exe >nul 2>&1
         echo Basic startup test completed.
     )
     echo.
@@ -174,10 +174,10 @@ goto menu
 
 :info
 echo.
-echo Media Manager Build Information
+echo 影藏·媒体管理器 Build Information
 echo ===============================
 echo.
-echo Project: Media Manager
+echo Project: 影藏·媒体管理器
 echo Version: 0.1.0
 echo Python:
 python --version
@@ -191,9 +191,9 @@ echo   Dist:  %CD%\dist
 echo   Package: %CD%\package
 echo.
 echo Output Files:
-if exist dist\media-manager.exe (
-    echo   Executable: dist\media-manager.exe
-    for %%I in (dist\media-manager.exe) do echo   Size: %%~zI bytes
+if exist dist\影藏·媒体管理器.exe (
+    echo   Executable: dist\影藏·媒体管理器.exe
+    for %%I in (dist\影藏·媒体管理器.exe) do echo   Size: %%~zI bytes
 ) else (
     echo   Executable: Not found
 )
@@ -209,10 +209,10 @@ goto menu
 
 :help
 echo.
-echo Media Manager Build Script Help
+echo 影藏·媒体管理器 Build Script Help
 echo ===============================
 echo.
-echo This script helps you build the Media Manager Windows executable.
+echo This script helps you build the 影藏·媒体管理器 Windows executable.
 echo.
 echo Build Options:
 echo --------------
@@ -227,7 +227,7 @@ echo 8. Help - Show this help message
 echo.
 echo Output Files:
 echo -------------
-echo - Executable: dist\media-manager.exe
+echo - Executable: dist\影藏·媒体管理器.exe
 echo - Portable package: package\media-manager-portable-0.1.0\
 echo - Installer package: package\media-manager-installer-0.1.0\
 echo - ZIP files: package\*.zip
@@ -247,7 +247,7 @@ goto menu
 
 :exit
 echo.
-echo Thank you for using Media Manager Build Script!
+echo Thank you for using 影藏·媒体管理器 Build Script!
 echo.
 pause
 exit /b 0

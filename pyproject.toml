@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "media-manager"
 version = "0.1.0"
 description = "A media management application built with PySide6"
-authors = [{name = "Media Manager Team"}]
+authors = [{name = "影藏·媒体管理器团队"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"

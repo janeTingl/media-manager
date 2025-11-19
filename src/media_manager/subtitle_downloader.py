@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 from PySide6.QtCore import QObject, Signal
 
+from . import APP_USER_AGENT
 from .logging import get_logger
 from .models import DownloadStatus, SubtitleInfo, SubtitleLanguage
 from .subtitle_provider import MockSubtitleProvider, SubtitleProvider, SubtitleResult
@@ -200,7 +201,7 @@ class SubtitleDownloader(QObject):
             try:
                 from urllib.request import Request, urlopen
 
-                req = Request(url, headers={"User-Agent": "MediaManager/1.0"})
+                req = Request(url, headers={"User-Agent": APP_USER_AGENT})
 
                 with urlopen(req, timeout=self._timeout) as response:
                     local_path = self.get_subtitle_path(

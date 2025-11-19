@@ -1,4 +1,4 @@
-# Media Manager v0.1.0 Release Quality Checklist
+# 影藏·媒体管理器 v0.1.0 Release Quality Checklist
 
 ## ✅ Completed Items
 
@@ -113,7 +113,7 @@
 
 ## 🎯 Release Summary
 
-**Media Manager v0.1.0** is a complete MVP release featuring:
+**影藏·媒体管理器 v0.1.0** is a complete MVP release featuring:
 
 - **Full media scanning and matching workflow**
 - **Poster and subtitle downloading systems**

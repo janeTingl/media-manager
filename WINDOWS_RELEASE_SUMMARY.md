@@ -2,7 +2,7 @@
 
 ## 🎯 Current Status: Release Ready (Requires Windows Environment)
 
-The Media Manager v0.1.0 Windows release is **fully prepared** but requires a Windows environment to build the actual `.exe` file.
+The 影藏·媒体管理器 v0.1.0 Windows release is **fully prepared** but requires a Windows environment to build the actual `.exe` file.
 
 ### ✅ What's Complete (100%)
 
@@ -84,7 +84,7 @@ python create_windows_release.py
 After Windows build, these files will be generated:
 
 ### Core Executable
-- `media-manager.exe` (~80-120 MB) - Main Windows executable
+- `影藏·媒体管理器.exe` (~80-120 MB) - Main Windows executable
 
 ### Distribution Packages
 - `media-manager-portable-0.1.0.zip` (~80-120 MB) - Portable package
@@ -122,14 +122,14 @@ After Windows build, these files will be generated:
 Once built, the GitHub Release will include:
 
 ```markdown
-## Media Manager v0.1.0
+## 影藏·媒体管理器 v0.1.0
 
 ### 🚀 Installation
 
 **Portable (No installation required):**
 1. Download `media-manager-portable-0.1.0.zip`
 2. Extract to any folder
-3. Run `media-manager.exe`
+3. Run `影藏·媒体管理器.exe`
 
 **Installer (System integration):**
 1. Download `media-manager-installer-0.1.0.zip`
@@ -149,7 +149,7 @@ media-manager-demo
 
 ### ✅ Verification
 ```
-certutil -hashfile media-manager.exe SHA256
+certutil -hashfile 影藏·媒体管理器.exe SHA256
 certutil -hashfile media-manager-portable-0.1.0.zip SHA256
 certutil -hashfile media-manager-installer-0.1.0.zip SHA256
 ```
@@ -207,6 +207,6 @@ certutil -hashfile media-manager-installer-0.1.0.zip SHA256
 **Expected Completion**: 1 hour once Windows environment available
 **Confidence**: High - All infrastructure and documentation complete
 
-The Media Manager v0.1.0 Windows release is **99% complete**. All build infrastructure, documentation, and package templates are ready. The only remaining step is running the build script on a Windows system to generate the actual `.exe` file and create the GitHub Release.
+The 影藏·媒体管理器 v0.1.0 Windows release is **99% complete**. All build infrastructure, documentation, and package templates are ready. The only remaining step is running the build script on a Windows system to generate the actual `.exe` file and create the GitHub Release.
 
 **Recommended Action**: Use GitHub Actions for automated Windows build by pushing the v0.1.0 tag.

@@ -1,6 +1,6 @@
-# Media Manager - Documentation Index
+# 影藏·媒体管理器 - Documentation Index
 
-Welcome to the comprehensive documentation for the Media Manager project! This guide will help you find the information you need.
+Welcome to the comprehensive documentation for the 影藏·媒体管理器 project! This guide will help you find the information you need.
 
 ## 📖 Documentation Overview
 
@@ -392,6 +392,6 @@ Start Here ↓
 
 ---
 
-**Happy using Media Manager!** 
+**Happy using 影藏·媒体管理器!** 
 
 For specific questions, find the relevant document in this index and dive in. If you can't find what you need, check the code examples in the `tests/` directory or open an issue on GitHub.

@@ -1,6 +1,6 @@
-# Media Manager - Quick Start Guide
+# 影藏·媒体管理器 - Quick Start Guide
 
-Get up and running with Media Manager in 5 minutes!
+Get up and running with 影藏·媒体管理器 in 5 minutes!
 
 ## Installation (2 minutes)
 

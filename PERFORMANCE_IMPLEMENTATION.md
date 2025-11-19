@@ -1,6 +1,6 @@
 # Performance Testing Implementation
 
-This document summarizes the implementation of automated performance testing for Media Manager.
+This document summarizes the implementation of automated performance testing for 影藏·媒体管理器.
 
 ## Overview
 
@@ -196,4 +196,4 @@ Legacy file moved to `test_performance_benchmarks_legacy.py` for reference.
 - Integration with application monitoring
 - Automated performance optimization suggestions
 
-This implementation provides a solid foundation for maintaining and improving Media Manager performance as the application scales.
+This implementation provides a solid foundation for maintaining and improving 影藏·媒体管理器 performance as the application scales.

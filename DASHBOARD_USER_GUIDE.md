@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-1. **Open Media Manager** - Launch the application
+1. **Open 影藏·媒体管理器** - Launch the application
 2. **Click the "Dashboard" Tab** - Located in the main window's tab bar
 3. **View Your Statistics** - See summary cards and activity feed
 

@@ -1,4 +1,4 @@
-# Media Manager - Installation Guide
+# 影藏·媒体管理器 - Installation Guide
 
 ## Table of Contents
 
@@ -34,14 +34,14 @@
 Download pre-built executables from the [Releases](https://github.com/your-username/media-manager/releases) page:
 
 #### Windows
-1. Download `media-manager.exe` or `media-manager-installer-*.zip`
+1. Download `影藏·媒体管理器.exe` or `media-manager-installer-*.zip`
 2. Extract the ZIP file
-3. Run `media-manager.exe` or `install.bat` (for installer version)
+3. Run `影藏·媒体管理器.exe` or `install.bat` (for installer version)
 
 #### macOS
-1. Download `Media Manager-*.dmg`
+1. Download `影藏·媒体管理器-*.dmg`
 2. Open the DMG file
-3. Drag `Media Manager.app` to Applications folder
+3. Drag `影藏·媒体管理器.app` to Applications folder
 4. Launch from Applications or Launchpad
 
 #### Linux (Coming Soon)
@@ -144,8 +144,8 @@ pip install -r build-requirements.txt
 python build.py --package
 
 # 5. Find built packages
-# Windows: dist/media-manager.exe, package/media-manager-*.zip
-# macOS: dist/Media Manager.app, package/*.dmg
+# Windows: dist/影藏·媒体管理器.exe, package/media-manager-*.zip
+# macOS: dist/影藏·媒体管理器.app, package/*.dmg
 ```
 
 **Platform-Specific Builds:**

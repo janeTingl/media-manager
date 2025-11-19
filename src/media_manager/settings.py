@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
@@ -31,12 +31,12 @@ class SettingsManager(QObject):
     settings_saved = Signal(dict)
 
     def __init__(
-        self, settings_file: Optional[Path] = None, parent: Optional[QObject] = None
+        self, settings_file: Path | None = None, parent: QObject | None = None
     ) -> None:
         super().__init__(parent)
         self._settings_file = settings_file or DEFAULT_SETTINGS_PATH
-        self._settings: Dict[str, Any] = {}
-        self._qsettings = QSettings("media-manager", "MediaManager")
+        self._settings: dict[str, Any] = {}
+        self._qsettings = QSettings("yingcang-media-manager", "影藏·媒体管理器")
         self._load_settings()
         self._ensure_default_domains()
         self._migrate_legacy_schema()
@@ -177,18 +177,18 @@ class SettingsManager(QObject):
 
         advanced_settings.setdefault("batch_defaults", {})
 
-    def _get_domain(self, domain: str) -> Dict[str, Any]:
+    def _get_domain(self, domain: str) -> dict[str, Any]:
         value = self._settings.get(domain)
         if isinstance(value, dict):
             return value
-        new_value: Dict[str, Any] = {}
+        new_value: dict[str, Any] = {}
         self._settings[domain] = new_value
         return new_value
 
-    def _get_downloads_section(self) -> Dict[str, Any]:
+    def _get_downloads_section(self) -> dict[str, Any]:
         return self._get_domain(DOWNLOAD_DOMAIN)
 
-    def _get_poster_settings(self) -> Dict[str, Any]:
+    def _get_poster_settings(self) -> dict[str, Any]:
         downloads = self._get_downloads_section()
         poster_settings = downloads.get("poster_settings")
         if isinstance(poster_settings, dict):
@@ -197,7 +197,7 @@ class SettingsManager(QObject):
         downloads["poster_settings"] = poster_settings
         return poster_settings
 
-    def _get_subtitle_settings(self) -> Dict[str, Any]:
+    def _get_subtitle_settings(self) -> dict[str, Any]:
         downloads = self._get_downloads_section()
         subtitle_settings = downloads.get("subtitle_settings")
         if isinstance(subtitle_settings, dict):
@@ -206,7 +206,7 @@ class SettingsManager(QObject):
         downloads["subtitle_settings"] = subtitle_settings
         return subtitle_settings
 
-    def _get_nfo_settings(self) -> Dict[str, Any]:
+    def _get_nfo_settings(self) -> dict[str, Any]:
         downloads = self._get_downloads_section()
         nfo_settings = downloads.get("nfo_settings")
         if isinstance(nfo_settings, dict):
@@ -215,28 +215,28 @@ class SettingsManager(QObject):
         downloads["nfo_settings"] = nfo_settings
         return nfo_settings
 
-    def _get_metadata_section(self) -> Dict[str, Any]:
+    def _get_metadata_section(self) -> dict[str, Any]:
         return self._get_domain(METADATA_DOMAIN)
 
-    def _get_rename_templates(self) -> Dict[str, str]:
+    def _get_rename_templates(self) -> dict[str, str]:
         metadata = self._get_metadata_section()
         templates = metadata.get("rename_templates")
         if isinstance(templates, dict):
-            return cast(Dict[str, str], templates)
+            return cast(dict[str, str], templates)
         templates = {}
         metadata["rename_templates"] = templates
         return templates
 
-    def _get_provider_keys_mutable(self) -> Dict[str, str]:
+    def _get_provider_keys_mutable(self) -> dict[str, str]:
         providers = self._get_domain(PROVIDER_DOMAIN)
         keys = providers.get("api_keys")
         if isinstance(keys, dict):
-            return cast(Dict[str, str], keys)
+            return cast(dict[str, str], keys)
         keys = {}
         providers["api_keys"] = keys
         return keys
 
-    def _get_provider_options(self) -> Dict[str, Any]:
+    def _get_provider_options(self) -> dict[str, Any]:
         providers = self._get_domain(PROVIDER_DOMAIN)
         options = providers.get("options")
         if isinstance(options, dict):
@@ -245,7 +245,7 @@ class SettingsManager(QObject):
         providers["options"] = options
         return options
 
-    def _get_batch_defaults_mutable(self) -> Dict[str, Any]:
+    def _get_batch_defaults_mutable(self) -> dict[str, Any]:
         advanced = self._get_domain(ADVANCED_DOMAIN)
         defaults = advanced.get("batch_defaults")
         if isinstance(defaults, dict):
@@ -254,7 +254,7 @@ class SettingsManager(QObject):
         advanced["batch_defaults"] = defaults
         return defaults
 
-    def _emit_change(self, key: str, value: Any, domain: Optional[str] = None) -> None:
+    def _emit_change(self, key: str, value: Any, domain: str | None = None) -> None:
         self.setting_changed.emit(key, value)
         if domain is not None:
             self.domain_changed.emit(domain, {key: value})
@@ -309,24 +309,24 @@ class SettingsManager(QObject):
                 self._settings[key] = value
         self._emit_change(f"{LIBRARY_DOMAIN}.{key}", value, "libraries")
 
-    def get_last_active_library_id(self) -> Optional[int]:
+    def get_last_active_library_id(self) -> int | None:
         value = self.get_library_setting("last_active_library_id")
-        return cast(Optional[int], value)
+        return cast(int | None, value)
 
-    def set_last_active_library_id(self, library_id: Optional[int]) -> None:
+    def set_last_active_library_id(self, library_id: int | None) -> None:
         self.set_library_setting("last_active_library_id", library_id)
 
-    def get_default_library_id(self) -> Optional[int]:
+    def get_default_library_id(self) -> int | None:
         value = self.get_library_setting("default_library_id")
-        return cast(Optional[int], value)
+        return cast(int | None, value)
 
-    def set_default_library_id(self, library_id: Optional[int]) -> None:
+    def set_default_library_id(self, library_id: int | None) -> None:
         self.set_library_setting("default_library_id", library_id)
 
     # ------------------------------------------------------------------
     # Provider keys and options
     # ------------------------------------------------------------------
-    def get_provider_keys(self) -> Dict[str, str]:
+    def get_provider_keys(self) -> dict[str, str]:
         return dict(self._get_provider_keys_mutable())
 
     def clear_provider_key(self, service: str) -> None:
@@ -335,11 +335,11 @@ class SettingsManager(QObject):
             provider_keys.pop(service, None)
             self._emit_change(f"{PROVIDER_DOMAIN}.api_keys.{service}", None, "providers")
 
-    def get_api_key(self, service: str) -> Optional[str]:
+    def get_api_key(self, service: str) -> str | None:
         provider_keys = self._get_provider_keys_mutable()
-        return cast(Optional[str], provider_keys.get(service))
+        return cast(str | None, provider_keys.get(service))
 
-    def set_api_key(self, service: str, api_key: Optional[str]) -> None:
+    def set_api_key(self, service: str, api_key: str | None) -> None:
         provider_keys = self._get_provider_keys_mutable()
         normalized = api_key.strip() if api_key else ""
         if normalized:
@@ -348,16 +348,16 @@ class SettingsManager(QObject):
             provider_keys.pop(service, None)
         self._emit_change(f"{PROVIDER_DOMAIN}.api_keys.{service}", provider_keys.get(service), "providers")
 
-    def get_tmdb_api_key(self) -> Optional[str]:
+    def get_tmdb_api_key(self) -> str | None:
         return self.get_api_key("tmdb")
 
-    def set_tmdb_api_key(self, api_key: Optional[str]) -> None:
+    def set_tmdb_api_key(self, api_key: str | None) -> None:
         self.set_api_key("tmdb", api_key)
 
-    def get_tvdb_api_key(self) -> Optional[str]:
+    def get_tvdb_api_key(self) -> str | None:
         return self.get_api_key("tvdb")
 
-    def set_tvdb_api_key(self, api_key: Optional[str]) -> None:
+    def set_tvdb_api_key(self, api_key: str | None) -> None:
         self.set_api_key("tvdb", api_key)
 
     def get_provider_setting(self, key: str, default: Any = None) -> Any:
@@ -434,29 +434,29 @@ class SettingsManager(QObject):
         """Set cache backend type."""
         self.set_cache_setting("backend_type", backend_type)
 
-    def get_redis_url(self) -> Optional[str]:
+    def get_redis_url(self) -> str | None:
         """Get Redis connection URL."""
         return self.get_cache_setting("redis_url")
 
-    def set_redis_url(self, url: Optional[str]) -> None:
+    def set_redis_url(self, url: str | None) -> None:
         """Set Redis connection URL."""
         self.set_cache_setting("redis_url", url)
 
-    def get_disk_cache_dir(self) -> Optional[str]:
+    def get_disk_cache_dir(self) -> str | None:
         """Get disk cache directory."""
         return self.get_cache_setting("disk_cache_dir")
 
-    def set_disk_cache_dir(self, directory: Optional[str]) -> None:
+    def set_disk_cache_dir(self, directory: str | None) -> None:
         """Set disk cache directory."""
         self.set_cache_setting("disk_cache_dir", directory)
 
-    def get_cache_dir(self) -> Optional[str]:
+    def get_cache_dir(self) -> str | None:
         poster_settings = self._get_poster_settings()
         cache_dir = poster_settings.get("cache_dir")
         if cache_dir:
-            return cast(Optional[str], cache_dir)
+            return cast(str | None, cache_dir)
         cache_setting = self.get_cache_setting("poster_cache_dir")
-        return cast(Optional[str], cache_setting)
+        return cast(str | None, cache_setting)
 
     def set_cache_dir(self, cache_dir: str | None) -> None:
         poster_settings = self._get_poster_settings()
@@ -471,10 +471,10 @@ class SettingsManager(QObject):
     # ------------------------------------------------------------------
     # Metadata and rename templates
     # ------------------------------------------------------------------
-    def get_target_folder(self, media_type: str) -> Optional[str]:
+    def get_target_folder(self, media_type: str) -> str | None:
         folders = self._settings.get("target_folders", {})
         if isinstance(folders, dict):
-            return cast(Optional[str], folders.get(media_type))
+            return cast(str | None, folders.get(media_type))
         return None
 
     def set_target_folder(self, media_type: str, folder: str) -> None:
@@ -485,9 +485,9 @@ class SettingsManager(QObject):
         folders[media_type] = folder
         self._emit_change("target_folders", dict(folders))
 
-    def get_rename_template(self, template_name: str) -> Optional[str]:
+    def get_rename_template(self, template_name: str) -> str | None:
         templates = self._get_rename_templates()
-        return cast(Optional[str], templates.get(template_name))
+        return cast(str | None, templates.get(template_name))
 
     def set_rename_template(self, template_name: str, template: str) -> None:
         templates = self._get_rename_templates()
@@ -582,13 +582,13 @@ class SettingsManager(QObject):
     def set_subtitle_provider(self, provider: str) -> None:
         self.set_subtitle_setting("provider", provider)
 
-    def get_subtitle_cache_dir(self) -> Optional[str]:
+    def get_subtitle_cache_dir(self) -> str | None:
         cache_dir = self.get_subtitle_setting("cache_dir")
         if cache_dir:
-            return cast(Optional[str], cache_dir)
+            return cast(str | None, cache_dir)
         return None
 
-    def set_subtitle_cache_dir(self, cache_dir: Optional[str]) -> None:
+    def set_subtitle_cache_dir(self, cache_dir: str | None) -> None:
         self.set_subtitle_setting("cache_dir", cache_dir)
 
     # ------------------------------------------------------------------
@@ -609,10 +609,10 @@ class SettingsManager(QObject):
     def set_nfo_enabled(self, enabled: bool) -> None:
         self.set_nfo_setting("enabled", bool(enabled))
 
-    def get_nfo_target_subfolder(self) -> Optional[str]:
-        return cast(Optional[str], self.get_nfo_setting("target_subfolder"))
+    def get_nfo_target_subfolder(self) -> str | None:
+        return cast(str | None, self.get_nfo_setting("target_subfolder"))
 
-    def set_nfo_target_subfolder(self, subfolder: Optional[str]) -> None:
+    def set_nfo_target_subfolder(self, subfolder: str | None) -> None:
         nfo_settings = self._get_nfo_settings()
         if subfolder:
             nfo_settings["target_subfolder"] = subfolder
@@ -723,11 +723,11 @@ class SettingsManager(QObject):
         advanced["logging_level"] = normalized
         self._emit_change(f"{ADVANCED_DOMAIN}.logging_level", normalized, "advanced")
 
-    def get_batch_defaults(self) -> Dict[str, Any]:
+    def get_batch_defaults(self) -> dict[str, Any]:
         defaults = self._get_batch_defaults_mutable()
         return dict(defaults)
 
-    def set_batch_defaults(self, defaults: Dict[str, Any]) -> None:
+    def set_batch_defaults(self, defaults: dict[str, Any]) -> None:
         advanced = self._get_domain(ADVANCED_DOMAIN)
         advanced["batch_defaults"] = dict(defaults)
         self._emit_change(f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced")
@@ -739,7 +739,7 @@ class SettingsManager(QObject):
         self._emit_change(f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced")
 
 
-_settings_instance: Optional[SettingsManager] = None
+_settings_instance: SettingsManager | None = None
 
 
 def get_settings() -> SettingsManager:

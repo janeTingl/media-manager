@@ -238,7 +238,7 @@ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_nfo_*.py -v
 - Gracefully handles missing optional fields
 - Validates XML before writing
 
-## Integration with Media Manager
+## Integration with 影藏·媒体管理器
 
 The NFO exporter integrates with the media manager workflow:
 

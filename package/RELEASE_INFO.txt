@@ -1,4 +1,4 @@
-Media Manager Release Information v0.1.0
+影藏·媒体管理器 Release Information v0.1.0
 ============================================================
 
 Generated: 2024-11-09 07:04:00
@@ -20,7 +20,7 @@ To generate the real release files:
 Files Expected After Windows Build:
 ----------------------------------
 
-1. Executable: media-manager.exe
+1. Executable: 影藏·媒体管理器.exe
    Size: [TBD - 80-120 MB expected]
    SHA-256: [TBD - will be generated on Windows build]
 
@@ -43,7 +43,7 @@ Installation Options:
 --------------------
 1. Portable Version:
    - Extract the ZIP file to any folder
-   - Run media-manager.exe or start.bat
+   - Run 影藏·媒体管理器.exe or start.bat
    - No installation required
 
 2. Installer Version:
@@ -60,14 +60,14 @@ Use the SHA-256 hashes above to verify file integrity:
 GitHub Release Upload:
 --------------------
 Upload these files to the v0.1.0 GitHub Release:
-1. media-manager.exe - Main executable (generated on Windows)
+1. 影藏·媒体管理器.exe - Main executable (generated on Windows)
 2. media-manager-portable-0.1.0.zip - Portable package (generated on Windows)
 3. media-manager-installer-0.1.0.zip - Installer package (generated on Windows)
 4. RELEASE_INFO.txt - This file (updated with real hashes)
 
 Release Notes Template:
 ----------------------
-## Media Manager v0.1.0
+## 影藏·媒体管理器 v0.1.0
 
 ### 🚀 Features
 - Complete media management system
@@ -81,7 +81,7 @@ Release Notes Template:
 **Option 1: Portable (No installation required)**
 1. Download `media-manager-portable-0.1.0.zip`
 2. Extract to any folder
-3. Run `media-manager.exe`
+3. Run `影藏·媒体管理器.exe`
 
 **Option 2: Installer (System integration)**
 1. Download `media-manager-installer-0.1.0.zip`
@@ -96,7 +96,7 @@ Release Notes Template:
 ### ✅ Verification
 Verify file integrity with SHA-256 hashes:
 ```
-certutil -hashfile media-manager.exe SHA256
+certutil -hashfile 影藏·媒体管理器.exe SHA256
 certutil -hashfile media-manager-portable-0.1.0.zip SHA256  
 certutil -hashfile media-manager-installer-0.1.0.zip SHA256
 ```

@@ -1,8 +1,8 @@
-Release Notes - Media Manager v0.1.0
+Release Notes - 影藏·媒体管理器 v0.1.0
 
 🎉 Initial MVP Release
 
-This is the first public release of Media Manager, a modern PySide6-based media management application.
+This is the first public release of 影藏·媒体管理器, a modern PySide6-based media management application.
 
 ## Key Features
 

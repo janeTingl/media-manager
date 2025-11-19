@@ -1,6 +1,6 @@
 # Import/Export Guide
 
-This guide describes how to use the import and export functionality in Media Manager to achieve data portability.
+This guide describes how to use the import and export functionality in 影藏·媒体管理器 to achieve data portability.
 
 ## Overview
 
@@ -17,7 +17,7 @@ The Import/Export feature allows you to:
 
 ### Starting an Export
 
-1. Open Media Manager
+1. Open 影藏·媒体管理器
 2. Go to **Edit** → **Export Media...** (or press `Ctrl+E`)
 3. Follow the Export Wizard steps
 
@@ -146,7 +146,7 @@ The Excel export creates a spreadsheet with the following columns:
 
 ### Starting an Import
 
-1. Open Media Manager
+1. Open 影藏·媒体管理器
 2. Go to **Edit** → **Import Media...** (or press `Ctrl+I`)
 3. Follow the Import Wizard steps
 
@@ -316,7 +316,7 @@ for item in data['items']:
 with open('modified.json', 'w') as f:
     json.dump(data, f, indent=2)
 
-# Import modified.json in Media Manager
+# Import modified.json in 影藏·媒体管理器
 ```
 
 ### Custom Column Mapping

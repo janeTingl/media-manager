@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Media Manager v0.1.0 Release Script
+# 影藏·媒体管理器 v0.1.0 Release Script
 # This script prepares and creates the v0.1.0 release
 
 set -e  # Exit on any error
 
-echo "🚀 Starting Media Manager v0.1.0 Release Process"
+echo "🚀 Starting 影藏·媒体管理器 v0.1.0 Release Process"
 
 # Colors for output
 RED='\033[0;31m'
@@ -116,7 +116,7 @@ Features:
 - Comprehensive test suite
 - Docker support
 
-This is the first stable release of Media Manager MVP."
+This is the first stable release of 影藏·媒体管理器 MVP."
 print_success "Git tag v0.1.0 created"
 
 # Build the package
@@ -136,11 +136,11 @@ fi
 
 # Create release notes
 print_status "Creating release notes..."
-RELEASE_NOTES="Release Notes - Media Manager v0.1.0
+RELEASE_NOTES="Release Notes - 影藏·媒体管理器 v0.1.0
 
 🎉 Initial MVP Release
 
-This is the first public release of Media Manager, a modern PySide6-based media management application.
+This is the first public release of 影藏·媒体管理器, a modern PySide6-based media management application.
 
 ## Key Features
 
@@ -245,11 +245,11 @@ print_status "Creating installation script..."
 cat > install.sh << 'EOF'
 #!/bin/bash
 
-# Media Manager v0.1.0 Installation Script
+# 影藏·媒体管理器 v0.1.0 Installation Script
 
 set -e
 
-echo "🚀 Installing Media Manager v0.1.0"
+echo "🚀 Installing 影藏·媒体管理器 v0.1.0"
 
 # Check Python version
 if ! command -v python3 &> /dev/null; then
@@ -268,12 +268,12 @@ fi
 echo "✅ Python $PYTHON_VERSION detected"
 
 # Install from PyPI
-echo "📦 Installing Media Manager from PyPI..."
+echo "📦 Installing 影藏·媒体管理器 from PyPI..."
 pip3 install media-manager
 
 # Verify installation
 echo "🔍 Verifying installation..."
-python3 -c "import media_manager; print(f'Media Manager {media_manager.__version__} installed successfully')"
+python3 -c "import media_manager; print(f'影藏·媒体管理器 {media_manager.__version__} installed successfully')"
 
 echo "🎉 Installation complete!"
 echo ""
@@ -309,4 +309,4 @@ echo "  4. Upload the distribution files from dist/"
 echo "  5. Publish to PyPI (if ready):"
 echo "     twine upload dist/*"
 echo ""
-echo "🎉 Media Manager v0.1.0 is ready for release!"
+echo "🎉 影藏·媒体管理器 v0.1.0 is ready for release!"

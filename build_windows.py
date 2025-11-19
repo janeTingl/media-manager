@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for creating Media Manager Windows executable.
+Build script for creating 影藏·媒体管理器 Windows executable.
 
 This script handles the complete build process including:
 - Environment setup
@@ -11,14 +11,12 @@ This script handles the complete build process including:
 - Package creation
 """
 
-import os
-import sys
+import hashlib
 import shutil
 import subprocess
-import tempfile
-from pathlib import Path
+import sys
 import zipfile
-import hashlib
+from pathlib import Path
 
 # Import shared build configuration
 from build_config import get_build_config, run_command
@@ -41,16 +39,16 @@ PACKAGE_DIR = config.PACKAGE_DIR
 def setup_environment():
     """Setup the build environment."""
     print("Setting up build environment...")
-    
+
     # Validate environment using shared config
     if not config.validate_environment():
         sys.exit(1)
-    
+
     # Create necessary directories
     BUILD_DIR.mkdir(exist_ok=True)
     DIST_DIR.mkdir(exist_ok=True)
     PACKAGE_DIR.mkdir(exist_ok=True)
-    
+
     # Check if we're on Windows
     if not config.is_windows:
         print("WARNING: This build script is optimized for Windows.")
@@ -59,7 +57,7 @@ def setup_environment():
 def install_dependencies():
     """Install required dependencies."""
     print("Installing dependencies...")
-    
+
     requirements_file = PROJECT_ROOT / "requirements.txt"
     if requirements_file.exists():
         print(f"Installing runtime dependencies from {requirements_file}...")
@@ -77,7 +75,7 @@ def install_dependencies():
         ]
         for dep in runtime_dependencies:
             run_command([sys.executable, "-m", "pip", "install", dep])
-    
+
     build_requirements_file = PROJECT_ROOT / "build-requirements.txt"
     if build_requirements_file.exists():
         print(f"Installing build dependencies from {build_requirements_file}...")
@@ -87,7 +85,7 @@ def install_dependencies():
         build_dependencies = ["pyinstaller>=5.0.0"]
         for dep in build_dependencies:
             run_command([sys.executable, "-m", "pip", "install", dep])
-    
+
     optional_dependencies = ["upx"]
     for dep in optional_dependencies:
         try:
@@ -99,7 +97,7 @@ def install_dependencies():
 def create_icon():
     """Create a simple icon if one doesn't exist."""
     icon_path = PROJECT_ROOT / "icon.ico"
-    
+
     if not icon_path.exists():
         print("Creating placeholder icon...")
         # For now, we'll skip icon creation
@@ -111,49 +109,49 @@ def create_icon():
 def build_executable():
     """Build the executable using PyInstaller."""
     print("Building executable...")
-    
+
     # Clean previous builds
     if BUILD_DIR.exists():
         shutil.rmtree(BUILD_DIR)
     if DIST_DIR.exists():
         shutil.rmtree(DIST_DIR)
-    
+
     # Create spec file using shared config
     spec_file = config.create_spec_file()
     print(f"Created spec file: {spec_file}")
-    
+
     # PyInstaller command using shared config
     pyinstaller_args = config.get_pyinstaller_args()
     cmd = [sys.executable, "-m", "PyInstaller"] + pyinstaller_args + [str(spec_file)]
-    
+
     try:
         run_command(cmd)
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}")
         sys.exit(1)
-    
+
     # Check if executable was created
     exe_path = DIST_DIR / EXECUTABLE_NAME
     if not exe_path.exists():
         print(f"ERROR: Executable not found at {exe_path}")
         sys.exit(1)
-    
+
     print(f"Successfully built: {exe_path}")
     return exe_path
 
 def test_executable(exe_path: Path):
     """Test the executable to ensure it works."""
     print("Testing executable...")
-    
+
     # Basic smoke test - check if it runs without immediate crash
     try:
         # Run with --help to see basic functionality
         result = run_command([str(exe_path), "--help"], check=False)
-        
+
         # The demo app might not have --help, so we check if it starts
         if result.returncode != 0:
             print("Executable doesn't support --help, trying basic startup test...")
-            
+
             # Try to run for a few seconds then terminate
             proc = subprocess.Popen([str(exe_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
@@ -163,9 +161,9 @@ def test_executable(exe_path: Path):
                 proc.terminate()
                 proc.wait(timeout=2)
                 print("Executable started successfully (terminated after 5 seconds)")
-        
+
         print("Basic executable test passed")
-        
+
     except Exception as e:
         print(f"Executable test failed: {e}")
         print("WARNING: The executable may have issues")
@@ -173,16 +171,16 @@ def test_executable(exe_path: Path):
 def create_portable_package(exe_path: Path):
     """Create a portable package with the executable."""
     print("Creating portable package...")
-    
+
     portable_dir = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}"
     if portable_dir.exists():
         shutil.rmtree(portable_dir)
-    
+
     portable_dir.mkdir(parents=True)
-    
+
     # Copy executable
     shutil.copy2(exe_path, portable_dir / EXECUTABLE_NAME)
-    
+
     # Create documentation
     readme_content = f"""{APP_NAME} v{VERSION} - Portable Version
 {'=' * 50}
@@ -191,7 +189,7 @@ This is a portable version of {APP_NAME}. No installation is required.
 
 System Requirements:
 - Windows 7 or higher
-- 64-bit operating system  
+- 64-bit operating system
 - 500MB free disk space
 - .NET Framework 4.5 or higher (usually pre-installed)
 
@@ -214,10 +212,10 @@ For documentation and support, please refer to the project documentation.
 Version: {VERSION}
 Build Date: {subprocess.check_output(['date'], text=True).strip()}
 """
-    
+
     with open(portable_dir / "README.txt", "w", encoding="utf-8") as f:
         f.write(readme_content)
-    
+
     # Create batch file for easy launching
     batch_content = f"""@echo off
 title {APP_NAME}
@@ -230,26 +228,26 @@ if errorlevel 1 (
     pause
 )
 """
-    
+
     with open(portable_dir / "start.bat", "w", encoding="utf-8") as f:
         f.write(batch_content)
-    
+
     print(f"Portable package created: {portable_dir}")
     return portable_dir
 
 def create_installer_package(portable_dir: Path):
     """Create an installer package structure."""
     print("Creating installer package...")
-    
+
     installer_dir = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}"
     if installer_dir.exists():
         shutil.rmtree(installer_dir)
-    
+
     installer_dir.mkdir(parents=True)
-    
+
     # Copy portable contents
     shutil.copytree(portable_dir, installer_dir / "files", dirs_exist_ok=True)
-    
+
     # Create installation script
     install_script = f"""@echo off
 title {APP_NAME} Installer v{VERSION}
@@ -286,10 +284,10 @@ echo - Directly from: %INSTALL_DIR%\\{EXECUTABLE_NAME}
 echo.
 pause
 """
-    
+
     with open(installer_dir / "install.bat", "w", encoding="utf-8") as f:
         f.write(install_script)
-    
+
     # Create uninstaller script
     uninstall_script = f"""@echo off
 title {APP_NAME} Uninstaller
@@ -315,10 +313,10 @@ echo {APP_NAME} has been uninstalled successfully.
 echo.
 pause
 """
-    
+
     with open(installer_dir / "uninstall.bat", "w", encoding="utf-8") as f:
         f.write(uninstall_script)
-    
+
     print(f"Installer package created: {installer_dir}")
     return installer_dir
 
@@ -333,30 +331,30 @@ def calculate_file_hash(file_path: Path) -> str:
 def create_release_info(exe_path: Path, portable_dir: Path, installer_dir: Path):
     """Create release information file."""
     print("Creating release information...")
-    
+
     exe_size = exe_path.stat().st_size
     exe_hash = calculate_file_hash(exe_path)
-    
+
     # Create ZIP archives
     portable_zip = PACKAGE_DIR / f"{PROJECT_NAME}-portable-{VERSION}.zip"
     installer_zip = PACKAGE_DIR / f"{PROJECT_NAME}-installer-{VERSION}.zip"
-    
+
     with zipfile.ZipFile(portable_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for file_path in portable_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(portable_dir)
                 zf.write(file_path, arcname)
-    
+
     with zipfile.ZipFile(installer_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
         for file_path in installer_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(installer_dir)
                 zf.write(file_path, arcname)
-    
+
     # Calculate hashes for ZIP files
     portable_hash = calculate_file_hash(portable_zip)
     installer_hash = calculate_file_hash(installer_zip)
-    
+
     release_info = f"""{APP_NAME} Release Information v{VERSION}
 {'=' * 60}
 
@@ -413,10 +411,10 @@ v{VERSION} - Initial release
 - Windows executable with PyInstaller
 - Portable and installer packages included
 """
-    
+
     with open(PACKAGE_DIR / "RELEASE_INFO.txt", "w", encoding="utf-8") as f:
         f.write(release_info)
-    
+
     print("Release information created")
     return release_info
 
@@ -424,30 +422,30 @@ def main():
     """Main build process."""
     print(f"Building {APP_NAME} v{VERSION} for Windows...")
     print("=" * 60)
-    
+
     try:
         # Setup environment
         setup_environment()
-        
+
         # Install dependencies
         install_dependencies()
-        
+
         # Create icon (if possible)
         create_icon()
-        
+
         # Build executable
         exe_path = build_executable()
-        
+
         # Test executable
         test_executable(exe_path)
-        
+
         # Create packages
         portable_dir = create_portable_package(exe_path)
         installer_dir = create_installer_package(portable_dir)
-        
+
         # Create release information
         create_release_info(exe_path, portable_dir, installer_dir)
-        
+
         print("\n" + "=" * 60)
         print("BUILD COMPLETED SUCCESSFULLY!")
         print("=" * 60)
@@ -456,7 +454,7 @@ def main():
         print(f"Installer package: {installer_dir}")
         print(f"Release info: {PACKAGE_DIR / 'RELEASE_INFO.txt'}")
         print("\nPackage files created in:", PACKAGE_DIR)
-        
+
     except Exception as e:
         print(f"\nBUILD FAILED: {e}")
         sys.exit(1)

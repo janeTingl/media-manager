@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Media Manager v0.1.0 Installation Script
+# 影藏·媒体管理器 v0.1.0 Installation Script
 
 set -e
 
-echo "🚀 Installing Media Manager v0.1.0"
+echo "🚀 Installing 影藏·媒体管理器 v0.1.0"
 
 # Check Python version
 if ! command -v python3 &> /dev/null; then
@@ -23,12 +23,12 @@ fi
 echo "✅ Python $PYTHON_VERSION detected"
 
 # Install from PyPI
-echo "📦 Installing Media Manager from PyPI..."
+echo "📦 Installing 影藏·媒体管理器 from PyPI..."
 pip3 install media-manager
 
 # Verify installation
 echo "🔍 Verifying installation..."
-python3 -c "import media_manager; print(f'Media Manager {media_manager.__version__} installed successfully')"
+python3 -c "import media_manager; print(f'影藏·媒体管理器 {media_manager.__version__} installed successfully')"
 
 echo "🎉 Installation complete!"
 echo ""

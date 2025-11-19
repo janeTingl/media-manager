@@ -1,4 +1,4 @@
-# Build requirements for Media Manager cross-platform executables
+# Build requirements for 影藏·媒体管理器 cross-platform executables
 # Install with: pip install -r build-requirements.txt
 
 # Core GUI framework

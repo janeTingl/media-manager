@@ -22,7 +22,7 @@ class TestHelpCenterDialog:
         """Test that the help center dialog initializes successfully."""
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
-        
+
         assert dialog.windowTitle() == "Help Center"
         assert dialog._topics_list is not None
         assert dialog._content_browser is not None
@@ -31,7 +31,7 @@ class TestHelpCenterDialog:
         """Test that the help index is loaded correctly."""
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
-        
+
         # Check that topics were loaded
         assert len(dialog._topics) > 0
         assert dialog._topics_list.count() > 0
@@ -40,15 +40,15 @@ class TestHelpCenterDialog:
         """Test that all referenced help files exist."""
         docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
-        
+
         assert index_file.exists(), "Help index file should exist"
-        
+
         with open(index_file, encoding="utf-8") as f:
             index_data = json.load(f)
-        
+
         topics = index_data.get("topics", [])
         assert len(topics) > 0, "Index should contain topics"
-        
+
         # Check that all referenced files exist
         for topic in topics:
             topic_file = docs_path / topic["file"]
@@ -58,29 +58,29 @@ class TestHelpCenterDialog:
         """Test that help files don't reference missing files."""
         docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
-        
+
         with open(index_file, encoding="utf-8") as f:
             index_data = json.load(f)
-        
+
         topics = index_data.get("topics", [])
         topic_files = {topic["file"] for topic in topics}
-        
+
         # Check each help file for internal links
         for topic in topics:
             topic_file = docs_path / topic["file"]
-            
+
             with open(topic_file, encoding="utf-8") as f:
                 content = f.read()
-            
+
             # Find all local href links
             import re
             links = re.findall(r'href="([^"]+\.html)"', content)
-            
+
             for link in links:
                 # Skip external links
                 if link.startswith("http"):
                     continue
-                
+
                 # Check that referenced file exists
                 assert link in topic_files, f"Broken link in {topic['file']}: {link}"
 
@@ -107,13 +107,13 @@ class TestHelpCenterDialog:
         """Test navigating between topics."""
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
-        
+
         # Initially should show welcome topic
         assert "welcome" in dialog._history
-        
+
         # Show a different topic
         dialog.show_topic("library-setup")
-        
+
         # Should be in history
         assert "library-setup" in dialog._history
         assert len(dialog._history) >= 2
@@ -122,20 +122,20 @@ class TestHelpCenterDialog:
         """Test that search filtering works."""
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
-        
+
         initial_visible = sum(
-            1 for i in range(dialog._topics_list.count()) 
+            1 for i in range(dialog._topics_list.count())
             if not dialog._topics_list.item(i).isHidden()
         )
-        
+
         # Search for a specific term
         dialog._search_box.setText("library")
-        
+
         visible_after = sum(
-            1 for i in range(dialog._topics_list.count()) 
+            1 for i in range(dialog._topics_list.count())
             if not dialog._topics_list.item(i).isHidden()
         )
-        
+
         # Should filter results
         assert visible_after <= initial_visible
         assert visible_after > 0
@@ -144,21 +144,21 @@ class TestHelpCenterDialog:
         """Test back and forward navigation."""
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
-        
+
         # Initially, back should be disabled
         assert not dialog._back_button.isEnabled()
         assert not dialog._forward_button.isEnabled()
-        
+
         # Navigate to a new topic
         dialog.show_topic("library-setup")
-        
+
         # Back should now be enabled
         assert dialog._back_button.isEnabled()
         assert not dialog._forward_button.isEnabled()
-        
+
         # Go back
         dialog._navigate_back()
-        
+
         # Forward should now be enabled
         assert dialog._forward_button.isEnabled()
 
@@ -166,7 +166,7 @@ class TestHelpCenterDialog:
         """Test that initial topic can be set."""
         dialog = HelpCenterDialog(initial_topic="providers")
         qtbot.addWidget(dialog)
-        
+
         # Should start with providers topic
         assert "providers" in dialog._history
 
@@ -179,11 +179,11 @@ class TestOnboardingWizard:
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
             settings = SettingsManager(settings_file)
-            
+
             wizard = OnboardingWizard(settings)
             qtbot.addWidget(wizard)
-            
-            assert wizard.windowTitle() == "Welcome to Media Manager"
+
+            assert wizard.windowTitle() == "Welcome to 影藏·媒体管理器"
             assert wizard.pageIds() is not None
 
     def test_onboarding_has_required_pages(self, qtbot: QtBot) -> None:
@@ -191,10 +191,10 @@ class TestOnboardingWizard:
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
             settings = SettingsManager(settings_file)
-            
+
             wizard = OnboardingWizard(settings)
             qtbot.addWidget(wizard)
-            
+
             # Should have multiple pages
             page_count = len(wizard.pageIds())
             assert page_count >= 4  # Welcome, Library, Provider, Tour, Complete
@@ -204,16 +204,16 @@ class TestOnboardingWizard:
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
             settings = SettingsManager(settings_file)
-            
+
             # Initially should not be completed
             assert not settings.get("onboarding_completed", False)
-            
+
             wizard = OnboardingWizard(settings)
             qtbot.addWidget(wizard)
-            
+
             # Simulate accepting the wizard
             wizard._on_wizard_finished(wizard.DialogCode.Accepted)
-            
+
             # Should now be marked as completed
             assert settings.get("onboarding_completed", False)
 
@@ -222,19 +222,19 @@ class TestOnboardingWizard:
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
             settings = SettingsManager(settings_file)
-            
+
             wizard = OnboardingWizard(settings)
             qtbot.addWidget(wizard)
-            
+
             # Navigate to library setup page (page 1)
             wizard.next()
-            
+
             current_page = wizard.currentPage()
-            
+
             # Should have skip checkbox
             skip_checkbox = getattr(current_page, "skip_checkbox", None)
             assert skip_checkbox is not None
-            
+
             # Should be able to check it
             skip_checkbox.setChecked(True)
             assert skip_checkbox.isChecked()
@@ -244,20 +244,20 @@ class TestOnboardingWizard:
         with tempfile.TemporaryDirectory() as temp_dir:
             settings_file = Path(temp_dir) / "test_settings.json"
             settings = SettingsManager(settings_file)
-            
+
             wizard = OnboardingWizard(settings)
             qtbot.addWidget(wizard)
-            
+
             # Navigate to provider page
             wizard.next()  # Skip welcome
             wizard.next()  # Skip library setup
-            
+
             current_page = wizard.currentPage()
-            
+
             # Should have API key fields
             tmdb_edit = getattr(current_page, "tmdb_key_edit", None)
             tvdb_edit = getattr(current_page, "tvdb_edit", None)
-            
+
             assert tmdb_edit is not None
             assert tvdb_edit is not None
 
@@ -268,21 +268,21 @@ class TestHelpIntegration:
     def test_help_content_is_valid_html(self) -> None:
         """Test that all help content is valid HTML."""
         from html.parser import HTMLParser
-        
+
         docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
-        
+
         with open(index_file, encoding="utf-8") as f:
             index_data = json.load(f)
-        
+
         topics = index_data.get("topics", [])
-        
+
         for topic in topics:
             topic_file = docs_path / topic["file"]
-            
+
             with open(topic_file, encoding="utf-8") as f:
                 content = f.read()
-            
+
             # Try to parse as HTML - will raise exception if invalid
             parser = HTMLParser()
             try:
@@ -294,15 +294,15 @@ class TestHelpIntegration:
         """Test that help index has all required fields."""
         docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
-        
+
         with open(index_file, encoding="utf-8") as f:
             index_data = json.load(f)
-        
+
         # Check top-level fields
         assert "title" in index_data
         assert "topics" in index_data
         assert "locale" in index_data
-        
+
         # Check each topic has required fields
         topics = index_data.get("topics", [])
         for topic in topics:

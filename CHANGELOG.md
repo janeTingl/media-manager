@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Media Manager project are documented in this file.
+All notable changes to the 影藏·媒体管理器 project are documented in this file.
 
 ## [Unreleased]
 
@@ -249,7 +249,7 @@ This is the initial release - no migrations needed.
 
 ### Contributors
 
-- Media Manager Team
+- 影藏·媒体管理器团队
 
 ### Acknowledgments
 

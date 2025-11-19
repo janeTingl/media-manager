@@ -1,6 +1,6 @@
-# Media Manager - Features & Status
+# 影藏·媒体管理器 - Features & Status
 
-Complete feature list for Media Manager v0.1.0 with implementation status and details.
+Complete feature list for 影藏·媒体管理器 v0.1.0 with implementation status and details.
 
 ## Executive Feature Summary
 
