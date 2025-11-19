@@ -12,9 +12,9 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QIcon
 
-from ..logging import get_logger
-from ..persistence.models import MediaItem
-from ..persistence.repositories import MediaItemRepository
+from media_manager.logging import get_logger
+from media_manager.persistence.models import MediaItem
+from media_manager.persistence.repositories import MediaItemRepository
 
 
 class LibraryViewModel(QAbstractItemModel):
