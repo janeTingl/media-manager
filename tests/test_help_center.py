@@ -11,6 +11,9 @@ from src.media_manager.help_center_dialog import HelpCenterDialog
 from src.media_manager.onboarding_wizard import OnboardingWizard
 from src.media_manager.settings import SettingsManager
 
+HELP_DOCS_LOCALE = "zh-CN"
+HELP_DOCS_PATH = Path(__file__).parent.parent / "docs" / HELP_DOCS_LOCALE
+
 
 class TestHelpCenterDialog:
     """Tests for the HelpCenterDialog."""
@@ -35,7 +38,7 @@ class TestHelpCenterDialog:
 
     def test_help_files_exist(self) -> None:
         """Test that all referenced help files exist."""
-        docs_path = Path(__file__).parent.parent / "docs" / "en"
+        docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
         
         assert index_file.exists(), "Help index file should exist"
@@ -53,7 +56,7 @@ class TestHelpCenterDialog:
 
     def test_help_files_have_no_broken_links(self) -> None:
         """Test that help files don't reference missing files."""
-        docs_path = Path(__file__).parent.parent / "docs" / "en"
+        docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
         
         with open(index_file, encoding="utf-8") as f:
@@ -83,7 +86,7 @@ class TestHelpCenterDialog:
 
     def test_zh_cn_help_locale_exists(self) -> None:
         """Ensure the Simplified Chinese help locale is present and complete."""
-        docs_path = Path(__file__).parent.parent / "docs" / "zh-CN"
+        docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
 
         assert index_file.exists(), "Chinese help index should exist"
@@ -91,7 +94,7 @@ class TestHelpCenterDialog:
         with open(index_file, encoding="utf-8") as f:
             index_data = json.load(f)
 
-        assert index_data.get("locale") == "zh-CN"
+        assert index_data.get("locale") == HELP_DOCS_LOCALE
 
         topics = index_data.get("topics", [])
         assert topics, "Chinese help index should list topics"
@@ -266,7 +269,7 @@ class TestHelpIntegration:
         """Test that all help content is valid HTML."""
         from html.parser import HTMLParser
         
-        docs_path = Path(__file__).parent.parent / "docs" / "en"
+        docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
         
         with open(index_file, encoding="utf-8") as f:
@@ -289,7 +292,7 @@ class TestHelpIntegration:
 
     def test_help_index_has_required_fields(self) -> None:
         """Test that help index has all required fields."""
-        docs_path = Path(__file__).parent.parent / "docs" / "en"
+        docs_path = HELP_DOCS_PATH
         index_file = docs_path / "index.json"
         
         with open(index_file, encoding="utf-8") as f:

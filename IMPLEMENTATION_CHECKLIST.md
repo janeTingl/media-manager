@@ -20,10 +20,10 @@
 - [x] Can be manually triggered
 
 ### Localization
-- [x] Locale-based content support (docs/en/)
-- [x] Settings integration for locale
-- [x] Fallback to English if translation missing
-- [x] Localization hooks in place
+- [x] Locale-based content support (docs/zh-CN/)
+- [x] Settings integration defaults to zh-CN
+- [x] zh-CN fallback enforced (single shipped locale)
+- [x] Localization hooks retained for future expansion
 
 ### Tests
 - [x] Help file loading tests
@@ -39,13 +39,13 @@
 - [x] `src/media_manager/onboarding_wizard.py` (378 lines)
 
 ### Documentation Structure
-- [x] `docs/en/index.json` - Topic index
-- [x] `docs/en/welcome.html` - Welcome page
-- [x] `docs/en/quick-start.html` - Quick start guide
-- [x] `docs/en/library-setup.html` - Library setup
-- [x] `docs/en/providers.html` - Provider config
-- [x] `docs/en/troubleshooting.html` - Troubleshooting
-- [x] `docs/en/*.html` - Additional topic placeholders
+- [x] `docs/zh-CN/index.json` - Topic index
+- [x] `docs/zh-CN/welcome.html` - Welcome page
+- [x] `docs/zh-CN/quick-start.html` - Quick start guide
+- [x] `docs/zh-CN/library-setup.html` - Library setup
+- [x] `docs/zh-CN/providers.html` - Provider config
+- [x] `docs/zh-CN/troubleshooting.html` - Troubleshooting
+- [x] `docs/zh-CN/*.html` - Additional topic placeholders
 
 ### Tests
 - [x] `tests/test_help_center.py` (287 lines)
@@ -121,7 +121,7 @@
 - [x] Quick reference guide
 - [x] Usage examples provided
 - [x] Developer guidelines
-- [x] Translation guide
+- [x] Localization policy documented
 - [x] Troubleshooting tips
 
 ## ✅ Quality Checks
@@ -141,7 +141,7 @@
 | Requirement | Status | Notes |
 |-------------|--------|-------|
 | Embedded help with QTextBrowser | ✅ | HelpCenterDialog implemented |
-| Markdown/HTML docs in docs/ | ✅ | 12 topics in docs/en/ |
+| Markdown/HTML docs in docs/ | ✅ | 12 topics in docs/zh-CN/ |
 | Navigation and search | ✅ | Full navigation with history |
 | Context-sensitive F1 | ✅ | Tab-aware topic routing |
 | First-run onboarding wizard | ✅ | 5-page wizard |

@@ -33,12 +33,9 @@
 
 ```
 docs/
-  en/                      # English locale
+  zh-CN/                  # Simplified Chinese locale
     index.json            # Topic index
     *.html                # Help pages
-  fr/                     # French locale (example)
-    index.json
-    *.html
 
 src/media_manager/
   help_center_dialog.py   # Help center implementation
@@ -50,7 +47,7 @@ tests/
 
 ### Adding a New Help Topic
 
-1. **Create HTML file** in `docs/en/`:
+1. **Create HTML file** in `docs/zh-CN/`:
    ```html
    <!DOCTYPE html>
    <html>
@@ -85,27 +82,11 @@ tests/
    <a href="your-topic.html">Your Topic</a>
    ```
 
-### Adding a Translation
+### Localization Policy
 
-1. **Create locale directory**:
-   ```bash
-   mkdir docs/fr
-   ```
-
-2. **Copy and translate files**:
-   ```bash
-   cp docs/en/index.json docs/fr/
-   cp docs/en/*.html docs/fr/
-   # Edit files to translate
-   ```
-
-3. **Update locale in index.json**:
-   ```json
-   {
-     "locale": "fr",
-     ...
-   }
-   ```
+Simplified Chinese (`zh-CN`) is the only supported locale. Keep all help
+content under `docs/zh-CN/` synced with the application's features. Additional
+translations are not distributed with the product.
 
 ### Testing
 
@@ -153,8 +134,8 @@ dialog.exec()
 # Show topic programmatically
 dialog.show_topic("providers")
 
-# Change locale
-dialog.set_locale("fr")
+# Change locale (zh-CN is the only supported option)
+dialog.set_locale("zh-CN")
 ```
 
 ### OnboardingWizard
@@ -175,13 +156,13 @@ from src.media_manager.settings import get_settings
 
 settings = get_settings()
 
-# Language settings
+# Language settings (zh-CN only)
 locale = settings.get_language()           # Get UI language
-settings.set_language("fr")                # Set UI language
+settings.set_language("zh-CN")             # Reapply UI language
 
-# Help locale
+# Help locale (mirrors UI language)
 help_locale = settings.get_help_locale()   # Get help locale
-settings.set_help_locale("fr")             # Set help locale
+settings.set_help_locale("zh-CN")          # Reapply help locale
 
 # Onboarding
 completed = settings.get("onboarding_completed", False)
@@ -195,7 +176,7 @@ settings.set("onboarding_completed", True)
 **Problem**: Help center shows "Error" or blank content
 
 **Solution**:
-1. Check that `docs/en/` directory exists
+1. Check that `docs/zh-CN/` directory exists
 2. Verify `index.json` is valid JSON
 3. Ensure HTML files exist and are readable
 4. Run `python3 validate_help.py`
@@ -224,7 +205,7 @@ settings.set("onboarding_completed", True)
 
 **Solution**:
 1. Run `python3 validate_help.py` to check links
-2. Verify target file exists in `docs/en/`
+2. Verify target file exists in `docs/zh-CN/`
 3. Ensure filename matches exactly (case-sensitive)
 4. Check that target is listed in `index.json`
 
@@ -284,10 +265,4 @@ settings.set("onboarding_completed", True)
 4. **Document context**: Update context mappings
 5. **Maintain index**: Keep `index.json` synchronized
 
-### For Translators
 
-1. **Preserve structure**: Keep HTML structure intact
-2. **Maintain links**: Don't change link targets
-3. **Update keywords**: Translate keywords in index
-4. **Test display**: Verify formatting in help center
-5. **Keep consistent**: Use consistent terminology

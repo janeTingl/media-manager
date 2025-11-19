@@ -10,6 +10,9 @@ from PySide6.QtCore import QObject, QSettings, Signal
 
 DEFAULT_SETTINGS_PATH = Path.home() / ".media-manager" / "settings.json"
 
+DEFAULT_LANGUAGE = "zh-CN"
+SUPPORTED_UI_LANGUAGES: tuple[str, ...] = (DEFAULT_LANGUAGE,)
+
 LIBRARY_DOMAIN = "library_settings"
 PROVIDER_DOMAIN = "providers"
 CACHE_DOMAIN = "cache_settings"
@@ -37,6 +40,7 @@ class SettingsManager(QObject):
         self._load_settings()
         self._ensure_default_domains()
         self._migrate_legacy_schema()
+        self._ensure_language_defaults()
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -95,6 +99,16 @@ class SettingsManager(QObject):
             ADVANCED_DOMAIN,
         ):
             self._get_domain(domain)
+
+    def _ensure_language_defaults(self) -> None:
+        """Ensure UI and help locales default to Simplified Chinese."""
+        ui_settings = self._get_domain(UI_DOMAIN)
+        if ui_settings.get("language") not in SUPPORTED_UI_LANGUAGES:
+            ui_settings["language"] = DEFAULT_LANGUAGE
+
+        help_locale = ui_settings.get("help_locale")
+        if help_locale not in SUPPORTED_UI_LANGUAGES:
+            ui_settings["help_locale"] = DEFAULT_LANGUAGE
 
     def _migrate_legacy_schema(self) -> None:
         """Migrate legacy flat keys into the new domain-based schema."""
@@ -679,11 +693,12 @@ class SettingsManager(QObject):
 
     def get_language(self) -> str:
         """Get the UI language/locale setting."""
-        return str(self.get_ui_setting("language", "en"))
+        return str(self.get_ui_setting("language", DEFAULT_LANGUAGE))
 
     def set_language(self, language: str) -> None:
         """Set the UI language/locale setting."""
-        self.set_ui_setting("language", language)
+        normalized = language if language in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
+        self.set_ui_setting("language", normalized)
 
     def get_help_locale(self) -> str:
         """Get the help documentation locale (falls back to UI language)."""
@@ -691,7 +706,8 @@ class SettingsManager(QObject):
 
     def set_help_locale(self, locale: str) -> None:
         """Set the help documentation locale."""
-        self.set_ui_setting("help_locale", locale)
+        normalized = locale if locale in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
+        self.set_ui_setting("help_locale", normalized)
 
     # ------------------------------------------------------------------
     # Advanced settings

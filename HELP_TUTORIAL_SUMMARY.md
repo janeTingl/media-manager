@@ -198,8 +198,8 @@ src/media_manager/
 ### For Developers
 
 **Adding New Help Topics:**
-1. Create HTML file in `docs/en/your-topic.html`
-2. Add entry to `docs/en/index.json`:
+1. Create HTML file in `docs/zh-CN/your-topic.html`
+2. Add entry to `docs/zh-CN/index.json`:
    ```json
    {
      "id": "your-topic",
@@ -210,11 +210,11 @@ src/media_manager/
    ```
 3. Link from other pages: `<a href="your-topic.html">Your Topic</a>`
 
-**Adding Translations:**
-1. Create locale directory: `docs/fr/`
-2. Copy and translate `index.json`
-3. Translate all HTML files
-4. Users can select locale in preferences
+**Localization Policy:**
+- Simplified Chinese (`zh-CN`) is the only distributed locale.
+- Keep `docs/zh-CN/` complete and in sync with new features.
+- Locale switching remains in the codebase for potential future expansion, but
+  user-facing options are limited to `zh-CN`.
 
 **Testing:**
 ```bash
@@ -231,29 +231,14 @@ python3 -m py_compile src/media_manager/onboarding_wizard.py
 
 ## Localization Architecture
 
-The help system is fully localizable:
+The help system now ships exclusively with Simplified Chinese content:
 
-1. **Settings Integration**: `get_help_locale()` returns current locale
-2. **Fallback Chain**: If topic not found in user's locale, falls back to English
-3. **Directory Structure**: Each locale has its own directory under `docs/`
-4. **Index Per Locale**: Each locale has its own `index.json`
-5. **Runtime Selection**: Locale can be changed in preferences
-
-**Adding a New Locale:**
-```bash
-# Create locale directory
-mkdir docs/fr
-
-# Copy English files as template
-cp docs/en/index.json docs/fr/
-cp docs/en/*.html docs/fr/
-
-# Translate files
-# Update locale in index.json to "fr"
-
-# Set locale in application
-settings.set_help_locale("fr")
-```
+1. **Settings Integration**: `get_help_locale()` and `get_language()` default to
+   `zh-CN` and ignore unsupported locales.
+2. **Directory Structure**: All help assets live under `docs/zh-CN/`.
+3. **Single Locale Distribution**: Additional translations are not bundled. Any
+   custom deployments that require extra locales must add directories manually
+   and rebuild the application.
 
 ## Key Features
 
