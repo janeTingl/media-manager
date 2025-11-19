@@ -1,0 +1,79 @@
+{
+  "title": "Media Manager 帮助",
+  "version": "1.0",
+  "locale": "zh-CN",
+  "topics": [
+    {
+      "id": "welcome",
+      "title": "欢迎",
+      "file": "welcome.html",
+      "keywords": ["欢迎", "介绍", "overview"]
+    },
+    {
+      "id": "quick-start",
+      "title": "快速入门指南",
+      "file": "quick-start.html",
+      "keywords": ["快速", "入门", "教程", "quick start"]
+    },
+    {
+      "id": "library-setup",
+      "title": "媒体库设置",
+      "file": "library-setup.html",
+      "keywords": ["媒体库", "设置", "library"]
+    },
+    {
+      "id": "providers",
+      "title": "元数据提供商",
+      "file": "providers.html",
+      "keywords": ["提供商", "tmdb", "tvdb", "metadata"]
+    },
+    {
+      "id": "scanning",
+      "title": "扫描媒体",
+      "file": "scanning.html",
+      "keywords": ["扫描", "matching", "导入"]
+    },
+    {
+      "id": "metadata-editing",
+      "title": "编辑元数据",
+      "file": "metadata-editing.html",
+      "keywords": ["编辑", "metadata", "信息"]
+    },
+    {
+      "id": "batch-operations",
+      "title": "批量操作",
+      "file": "batch-operations.html",
+      "keywords": ["批量", "操作", "batch"]
+    },
+    {
+      "id": "tags-favorites",
+      "title": "标签与收藏",
+      "file": "tags-favorites.html",
+      "keywords": ["标签", "收藏", "favorites"]
+    },
+    {
+      "id": "search",
+      "title": "搜索媒体",
+      "file": "search.html",
+      "keywords": ["搜索", "查找", "search"]
+    },
+    {
+      "id": "import-export",
+      "title": "导入与导出",
+      "file": "import-export.html",
+      "keywords": ["导入", "导出", "备份"]
+    },
+    {
+      "id": "preferences",
+      "title": "首选项",
+      "file": "preferences.html",
+      "keywords": ["设置", "preferences", "选项"]
+    },
+    {
+      "id": "troubleshooting",
+      "title": "故障排除",
+      "file": "troubleshooting.html",
+      "keywords": ["问题", "排除", "troubleshooting"]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>元数据提供商</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .warning { background: #f8d7da; padding: 15px; margin: 15px 0; border-left: 4px solid #dc3545; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>元数据提供商</h1>
+    
+    <p>Media Manager 会从线上数据库抓取影片资讯，并自动填入标题、年份、海报等细节。</p>
+    
+    <h2>支援的提供商</h2>
+    
+    <h3>TMDB（The Movie Database）</h3>
+    <p>主要的电影与影集资料来源。</p>
+    <ul>
+        <li><strong>网站：</strong> <a href="https://www.themoviedb.org/">themoviedb.org</a></li>
+        <li><strong>API 金钥：</strong> <a href="https://www.themoviedb.org/settings/api">申请金钥</a></li>
+        <li><strong>费用：</strong> 非商业用途免费</li>
+    </ul>
+    
+    <h3>TVDB（The TV Database）</h3>
+    <p>专注于电视与影集的资料库。</p>
+    <ul>
+        <li><strong>网站：</strong> <a href="https://thetvdb.com/">thetvdb.com</a></li>
+        <li><strong>API 金钥：</strong> <a href="https://thetvdb.com/dashboard/account/apikeys">申请金钥</a></li>
+        <li><strong>费用：</strong> 非商业用途免费</li>
+    </ul>
+    
+    <h2>设定提供商</h2>
+    <ol>
+        <li>打开 <strong>Edit → Preferences</strong></li>
+        <li>切换到 <strong>Providers</strong> 页签</li>
+        <li>输入各提供商的 API 金钥</li>
+        <li>如有需要，可进一步设定：
+            <ul>
+                <li><strong>Enabled Providers：</strong> 要启用的来源</li>
+                <li><strong>Timeout：</strong> 网络请求逾时时间（秒）</li>
+                <li><strong>Retry Count：</strong> 失败时的重试次数</li>
+            </ul>
+        </li>
+        <li>点击 <strong>Apply</strong></li>
+    </ol>
+    
+    <div class="warning">
+        <strong>重要：</strong> 至少需要启用一个提供商才能抓取资料；若没有 API 金钥，所有资讯都得手动输入。
+    </div>
+    
+    <h2>提供商优先顺序</h2>
+    <p>当启用多个提供商时，Media Manager 会依顺序尝试：</p>
+    <ol>
+        <li>先使用第一个启用的提供商</li>
+        <li>若没有结果，再尝试下一位</li>
+        <li>采纳匹配度最高的结果</li>
+    </ol>
+    
+    <h2>快取</h2>
+    <p>为了提升速度与减少 API 呼叫，提供商响应会被快取。相关设定可在 <strong>Advanced</strong> 分页调整。</p>
+    
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="quick-start.html">快速入门指南</a></li>
+        <li><a href="scanning.html">扫描媒体</a></li>
+        <li><a href="preferences.html">首选项</a></li>
+    </ul>
+</body>
+</html>

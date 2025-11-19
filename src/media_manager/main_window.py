@@ -485,7 +485,8 @@ class MainWindow(QMainWindow):
             "About Media Manager",
             "Media Manager v0.1.0\n\n"
             "A PySide6-based media management application.\n\n"
-            "Built with Python and PySide6.",
+            "Built with Python and PySide6.\n"
+            "Author: janeT",
         )
 
     def _on_settings_manager_changed(self, key: str, value: object) -> None:

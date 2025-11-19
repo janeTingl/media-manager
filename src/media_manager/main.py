@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from typing import Optional
 
 from PySide6.QtCore import QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
@@ -24,14 +25,28 @@ def create_application() -> QApplication:
     app.setOrganizationName("Media Manager Team")
     app.setOrganizationDomain("media-manager.local")
 
-    # Setup translator
-    translator = QTranslator()
-    locale = QLocale.system()
-    translations_path = str(Path(__file__).parent / "translations")
-    if translator.load(locale, "media_manager", "_", translations_path):
-        app.installTranslator(translator)
-
     return app
+
+
+def _install_translator(app: QApplication, language: Optional[str] = None) -> None:
+    """Install Qt translations for the requested language if available."""
+    translations_path = Path(__file__).parent / "translations"
+    if not translations_path.exists():
+        return
+
+    translator = QTranslator()
+    locale = _resolve_locale(language)
+    if translator.load(locale, "media_manager", "_", str(translations_path)):
+        app.installTranslator(translator)
+        setattr(app, "_installed_translator", translator)
+
+
+def _resolve_locale(language: Optional[str]) -> QLocale:
+    """Return a QLocale for the requested language or the system default."""
+    if language:
+        normalized = language.replace("-", "_")
+        return QLocale(normalized)
+    return QLocale.system()
 
 
 def main() -> int:
@@ -47,6 +62,9 @@ def main() -> int:
 
         # Get settings
         settings = get_settings()
+
+        # Install translator based on preferred language
+        _install_translator(app, settings.get_language())
 
         # Initialize database service
         db_service = init_database_service(settings.get_database_url())

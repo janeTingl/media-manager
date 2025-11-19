@@ -4,7 +4,7 @@ include LICENSE
 include CHANGELOG.md
 include pyproject.toml
 recursive-include src/media_manager *.py
-recursive-include docs *.md *.txt
+recursive-include docs *.md *.txt *.html *.json
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-exclude * .DS_Store

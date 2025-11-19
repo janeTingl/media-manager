@@ -469,7 +469,7 @@ class UIPreferencesWidget(BasePreferencesSection):
     """Preferences section for UI-related options."""
 
     THEMES = ["system", "light", "dark"]
-    LANGUAGES = ["en", "de", "es", "fr"]
+    LANGUAGES = ["en", "de", "es", "fr", "zh-CN"]
 
     def __init__(self, settings: SettingsManager, parent: Optional[QWidget] = None) -> None:
         super().__init__(settings, parent)

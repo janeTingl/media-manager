@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>故障排除</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        h3 { color: #546e7a; }
+        .solution { background: #e8f5e9; padding: 10px; margin: 10px 0; border-left: 3px solid #4caf50; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>故障排除</h1>
+    
+    <p>以下列出常见问题与对应的解决方式。</p>
+    
+    <h2>元数据问题</h2>
+    
+    <h3>无法取得任何元数据</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>确认已在 <strong>Edit → Preferences → Providers</strong> 中填写正确的 API 金钥</li>
+            <li>检查网路连接是否正常</li>
+            <li>确定至少启用一个提供商</li>
+            <li>查看日志是否有错误讯息</li>
+        </ul>
+    </div>
+    
+    <h3>匹配结果完全不正确</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>使用搜寻功能手动挑选正确的结果</li>
+            <li>将档名加入年份（例如「Movie Title (2020).mkv」）</li>
+            <li>在匹配后手动编辑元数据</li>
+        </ul>
+    </div>
+    
+    <h2>扫描问题</h2>
+    
+    <h3>找不到任何档案</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>确认档案格式受支援（mkv、mp4、avi 等）</li>
+            <li>确保档案位于媒体库的 root path 内</li>
+            <li>检查是否具有读取该资料夹的权限</li>
+        </ul>
+    </div>
+    
+    <h3>扫描速度非常慢</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>第一次处理大型媒体库时需要较久时间</li>
+            <li>后续扫描会因为快取而更快</li>
+            <li>可考虑拆分为多个较小的媒体库</li>
+        </ul>
+    </div>
+    
+    <h2>效能问题</h2>
+    
+    <h3>程式反应迟缓或冻结</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>在 <strong>Edit → Preferences → Advanced</strong> 中清除快取</li>
+            <li>减少一次下载的海报类型</li>
+            <li>提高快取 TTL 以降低 API 请求频率</li>
+            <li>关闭其他占用资源的应用程式</li>
+        </ul>
+    </div>
+    
+    <h2>界面问题</h2>
+    
+    <h3>海报没有显示</h3>
+    <div class="solution">
+        <strong>解决方法：</strong>
+        <ul>
+            <li>检查首选项里的海报下载设定</li>
+            <li>确认快取资料夹可写入</li>
+            <li>尝试清除并重新下载海报</li>
+        </ul>
+    </div>
+    
+    <h2>需要更多帮助？</h2>
+    <p>若问题仍然存在，可以：</p>
+    <ul>
+        <li>查看日志（一般位于 <code>~/.media-manager/logs/</code>）</li>
+        <li>查阅其他说明主题以获得更完整资讯</li>
+        <li>向开发团队回报错误</li>
+    </ul>
+    
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="providers.html">元数据提供商</a></li>
+        <li><a href="scanning.html">扫描媒体</a></li>
+        <li><a href="preferences.html">首选项</a></li>
+    </ul>
+</body>
+</html>

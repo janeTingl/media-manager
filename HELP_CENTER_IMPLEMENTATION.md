@@ -59,6 +59,9 @@ docs/
     providers.html      # Provider configuration
     troubleshooting.html # Common issues
     ... (other topics)
+  zh-CN/
+    index.json          # 简体中文主题索引
+    *.html              # Translated help topics (mirrors en/ structure)
 ```
 
 **index.json structure:**
