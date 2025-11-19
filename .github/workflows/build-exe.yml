@@ -1,19 +1,85 @@
-name: Build EXE for Windows & macOS with Resources, Version & Release Notes
+name: Build Media Manager
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install PySide6
+          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          $VERSION = "${GITHUB_REF#refs/tags/}"
+          if (-not $VERSION) { $VERSION = "dev" }
+
+          $versionFile = ".\src\media_manager\version.txt"
+          $dir = Split-Path $versionFile
+          if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
+          Set-Content -Path $versionFile -Value $VERSION
+
+          $res_src = ".\resources"
+          $res_dest = "resources"
+
+          if (Test-Path $res_src) {
+              pyinstaller `
+                --onefile `
+                -m media_manager `
+                --paths .\src `
+                --name "media-manager-$VERSION" `
+                --add-data "$res_src;$res_dest"
+          } else {
+              Write-Host "Resources folder not found, skipping --add-data"
+              pyinstaller `
+                --onefile `
+                -m media_manager `
+                --paths .\src `
+                --name "media-manager-$VERSION"
+          }
+
+      - name: Compress EXE to zip
+        shell: pwsh
+        run: |
+          $VERSION = "${GITHUB_REF#refs/tags/}"
+          Compress-Archive -Path "dist/media-manager-$VERSION.exe" -DestinationPath "dist/media-manager-$VERSION.zip"
+
+      - name: Generate SHA256
+        shell: pwsh
+        id: checksum
+        run: |
+          $VERSION = "${GITHUB_REF#refs/tags/}"
+          $exePath = "dist/media-manager-$VERSION.exe"
+          $hash = Get-FileHash $exePath -Algorithm SHA256
+          echo "SHA256=$($hash.Hash)" >> $GITHUB_ENV
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-manager-artifacts
+          path: |
+            dist/media-manager-*.exe
+            dist/media-manager-*.zip
+
+  build-macos:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -25,137 +91,49 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PySide6
+          pip install pyinstaller
+          pip install PySide6
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        shell: bash
 
-      - name: Prepare version.txt
+      - name: Build macOS executable
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           if [ -z "$VERSION" ]; then VERSION="dev"; fi
-          VERSION=$(echo "$VERSION" | tr '/' '-')
-          mkdir -p src/media_manager
-          echo "$VERSION" > src/media_manager/version.txt
-        shell: bash
 
-      - name: Build EXE / App
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          if [ -z "$VERSION" ]; then VERSION="dev"; fi
-          VERSION=$(echo "$VERSION" | tr '/' '-')
+          VERSION_FILE="src/media_manager/version.txt"
+          mkdir -p "$(dirname "$VERSION_FILE")"
+          echo "$VERSION" > "$VERSION_FILE"
 
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-              pwsh -Command "
-                  \$versionFile = '.\src\media_manager/version.txt'
-                  \$dir = Split-Path \$versionFile
-                  if (-not (Test-Path \$dir)) { New-Item -ItemType Directory -Path \$dir | Out-Null }
-                  Set-Content -Path \$versionFile -Value '$VERSION'
+          RES_SRC="resources"
+          RES_DEST="resources"
 
-                  \$res_src = '.\resources'
-                  \$res_dest = 'resources'
-
-                  if (Test-Path \$res_src) {
-                      pyinstaller `
-                        --onefile `
-                        -m media_manager `
-                        --paths .\src `
-                        --name 'media-manager-$VERSION' `
-                        --add-data '\$res_src;\$res_dest'
-                  } else {
-                      Write-Host 'Resources folder not found, skipping --add-data'
-                      pyinstaller `
-                        --onefile `
-                        -m media_manager `
-                        --paths .\src `
-                        --name 'media-manager-$VERSION'
-                  }
-              "
-          else
-              # macOS
-              RES_SRC="resources"
-              RES_DEST="resources"
+          if [ -d "$RES_SRC" ]; then
               pyinstaller -m media_manager \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION" \
                 --add-data "$RES_SRC:$RES_DEST"
+          else
+              pyinstaller -m media_manager \
+                --paths src \
+                --onefile \
+                --name "media-manager-macos-$VERSION"
           fi
-        shell: bash
+
+      - name: Compress macOS executable
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          zip -j "dist/media-manager-macos-$VERSION.zip" "dist/media-manager-macos-$VERSION"
 
       - name: Generate SHA256
+        id: checksum-macos
         run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            pwsh -Command "
-              \$shaFile = 'dist/sha256.txt'
-              New-Item -Path \$shaFile -Force -ItemType File | Out-Null
-              Get-ChildItem 'dist' -File | ForEach-Object {
-                \$hash = Get-FileHash \$_ -Algorithm SHA256
-                Add-Content -Path \$shaFile -Value \"\$($_.Name): \$($hash.Hash)\"
-              }
-            "
-          else
-            SHA256_FILE="dist/sha256.txt"
-            > $SHA256_FILE
-            for f in dist/*; do
-              HASH=$(shasum -a 256 "$f" | awk '{print $1}')
-              echo "$f: $HASH" >> $SHA256_FILE
-              echo "$f SHA256=$HASH"
-            done
-          fi
-        shell: bash
+          VERSION="${GITHUB_REF#refs/tags/}"
+          shasum -a 256 "dist/media-manager-macos-$VERSION" > "dist/sha256-macos.txt"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}
-          path: dist/*
-
-  release:
-    name: Publish Release
-    runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./release-files
-
-      - name: Generate Release Notes from README & SHA256
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          DATE=$(date +"%Y-%m-%d")
-          VERSION=$(echo "$VERSION" | tr '/' '-')
-
-          echo "## Release $VERSION" > release_notes.md
-          echo "**Date:** $DATE" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Project Description" >> release_notes.md
-          head -n 40 README.md >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Changes" >> release_notes.md
-          echo "- Update release details as needed" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### SHA256 Checksums" >> release_notes.md
-
-          for f in release-files/*; do
-            if [[ "$f" == *.exe ]] || [[ "$f" == *macos* ]]; then
-              if [[ "$RUNNER_OS" == "Windows" ]]; then
-                HASH=$(powershell -Command "Get-FileHash '$f' -Algorithm SHA256 | Select-Object -ExpandProperty Hash")
-              else
-                HASH=$(shasum -a 256 "$f" | awk '{print $1}')
-              fi
-              echo "- $(basename $f): $HASH" >> release_notes.md
-            fi
-          done
-
-      - name: Publish Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./release-files/**
-          body_path: release_notes.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: media-manager-artifacts-macos
+          path: |
+            dist/media-manager-macos-*
