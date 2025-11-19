@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QItemSelectionModel
 from PySide6.QtWidgets import (
     QHeaderView,
     QMenu,
@@ -71,6 +71,7 @@ class MediaTableView(QTableView):
         
         # Model
         self._model: Optional[LibraryViewModel] = None
+        self._selection_model: Optional[QItemSelectionModel] = None
         
         # Context menu
         self._context_menu: Optional[QMenu] = None
@@ -79,18 +80,31 @@ class MediaTableView(QTableView):
         self.clicked.connect(self._on_item_clicked)
         self.doubleClicked.connect(self._on_item_double_clicked)
         self.entered.connect(self._on_item_entered)
-        self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def set_model(self, model: LibraryViewModel) -> None:
         """Set the view model."""
         self._model = model
         self.setModel(model)
+        self._refresh_selection_model_binding()
         
         # Apply default column widths
         self._apply_column_widths()
         
         # Set default sort
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+
+    def _refresh_selection_model_binding(self) -> None:
+        """Ensure the Qt selection model signal is connected safely."""
+        if self._selection_model is not None:
+            try:
+                self._selection_model.selectionChanged.disconnect(self._on_selection_changed)
+            except (RuntimeError, TypeError):
+                pass
+
+        selection_model = self.selectionModel()
+        self._selection_model = selection_model
+        if selection_model is not None:
+            selection_model.selectionChanged.connect(self._on_selection_changed)
 
     def get_selected_items(self) -> list:
         """Get currently selected media items."""
