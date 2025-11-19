@@ -55,16 +55,16 @@ jobs:
           $res_dest = "resources"
 
           if (Test-Path $res_src) {
-              pyinstaller ` 
+              python -m PyInstaller `
                 --onefile `
-                .\src\media_manager\main.py `
+                -m media_manager `
                 --paths .\src `
                 --name "media-manager-$VERSION" `
                 --add-data "$res_src;$res_dest"
           } else {
-              pyinstaller ` 
+              python -m PyInstaller `
                 --onefile `
-                .\src\media_manager\main.py `
+                -m media_manager `
                 --paths .\src `
                 --name "media-manager-$VERSION"
           }
@@ -131,13 +131,13 @@ jobs:
           RES_DEST="resources"
 
           if [ -d "$RES_SRC" ]; then
-              python3 -m PyInstaller src/media_manager/main.py \
+              python -m PyInstaller src/media_manager/main.py \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION" \
                 --add-data "$RES_SRC:$RES_DEST"
           else
-              python3 -m PyInstaller src/media_manager/main.py \
+              python -m PyInstaller src/media_manager/main.py \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION"
