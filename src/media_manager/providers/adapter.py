@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..cache_service import get_cache_service
-from ..instrumentation import get_instrumentation
-from ..logging import get_logger
-from ..models import MediaMatch, MediaType, MatchStatus, DownloadStatus, PosterInfo, PosterType, VideoMetadata
+from media_manager.cache_service import get_cache_service
+from media_manager.instrumentation import get_instrumentation
+from media_manager.logging import get_logger
+from media_manager.models import MediaMatch, MediaType, MatchStatus, DownloadStatus, PosterInfo, PosterType, VideoMetadata
 from .base import BaseProvider, ProviderError, ProviderResult
 
 

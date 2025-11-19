@@ -14,7 +14,7 @@ from tenacity import (
     retry_if_exception_type,
 )
 
-from ..logging import get_logger
+from media_manager.logging import get_logger
 from .base import BaseProvider, ProviderError, ProviderResult
 
 

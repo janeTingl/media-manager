@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
 
-from ..logging import get_logger
+from media_manager.logging import get_logger
 from .database import get_database_service
 from .models import Library, MediaItem, MediaFile, Artwork, Credit, Person
 
