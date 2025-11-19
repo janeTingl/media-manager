@@ -22,9 +22,8 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 
-from ..persistence.models import MediaItem
-from ..logging import get_logger
-
+from media_manager.persistence.models import MediaItem
+from media_manager.logging import get_logger
 
 class DetailPanel(QFrame):
     """
