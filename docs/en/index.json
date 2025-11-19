@@ -16,6 +16,12 @@
       "keywords": ["quick start", "tutorial", "first steps"]
     },
     {
+      "id": "about",
+      "title": "About Media Manager",
+      "file": "about.html",
+      "keywords": ["about", "author", "credits", "janeT"]
+    },
+    {
       "id": "library-setup",
       "title": "Library Setup",
       "file": "library-setup.html",
