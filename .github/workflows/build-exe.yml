@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: |
+            ${{ matrix.os == 'macos-latest' && '3.10.11' || '3.10' }}
 
       - name: Install dependencies
         run: |
@@ -36,34 +37,73 @@ jobs:
           echo "$VERSION" > src/media_manager/version.txt
         shell: bash
 
-      - name: Build Executable
+      - name: Build Executable (Windows/macOS)
+        if: matrix.os != 'ubuntu-latest'
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
 
-          # 平台区分路径分隔符（Windows 用 ; 其它用 :）
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ADD_DATA="resources;media_manager/resources"
             EXT=".exe"
+            OUT="media-manager-windows-$VERSION"
           else
             ADD_DATA="resources:media_manager/resources"
             EXT=""
+            OUT="media-manager-macos-$VERSION"
           fi
-
-          # 输出文件名
-          OUT="media-manager-${{ matrix.os }}-$VERSION"
 
           pyinstaller src/media_manager/main.py \
             --name "$OUT" \
             --onefile \
             --add-data "$ADD_DATA"
 
+          # macOS DMG 打包
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            mkdir -p dist/dmg
+            cp dist/"$OUT" dist/dmg/
+            hdiutil create -volname "MediaManager-$VERSION" -srcfolder dist/dmg -ov -format UDZO dist/"$OUT".dmg
+          fi
+        shell: bash
+
+      - name: Build Executable + AppImage (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          OUT="media-manager-linux-$VERSION"
+          ADD_DATA="resources:media_manager/resources"
+
+          # 先打包单文件 EXE
+          pyinstaller src/media_manager/main.py \
+            --name "$OUT" \
+            --onefile \
+            --add-data "$ADD_DATA"
+
+          # 安装 linuxdeploy 工具
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-python/releases/download/continuous/linuxdeploy-plugin-python-x86_64.AppImage
+          chmod +x linuxdeploy-plugin-python-x86_64.AppImage
+
+          # 准备 AppDir
+          mkdir -p AppDir/usr/bin
+          cp dist/"$OUT" AppDir/usr/bin/
+          mkdir -p AppDir/usr/share/media_manager/resources
+          cp -r resources/* AppDir/usr/share/media_manager/resources/
+
+          # 打包成 AppImage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --output appimage \
+            --plugin python \
+            --executable AppDir/usr/bin/"$OUT"
         shell: bash
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
-          path: dist/*
+          path: |
+            dist/*
 
   release:
     name: Publish Release
@@ -88,7 +128,6 @@ jobs:
           echo "**Date:** $DATE" >> release_notes.md
           echo "" >> release_notes.md
           echo "### Project Description" >> release_notes.md
-          # 复制 README.md 前 40 行作为 Release Notes
           head -n 40 README.md >> release_notes.md
           echo "" >> release_notes.md
           echo "### Changes" >> release_notes.md
