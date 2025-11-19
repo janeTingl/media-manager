@@ -1,4 +1,4 @@
-name: Build XE
+name: Build EXE with Resources, Version & Release Notes
 
 on:
   push:
@@ -24,15 +24,45 @@ jobs:
           pip install pyinstaller
           if (Test-Path "requirements.txt") { pip install -r requirements.txt }
 
-      - name: Build with PyInstaller
+      - name: Prepare PyInstaller resources
         run: |
-          pyinstaller --onefile media_manager/__main__.py --name media-manager
+          $resources = @(
+            "media_manager/resources/*"  # 所有资源文件夹
+          )
+          $copyArgs = ""
+          foreach ($res in $resources) {
+            $copyArgs += " --add-data `"$res;media_manager/resources`""
+          }
+          Set-Content -Path "resources_args.txt" -Value $copyArgs
 
-      - name: Upload EXE as Artifact
+      - name: Build EXE with PyInstaller
+        run: |
+          $version = "${GITHUB_REF#refs/tags/}"
+          $args = Get-Content resources_args.txt
+          # 生成 version.txt，用于 EXE 内部读取
+          Set-Content -Path "./media_manager/version.txt" -Value $version
+          pyinstaller --onefile ./media_manager/__main__.py --name "media-manager-$version" --icon "./media-manager.ico" $args
+
+      - name: Compress EXE to zip
+        run: |
+          $version = "${GITHUB_REF#refs/tags/}"
+          Compress-Archive -Path "dist/media-manager-$version.exe" -DestinationPath "dist/media-manager-$version.zip"
+
+      - name: Generate SHA256
+        id: checksum
+        run: |
+          $version = "${GITHUB_REF#refs/tags/}"
+          $exePath = "dist/media-manager-$version.exe"
+          $hash = Get-FileHash $exePath -Algorithm SHA256
+          echo "SHA256=$($hash.Hash)" >> $GITHUB_ENV
+
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: media-manager-exe
-          path: dist/media-manager.exe
+          name: media-manager-artifacts
+          path: |
+            dist/media-manager-*.exe
+            dist/media-manager-*.zip
 
   release:
     runs-on: ubuntu-latest
@@ -40,15 +70,25 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Download artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: media-manager-exe
+          name: media-manager-artifacts
           path: ./release-files
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          DATE=$(date +"%Y-%m-%d")
+          SHA256=${SHA256}
+          NOTES="## Release Notes\n\n**Version:** $VERSION\n**Date:** $DATE\n**SHA256:** $SHA256\n\n### Changes\n- Describe new features or fixes here\n- Update any important notes"
+          echo "$NOTES" >> release_notes.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./release-files/media-manager.exe
+          files: ./release-files/*
+          body_path: release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
