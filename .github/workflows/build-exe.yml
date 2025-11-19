@@ -34,7 +34,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PySide6 sqlalchemy
+          pip install pyinstaller
+          pip install PySide6
           if (Test-Path "requirements.txt") { pip install -r requirements.txt }
 
       - name: Build Windows EXE
@@ -56,14 +57,14 @@ jobs:
           if (Test-Path $res_src) {
               pyinstaller `
                 --onefile `
-                -m media_manager `
+                .\src\media_manager\main.py `
                 --paths .\src `
                 --name "media-manager-$VERSION" `
                 --add-data "$res_src;$res_dest"
           } else {
               pyinstaller `
                 --onefile `
-                -m media_manager `
+                .\src\media_manager\main.py `
                 --paths .\src `
                 --name "media-manager-$VERSION"
           }
@@ -116,7 +117,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PySide6 sqlalchemy
+          pip install pyinstaller
+          pip install PySide6
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build macOS APP
@@ -129,13 +131,13 @@ jobs:
           RES_DEST="resources"
 
           if [ -d "$RES_SRC" ]; then
-              pyinstaller src/media_manager/main.py \
+              pyinstaller -m media_manager \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION" \
                 --add-data "$RES_SRC:$RES_DEST"
           else
-              pyinstaller src/media_manager/main.py \
+              pyinstaller -m media_manager \
                 --paths src \
                 --onefile \
                 --name "media-manager-macos-$VERSION"
