@@ -8,7 +8,7 @@ The help system provides:
 - **Help Center Dialog**: Searchable documentation with navigation
 - **Onboarding Wizard**: First-run setup guide
 - **Context-Sensitive Help**: F1 key opens relevant help topics
-- **Localization Support**: Multi-language help content
+- **Localization Support**: Simplified Chinese (zh-CN) help content
 
 ## Components
 
@@ -19,7 +19,7 @@ A dialog that displays HTML-based help documentation with:
 - **Content Browser**: HTML content display with QTextBrowser
 - **Search Functionality**: Filter topics by keywords
 - **History Navigation**: Back/forward buttons and keyboard shortcuts
-- **Localization**: Supports multiple locales (defaults to `en`)
+- **Localization**: Loads zh-CN documentation (locale hooks retained for future expansion)
 
 **Features:**
 - Press `F1` to open help center from anywhere
@@ -47,35 +47,32 @@ A multi-page wizard for first-run setup:
 
 ### 3. Documentation Structure (`docs/`)
 
-Help content is organized by locale:
+Help content is stored exclusively under the Simplified Chinese locale:
 
 ```
 docs/
-  en/
-    index.json          # Topic index with metadata
-    welcome.html        # Welcome page
-    quick-start.html    # Quick start guide
-    library-setup.html  # Library setup guide
-    providers.html      # Provider configuration
-    troubleshooting.html # Common issues
-    ... (other topics)
   zh-CN/
-    index.json          # 简体中文主题索引
-    *.html              # Translated help topics (mirrors en/ structure)
+    index.json          # Topic index (zh-CN)
+    welcome.html        # 欢迎页
+    quick-start.html    # 快速入门
+    library-setup.html  # 媒体库设置
+    providers.html      # 元数据提供商
+    troubleshooting.html # 故障排除
+    ... (other topics)
 ```
 
 **index.json structure:**
 ```json
 {
-  "title": "Media Manager Help",
+  "title": "Media Manager 帮助",
   "version": "1.0",
-  "locale": "en",
+  "locale": "zh-CN",
   "topics": [
     {
       "id": "welcome",
-      "title": "Welcome",
+      "title": "欢迎",
       "file": "welcome.html",
-      "keywords": ["introduction", "overview"]
+      "keywords": ["欢迎", "概览"]
     }
   ]
 }
@@ -84,9 +81,12 @@ docs/
 ### 4. Settings Integration
 
 New settings methods in `SettingsManager`:
-- `get_language()` / `set_language()`: UI language
-- `get_help_locale()` / `set_help_locale()`: Help documentation locale
+- `get_language()` / `set_language()`: UI language (defaults to zh-CN)
+- `get_help_locale()` / `set_help_locale()`: Help documentation locale (mirrors zh-CN)
 - `get("onboarding_completed")`: Track onboarding completion
+
+Unsupported locales automatically fall back to zh-CN so the UI always loads
+Simplified Chinese resources.
 
 ### 5. MainWindow Integration
 
@@ -144,12 +144,13 @@ if wizard.exec():
    ```
 3. Link to topic from other pages: `<a href="my-topic.html">Link text</a>`
 
-### Adding Localization
+### Localization Policy
 
-1. Create locale directory: `docs/fr/` (for French)
-2. Copy `index.json` and translate
-3. Translate all HTML files
-4. Set locale in settings: `settings.set_help_locale("fr")`
+Simplified Chinese is the only locale distributed with the application. Keep the
+content in `docs/zh-CN/` up to date with product changes. Custom deployments may
+add more locales by creating new directories (for example `docs/fr/`), copying
+`docs/zh-CN/` as a template, translating files, and rebuilding the application,
+but these translations are not part of the official release.
 
 ## Testing
 
@@ -187,7 +188,7 @@ src/media_manager/
   settings.py                 # Settings for locale/onboarding
 
 docs/
-  en/                         # English help content
+  zh-CN/                      # Simplified Chinese help content
     index.json                # Topic index
     welcome.html              # Help pages
     quick-start.html
