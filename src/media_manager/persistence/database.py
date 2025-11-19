@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlmodel import SQLModel, Session, create_engine as sm_create_engine
 
-from ..logging import get_logger
+from media_manager.logging import get_logger
 
 logger_instance = get_logger()
 logger = logger_instance.get_logger(__name__)
