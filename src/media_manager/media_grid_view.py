@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QStyleOptionViewItem,
     QWidget,
     QToolTip,
+    QStyledItemDelegate,
 )
 
 from .library_view_model import LibraryViewModel
@@ -56,7 +57,8 @@ class MediaGridView(QListView):
         self.setWordWrap(True)
         
         # Custom item delegate for better rendering
-        self.setItemDelegate(MediaGridDelegate(self))
+        self._delegate = MediaGridDelegate(self)
+        self.setItemDelegate(self._delegate)
         
         # Model
         self._model: Optional[LibraryViewModel] = None
@@ -166,7 +168,7 @@ class MediaGridView(QListView):
             self.context_menu_requested.emit(item, global_pos)
 
 
-class MediaGridDelegate:
+class MediaGridDelegate(QStyledItemDelegate):
     """
     Custom delegate for rendering media items in grid view.
     
@@ -174,6 +176,7 @@ class MediaGridDelegate:
     """
     
     def __init__(self, parent: MediaGridView) -> None:
+        super().__init__(parent)
         self._parent = parent
         self._default_poster = None
 
