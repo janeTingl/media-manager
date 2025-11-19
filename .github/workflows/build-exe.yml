@@ -28,8 +28,8 @@ jobs:
         run: |
           $version = "${GITHUB_REF#refs/tags/}"
 
-          # 确保 media_manager 目录存在
-          $versionFile = "./media_manager/version.txt"
+          # 确保 src/media_manager 目录存在
+          $versionFile = ".\src\media_manager/version.txt"
           $dir = Split-Path $versionFile
           if (-not (Test-Path $dir)) {
               New-Item -ItemType Directory -Path $dir | Out-Null
@@ -38,10 +38,10 @@ jobs:
           # 写入 version.txt
           Set-Content -Path $versionFile -Value $version
 
-          # PyInstaller 打包整个资源目录（不要使用 *）
-          $res_src = "media_manager/resources"
+          # PyInstaller 打包整个资源目录
+          $res_src = ".\src\media_manager/resources"
           $res_dest = "media_manager/resources"
-          pyinstaller --onefile ./media_manager/__main__.py --name "media-manager-$version" --icon "./media-manager.ico" --add-data "$res_src;$res_dest"
+          pyinstaller --onefile .\src\media_manager/main.py --name "media-manager-$version" --icon ".\media-manager.ico" --add-data "$res_src;$res_dest"
 
       - name: Compress EXE to zip
         run: |
