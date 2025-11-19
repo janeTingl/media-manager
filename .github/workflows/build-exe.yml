@@ -1,17 +1,18 @@
-name: Build Multi-Platform EXE with Auto Release Notes
+name: Build Multi-Platform EXE/App with Resources & Release Notes
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 jobs:
-# ----------------------
-# WINDOWS BUILD
-# ----------------------
-  build-windows:
-    runs-on: windows-latest
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -24,145 +25,79 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install PySide6
-          if (Test-Path "requirements.txt") { pip install -r requirements.txt }
-
-      - name: Write version.txt
-        run: |
-          $version = "${GITHUB_REF#refs/tags/}"
-          Set-Content -Path "./src/media_manager/version.txt" -Value $version
-
-      - name: Build Windows EXE
-        run: |
-          $version = "${GITHUB_REF#refs/tags/}"
-          pyinstaller `
-            --onefile `
-            --name "media-manager-$version-windows" `
-            --add-data "./src/media_manager/resources;media_manager/resources" `
-            ./src/media_manager/main.py
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-windows
-          path: dist/*
-
-# ----------------------
-# MAC BUILD
-# ----------------------
-  build-macos:
-    runs-on: macos-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install PySide6
+          pip install pyinstaller PySide6
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        shell: bash
 
       - name: Write version.txt
         run: |
-          version="${GITHUB_REF#refs/tags/}"
-          echo "$version" > ./src/media_manager/version.txt
+          VERSION="${GITHUB_REF#refs/tags/}"
+          mkdir -p src/media_manager
+          echo "$VERSION" > src/media_manager/version.txt
+        shell: bash
 
-      - name: Build macOS APP + Binary
+      - name: Build Executable
         run: |
-          version="${GITHUB_REF#refs/tags/}"
-          pyinstaller \
-            --onefile \
-            --name "media-manager-$version-macos" \
-            --add-data "./src/media_manager/resources:media_manager/resources" \
-            ./src/media_manager/main.py
+          VERSION="${GITHUB_REF#refs/tags/}"
 
-      - uses: actions/upload-artifact@v4
+          # 平台区分路径分隔符（Windows 用 ; 其它用 :）
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            ADD_DATA="resources;media_manager/resources"
+            EXT=".exe"
+          else
+            ADD_DATA="resources:media_manager/resources"
+            EXT=""
+          fi
+
+          # 输出文件名
+          OUT="media-manager-${{ matrix.os }}-$VERSION"
+
+          pyinstaller src/media_manager/main.py \
+            --name "$OUT" \
+            --onefile \
+            --add-data "$ADD_DATA"
+
+        shell: bash
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: build-macos
+          name: build-${{ matrix.os }}
           path: dist/*
 
-# ----------------------
-# LINUX BUILD
-# ----------------------
-  build-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install PySide6
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Write version.txt
-        run: |
-          version="${GITHUB_REF#refs/tags/}"
-          echo "$version" > ./src/media_manager/version.txt
-
-      - name: Build Linux Binary
-        run: |
-          version="${GITHUB_REF#refs/tags/}"
-          pyinstaller \
-            --onefile \
-            --name "media-manager-$version-linux" \
-            --add-data "./src/media_manager/resources:media_manager/resources" \
-            ./src/media_manager/main.py
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-linux
-          path: dist/*
-
-# ----------------------
-# RELEASE (AFTER ALL BUILDS)
-# ----------------------
   release:
+    name: Publish Release
     runs-on: ubuntu-latest
-    needs:
-      - build-windows
-      - build-macos
-      - build-linux
+    needs: build
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Download all artifacts
+      - uses: actions/checkout@v4
+
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./release-files
 
-      # 自动从 README.md 读取 "## Changelog" 内容作为 Release Notes
-      - name: Extract Release Notes from README.md
-        id: notes
+      - name: Generate Release Notes from README
         run: |
-          awk '/## Changelog/{flag=1;next}/## /{flag=0}flag' README.md > release_notes.md
-
           VERSION="${GITHUB_REF#refs/tags/}"
           DATE=$(date +"%Y-%m-%d")
 
-          echo "## Release $VERSION ($DATE)" > final_notes.md
-          echo "" >> final_notes.md
-          echo "### Changelog" >> final_notes.md
-          cat release_notes.md >> final_notes.md
-          echo "" >> final_notes.md
+          echo "## Release $VERSION" > release_notes.md
+          echo "**Date:** $DATE" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Project Description" >> release_notes.md
+          # 复制 README.md 前 40 行作为 Release Notes
+          head -n 40 README.md >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Changes" >> release_notes.md
+          echo "- Update release details as needed" >> release_notes.md
 
-      - name: Create GitHub Release
+      - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ./release-files/**/* 
-          body_path: final_notes.md
+          files: ./release-files/**
+          body_path: release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
