@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>快速入门指南</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        .step { background: #ecf0f1; padding: 15px; margin: 15px 0; border-left: 4px solid #3498db; }
+        .step h3 { margin-top: 0; color: #2980b9; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>快速入门指南</h1>
+    
+    <p>按照以下步骤操作，只需几分钟就能完成 Media Manager 的基本设置。</p>
+    
+    <div class="step">
+        <h3>步骤 1：建立第一个媒体库</h3>
+        <p>媒体库是档案的集合，要创建一个媒体库：</p>
+        <ol>
+            <li>在菜单中选择 <strong>File → Manage Libraries</strong></li>
+            <li>点击 <strong>Add Library</strong></li>
+            <li>输入一个名称（例如「Movies」或「TV Shows」）</li>
+            <li>选择媒体类型（Movie 或 TV）</li>
+            <li>指定存放媒体档案的资料夹</li>
+            <li>点击 <strong>Save</strong></li>
+        </ol>
+        <p>延伸阅读：<a href="library-setup.html">媒体库设置</a></p>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 2：配置元数据提供商</h3>
+        <p>若要自动取得影片资讯，需要先填写 API 金钥：</p>
+        <ol>
+            <li>打开 <strong>Edit → Preferences</strong></li>
+            <li>切换到 <strong>Providers</strong> 分页</li>
+            <li>输入 TMDB 与/或 TVDB 的 API 金钥</li>
+            <li>点击 <strong>Apply</strong></li>
+        </ol>
+        <p><strong>如何取得 API 金钥：</strong></p>
+        <ul>
+            <li>TMDB：造访 <a href="https://www.themoviedb.org/settings/api">themoviedb.org/settings/api</a></li>
+            <li>TVDB：造访 <a href="https://thetvdb.com/dashboard/account/apikeys">thetvdb.com/dashboard/account/apikeys</a></li>
+        </ul>
+        <p>延伸阅读：<a href="providers.html">元数据提供商</a></p>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 3：扫描媒体档案</h3>
+        <p>完成媒体库后：</p>
+        <ol>
+            <li>在左侧面板选择要扫描的媒体库</li>
+            <li>系统会自动检测资料夹中的档案</li>
+            <li>应用程序会尝试与线上资料库匹配</li>
+            <li>在 <strong>Matching</strong> 分页中审查并确认结果</li>
+            <li>点击 <strong>Finalize</strong> 保存元数据</li>
+        </ol>
+        <p>延伸阅读：<a href="scanning.html">扫描媒体</a></p>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 4：浏览你的收藏</h3>
+        <p>扫描完成后，你可以：</p>
+        <ul>
+            <li>切换 <strong>Grid View</strong> 与 <strong>Table View</strong></li>
+            <li>使用 <strong>Search</strong> 分页快速找到项目</li>
+            <li>点击任何条目查看详细资讯</li>
+            <li>按右键可编辑元数据或下载海报</li>
+        </ul>
+    </div>
+    
+    <h2>下一步</h2>
+    <p>熟悉基本流程后，可以进一步探索：</p>
+    <ul>
+        <li><a href="metadata-editing.html">自定义元数据</a></li>
+        <li><a href="batch-operations.html">对多个项目执行批量操作</a></li>
+        <li><a href="tags-favorites.html">利用标签与收藏整理内容</a></li>
+        <li><a href="import-export.html">备份或汇出资料</a></li>
+    </ul>
+</body>
+</html>

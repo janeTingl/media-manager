@@ -81,6 +81,25 @@ class TestHelpCenterDialog:
                 # Check that referenced file exists
                 assert link in topic_files, f"Broken link in {topic['file']}: {link}"
 
+    def test_zh_cn_help_locale_exists(self) -> None:
+        """Ensure the Simplified Chinese help locale is present and complete."""
+        docs_path = Path(__file__).parent.parent / "docs" / "zh-CN"
+        index_file = docs_path / "index.json"
+
+        assert index_file.exists(), "Chinese help index should exist"
+
+        with open(index_file, encoding="utf-8") as f:
+            index_data = json.load(f)
+
+        assert index_data.get("locale") == "zh-CN"
+
+        topics = index_data.get("topics", [])
+        assert topics, "Chinese help index should list topics"
+
+        for topic in topics:
+            topic_file = docs_path / topic["file"]
+            assert topic_file.exists(), f"Chinese help file should exist: {topic['file']}"
+
     def test_topic_navigation(self, qtbot: QtBot) -> None:
         """Test navigating between topics."""
         dialog = HelpCenterDialog()
