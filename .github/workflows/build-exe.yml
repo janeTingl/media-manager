@@ -1,4 +1,4 @@
-name: Build Windows & macOS EXE with Resources, SHA256 & Release Notes
+name: Build EXE for Windows & macOS with SHA256 & Release Notes
 
 on:
   push:
@@ -33,7 +33,6 @@ jobs:
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           if [ -z "$VERSION" ]; then VERSION="dev"; fi
-          # 替换 / 为 -
           VERSION=$(echo "$VERSION" | tr '/' '-')
           mkdir -p src/media_manager
           echo "$VERSION" > src/media_manager/version.txt
@@ -47,11 +46,9 @@ jobs:
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ADD_DATA="resources;media_manager/resources"
-            EXT=".exe"
-            OUT="media-manager-windows-$VERSION"
+            OUT="media-manager-windows-$VERSION.exe"
           else
             ADD_DATA="resources:media_manager/resources"
-            EXT=""
             OUT="media-manager-macos-$VERSION"
           fi
 
@@ -59,37 +56,35 @@ jobs:
             --name "$OUT" \
             --onefile \
             --add-data "$ADD_DATA"
-
-          # macOS DMG 打包
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            mkdir -p dist/dmg
-            cp dist/"$OUT" dist/dmg/
-            hdiutil create -volname "MediaManager-$VERSION" -srcfolder dist/dmg -ov -format UDZO dist/"$OUT".dmg
-          fi
         shell: bash
 
       - name: Generate SHA256
         run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          if [ -z "$VERSION" ]; then VERSION="dev"; fi
-          VERSION=$(echo "$VERSION" | tr '/' '-')
-
-          SHA256_FILE="dist/sha256.txt"
-          > $SHA256_FILE
-
-          for f in dist/*; do
-            HASH=$(shasum -a 256 "$f" | awk '{print $1}')
-            echo "$f: $HASH" >> $SHA256_FILE
-            echo "$f SHA256=$HASH"
-          done
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            pwsh -Command "
+              \$shaFile = 'dist/sha256.txt'
+              New-Item -Path \$shaFile -Force -ItemType File | Out-Null
+              Get-ChildItem 'dist' -File | ForEach-Object {
+                \$hash = Get-FileHash \$_ -Algorithm SHA256
+                Add-Content -Path \$shaFile -Value \"\$($_.Name): \$($hash.Hash)\"
+              }
+            "
+          else
+            SHA256_FILE="dist/sha256.txt"
+            > $SHA256_FILE
+            for f in dist/*; do
+              HASH=$(shasum -a 256 "$f" | awk '{print $1}')
+              echo "$f: $HASH" >> $SHA256_FILE
+              echo "$f SHA256=$HASH"
+            done
+          fi
         shell: bash
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
-          path: |
-            dist/*
+          path: dist/*
 
   release:
     name: Publish Release
@@ -123,8 +118,14 @@ jobs:
           echo "### SHA256 Checksums" >> release_notes.md
 
           for f in release-files/*; do
-            HASH=$(shasum -a 256 "$f" | awk '{print $1}')
-            echo "- $(basename $f): $HASH" >> release_notes.md
+            if [[ "$f" == *.exe ]] || [[ "$f" == *macos* ]]; then
+              if [[ "$RUNNER_OS" == "Windows" ]]; then
+                HASH=$(powershell -Command "Get-FileHash '$f' -Algorithm SHA256 | Select-Object -ExpandProperty Hash")
+              else
+                HASH=$(shasum -a 256 "$f" | awk '{print $1}')
+              fi
+              echo "- $(basename $f): $HASH" >> release_notes.md
+            fi
           done
 
       - name: Publish Release
