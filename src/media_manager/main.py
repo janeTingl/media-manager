@@ -1,10 +1,11 @@
 """Main entry point for the media manager application."""
 
 import sys
+import os
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import QLocale, QTranslator
+from PySide6.QtCore import QLocale, QTranslator, QLibraryInfo
 from PySide6.QtWidgets import QApplication
 
 from media_manager import (
@@ -30,20 +31,30 @@ def create_application() -> QApplication:
     app.setOrganizationName(APP_ORGANIZATION_NAME)
     app.setOrganizationDomain(APP_ORGANIZATION_DOMAIN)
 
+    # Install translator for Chinese UI
+    _install_translator(app, "zh_CN")
+
     return app
 
 
 def _install_translator(app: QApplication, language: Optional[str] = None) -> None:
-    """Install Qt translations for the requested language if available."""
-    translations_path = Path(__file__).parent / "translations"
-    if not translations_path.exists():
-        return
-
+    """Install Qt translations for the requested language (fallback to Qt Chinese if missing)."""
     translator = QTranslator()
+
+    # Try to load custom translation from project translations folder
+    translations_path = Path(__file__).parent / "translations"
     locale = _resolve_locale(language)
-    if translator.load(locale, "media_manager", "_", str(translations_path)):
-        app.installTranslator(translator)
-        app._installed_translator = translator
+    loaded_custom = False
+    if translations_path.exists():
+        loaded_custom = translator.load(locale, "media_manager", "_", str(translations_path))
+
+    # If no custom translation, load Qt built-in Chinese translation
+    if not loaded_custom:
+        qt_translations_path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+        translator.load(os.path.join(qt_translations_path, "qtbase_zh_CN.qm"))
+
+    app.installTranslator(translator)
+    app._installed_translator = translator
 
 
 def _resolve_locale(language: Optional[str]) -> QLocale:
@@ -68,9 +79,6 @@ def main() -> int:
         # Get settings
         settings = get_settings()
 
-        # Install translator based on preferred language
-        _install_translator(app, settings.get_language())
-
         # Initialize database service
         db_service = init_database_service(settings.get_database_url())
 
@@ -80,8 +88,7 @@ def main() -> int:
 
         # Create main window
         main_window = MainWindow(settings)
-
-        # Show the main window
+        main_window.setWindowTitle(APP_DISPLAY_NAME)  # 设置窗口标题为中文
         main_window.show()
 
         logger.info("Application started successfully")
