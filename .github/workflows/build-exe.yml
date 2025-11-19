@@ -1,4 +1,4 @@
-name: Build EXE for Windows & macOS with SHA256 & Release Notes
+name: Build EXE for Windows & macOS with Resources, Version & Release Notes
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         shell: bash
 
-      - name: Write version.txt
+      - name: Prepare version.txt
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           if [ -z "$VERSION" ]; then VERSION="dev"; fi
@@ -38,24 +38,48 @@ jobs:
           echo "$VERSION" > src/media_manager/version.txt
         shell: bash
 
-      - name: Build Executable
+      - name: Build EXE / App
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           if [ -z "$VERSION" ]; then VERSION="dev"; fi
           VERSION=$(echo "$VERSION" | tr '/' '-')
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            ADD_DATA="resources;media_manager/resources"
-            OUT="media-manager-windows-$VERSION.exe"
-          else
-            ADD_DATA="resources:media_manager/resources"
-            OUT="media-manager-macos-$VERSION"
-          fi
+              pwsh -Command "
+                  \$versionFile = '.\src\media_manager/version.txt'
+                  \$dir = Split-Path \$versionFile
+                  if (-not (Test-Path \$dir)) { New-Item -ItemType Directory -Path \$dir | Out-Null }
+                  Set-Content -Path \$versionFile -Value '$VERSION'
 
-          pyinstaller src/media_manager/main.py \
-            --name "$OUT" \
-            --onefile \
-            --add-data "$ADD_DATA"
+                  \$res_src = '.\resources'
+                  \$res_dest = 'resources'
+
+                  if (Test-Path \$res_src) {
+                      pyinstaller `
+                        --onefile `
+                        -m media_manager `
+                        --paths .\src `
+                        --name 'media-manager-$VERSION' `
+                        --add-data '\$res_src;\$res_dest'
+                  } else {
+                      Write-Host 'Resources folder not found, skipping --add-data'
+                      pyinstaller `
+                        --onefile `
+                        -m media_manager `
+                        --paths .\src `
+                        --name 'media-manager-$VERSION'
+                  }
+              "
+          else
+              # macOS
+              RES_SRC="resources"
+              RES_DEST="resources"
+              pyinstaller -m media_manager \
+                --paths src \
+                --onefile \
+                --name "media-manager-macos-$VERSION" \
+                --add-data "$RES_SRC:$RES_DEST"
+          fi
         shell: bash
 
       - name: Generate SHA256
