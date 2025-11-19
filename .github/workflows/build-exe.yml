@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PySide6
+          pip install pyinstaller PySide6 sqlalchemy
           if (Test-Path "requirements.txt") { pip install -r requirements.txt }
 
       - name: Build Windows EXE
@@ -49,31 +49,34 @@ jobs:
           if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
           Set-Content -Path $versionFile -Value $VERSION
 
+          # 打包
           $res_src = ".\resources"
           $res_dest = "resources"
 
           if (Test-Path $res_src) {
               pyinstaller `
                 --onefile `
-                .\src\media_manager\main.py `
+                -m media_manager `
                 --paths .\src `
                 --name "media-manager-$VERSION" `
                 --add-data "$res_src;$res_dest"
           } else {
               pyinstaller `
                 --onefile `
-                .\src\media_manager\main.py `
+                -m media_manager `
                 --paths .\src `
                 --name "media-manager-$VERSION"
           }
 
-          # 压缩 EXE
+          # 压缩
           $exePath = "dist/media-manager-$VERSION.exe"
           if (Test-Path $exePath) {
               Compress-Archive -Path $exePath -DestinationPath "dist/media-manager-$VERSION.zip"
+          } else {
+              Write-Error "EXE not found at $exePath"
           }
 
-          # 生成 SHA256
+          # SHA256
           if (Test-Path $exePath) {
               $hash = Get-FileHash $exePath -Algorithm SHA256
               echo "SHA256=$($hash.Hash)" >> $env:GITHUB_ENV
@@ -113,7 +116,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller PySide6
+          pip install pyinstaller PySide6 sqlalchemy
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build macOS APP
