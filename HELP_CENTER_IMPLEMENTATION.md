@@ -132,8 +132,8 @@ if wizard.exec():
 
 ### Adding New Help Topics
 
-1. Create HTML file in `docs/en/` (or other locale)
-2. Add topic entry to `docs/en/index.json`:
+1. Create HTML file in `docs/zh-CN/`
+2. Add topic entry to `docs/zh-CN/index.json`:
    ```json
    {
      "id": "my-topic",

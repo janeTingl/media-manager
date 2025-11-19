@@ -469,7 +469,7 @@ class UIPreferencesWidget(BasePreferencesSection):
     """Preferences section for UI-related options."""
 
     THEMES = ["system", "light", "dark"]
-    LANGUAGES = ["en", "de", "es", "fr", "zh-CN"]
+    LANGUAGES = [("zh-CN", "简体中文")]
 
     def __init__(self, settings: SettingsManager, parent: Optional[QWidget] = None) -> None:
         super().__init__(settings, parent)
@@ -486,8 +486,8 @@ class UIPreferencesWidget(BasePreferencesSection):
         form.addRow("Theme:", self.theme_combo)
 
         self.language_combo = QComboBox()
-        for language in self.LANGUAGES:
-            self.language_combo.addItem(language.upper(), language)
+        for code, label in self.LANGUAGES:
+            self.language_combo.addItem(label, code)
         form.addRow("Language:", self.language_combo)
 
         self.remember_layout_checkbox = QCheckBox("Remember window layout between sessions")
@@ -502,7 +502,7 @@ class UIPreferencesWidget(BasePreferencesSection):
         if index >= 0:
             self.theme_combo.setCurrentIndex(index)
 
-        language = self._settings.get_ui_setting("language", "en")
+        language = self._settings.get_ui_setting("language", "zh-CN")
         index = self.language_combo.findData(language)
         if index >= 0:
             self.language_combo.setCurrentIndex(index)

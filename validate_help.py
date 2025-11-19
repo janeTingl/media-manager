@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+HELP_LOCALE = "zh-CN"
+
 
 def validate_help_system():
     """Validate help system files and structure."""
@@ -20,18 +22,18 @@ def validate_help_system():
         errors.append("docs/ directory not found")
         return errors, warnings
     
-    # Check English locale
-    en_path = docs_path / "en"
-    if not en_path.exists():
-        errors.append("docs/en/ directory not found")
+    # Check Simplified Chinese locale
+    locale_path = docs_path / HELP_LOCALE
+    if not locale_path.exists():
+        errors.append(f"docs/{HELP_LOCALE}/ directory not found")
         return errors, warnings
     
-    print("✓ Documentation directory structure exists")
+    print(f"✓ Documentation directory structure exists ({HELP_LOCALE})")
     
     # Check index file
-    index_file = en_path / "index.json"
+    index_file = locale_path / "index.json"
     if not index_file.exists():
-        errors.append("docs/en/index.json not found")
+        errors.append(f"docs/{HELP_LOCALE}/index.json not found")
         return errors, warnings
     
     print("✓ Help index file exists")
@@ -64,7 +66,7 @@ def validate_help_system():
             if "file" not in topic:
                 errors.append(f"Topic {i} ({topic.get('id', 'unknown')}) missing 'file'")
             else:
-                topic_file = en_path / topic["file"]
+                topic_file = locale_path / topic["file"]
                 if not topic_file.exists():
                     errors.append(f"Help file not found: {topic['file']}")
                 else:
@@ -83,7 +85,7 @@ def validate_help_system():
             if "file" not in topic:
                 continue
             
-            topic_file = en_path / topic["file"]
+            topic_file = locale_path / topic["file"]
             if not topic_file.exists():
                 continue
             
