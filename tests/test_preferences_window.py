@@ -99,16 +99,21 @@ def test_downloads_preferences_apply(qapp, temp_settings, monkeypatch):
     assert temp_settings.get_trailer_quality().upper() == "4K"
 
 
-def test_ui_preferences_apply(qapp, temp_settings):
+def test_ui_preferences_apply(qapp, temp_settings, monkeypatch):
     widget = UIPreferencesWidget(temp_settings)
     widget.theme_combo.setCurrentIndex(widget.theme_combo.findData("dark"))
-    widget.language_combo.setCurrentIndex(widget.language_combo.findData("de"))
+    widget.language_combo.setCurrentIndex(widget.language_combo.findData("zh_CN"))
     widget.remember_layout_checkbox.setChecked(False)
+
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QMessageBox.information",
+        lambda *args, **kwargs: None,
+    )
 
     success, error = widget.apply()
     assert success is True
     assert temp_settings.get_ui_setting("theme") == "dark"
-    assert temp_settings.get_ui_setting("language") == "de"
+    assert temp_settings.get_language() == "zh_CN"
     assert temp_settings.get_ui_setting("remember_layout") is False
 
 
