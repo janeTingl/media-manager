@@ -42,10 +42,10 @@ jobs:
           $res_src = ".\resources"
           $res_dest = "resources"
           if (Test-Path $res_src) {
-              pyinstaller --onefile .\src\media_manager/main.py --name "media-manager-$version" --icon ".\media-manager.ico" --add-data "$res_src;$res_dest"
+              pyinstaller --onefile .\src\media_manager/main.py --name "media-manager-$version" --add-data "$res_src;$res_dest"
           } else {
               Write-Host "Resources folder not found, skipping --add-data"
-              pyinstaller --onefile .\src\media_manager/main.py --name "media-manager-$version" --icon ".\media-manager.ico"
+              pyinstaller --onefile .\src\media_manager/main.py --name "media-manager-$version"
           }
 
       - name: Compress EXE to zip
