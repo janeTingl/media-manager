@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from .library_manager_dialog import LibraryManagerDialog
-from .localization import get_language_display_name, iter_language_options
+from .localization import iter_language_options, language_choice_requires_restart
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
 from .settings import SettingsManager, get_settings
@@ -489,7 +489,6 @@ class UIPreferencesWidget(BasePreferencesSection):
 
     def __init__(self, settings: SettingsManager, parent: Optional[QWidget] = None) -> None:
         super().__init__(settings, parent)
-        self._last_language = self._settings.get_language()
         self._setup_ui()
         self.refresh()
 
@@ -508,8 +507,14 @@ class UIPreferencesWidget(BasePreferencesSection):
         form.addRow(self.tr("Theme:"), self.theme_combo)
 
         self.language_combo = QComboBox()
+        language_labels = {
+            "system": self.tr("System Default"),
+            "en": self.tr("English"),
+            "zh_CN": self.tr("简体中文"),
+        }
         for code, label in iter_language_options():
-            self.language_combo.addItem(self.tr(label), code)
+            display_label = language_labels.get(code, self.tr(label))
+            self.language_combo.addItem(display_label, code)
         form.addRow(self.tr("Language:"), self.language_combo)
 
         self.language_help_label = QLabel(self.tr("Language changes take effect after restarting the application."))
@@ -536,7 +541,6 @@ class UIPreferencesWidget(BasePreferencesSection):
 
         remember = bool(self._settings.get_ui_setting("remember_layout", True))
         self.remember_layout_checkbox.setChecked(remember)
-        self._last_language = language
 
     def apply(self) -> Tuple[bool, Optional[str]]:
         self._settings.set_ui_setting("theme", self.theme_combo.currentData())
@@ -545,7 +549,7 @@ class UIPreferencesWidget(BasePreferencesSection):
         self._settings.set_language(selected_language)
         self._settings.set_ui_setting("remember_layout", self.remember_layout_checkbox.isChecked())
 
-        if previous_language != selected_language:
+        if language_choice_requires_restart(previous_language, selected_language):
             QMessageBox.information(
                 self,
                 self.tr("Language Updated"),

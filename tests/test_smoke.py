@@ -24,7 +24,7 @@ class TestApplicationSmoke:
 
     def test_create_application(self, qapp):
         """Test that QApplication can be created."""
-        app = create_application()
+        app = create_application(["test_app"])
         assert app is not None
         assert app.applicationName() == "Media Manager"
         assert app.applicationVersion() == "0.1.0"
