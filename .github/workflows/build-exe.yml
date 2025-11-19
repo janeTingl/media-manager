@@ -1,4 +1,4 @@
-name: Build Multi-Platform EXE/App with Resources & Release Notes
+name: Build Windows & macOS EXE with Resources, SHA256 & Release Notes
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -20,8 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: |
-            ${{ matrix.os == 'macos-latest' && '3.10.11' || '3.10' }}
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
@@ -33,14 +32,15 @@ jobs:
       - name: Write version.txt
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
+          if [ -z "$VERSION" ]; then VERSION="dev"; fi
           mkdir -p src/media_manager
           echo "$VERSION" > src/media_manager/version.txt
         shell: bash
 
-      - name: Build Executable (Windows/macOS)
-        if: matrix.os != 'ubuntu-latest'
+      - name: Build Executable
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
+          if [ -z "$VERSION" ]; then VERSION="dev"; fi
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ADD_DATA="resources;media_manager/resources"
@@ -65,37 +65,20 @@ jobs:
           fi
         shell: bash
 
-      - name: Build Executable + AppImage (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Generate SHA256
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
-          OUT="media-manager-linux-$VERSION"
-          ADD_DATA="resources:media_manager/resources"
+          if [ -z "$VERSION" ]; then VERSION="dev"; fi
 
-          # 先打包单文件 EXE
-          pyinstaller src/media_manager/main.py \
-            --name "$OUT" \
-            --onefile \
-            --add-data "$ADD_DATA"
+          SHA256_FILE="dist/sha256.txt"
+          > $SHA256_FILE
 
-          # 安装 linuxdeploy 工具
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
+          for f in dist/*; do
+            HASH=$(shasum -a 256 "$f" | awk '{print $1}')
+            echo "$f: $HASH" >> $SHA256_FILE
+            echo "$f SHA256=$HASH"
+          done
 
-          wget https://github.com/linuxdeploy/linuxdeploy-plugin-python/releases/download/continuous/linuxdeploy-plugin-python-x86_64.AppImage
-          chmod +x linuxdeploy-plugin-python-x86_64.AppImage
-
-          # 准备 AppDir
-          mkdir -p AppDir/usr/bin
-          cp dist/"$OUT" AppDir/usr/bin/
-          mkdir -p AppDir/usr/share/media_manager/resources
-          cp -r resources/* AppDir/usr/share/media_manager/resources/
-
-          # 打包成 AppImage
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
-            --output appimage \
-            --plugin python \
-            --executable AppDir/usr/bin/"$OUT"
         shell: bash
 
       - name: Upload Artifacts
@@ -119,7 +102,7 @@ jobs:
         with:
           path: ./release-files
 
-      - name: Generate Release Notes from README
+      - name: Generate Release Notes from README & SHA256
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           DATE=$(date +"%Y-%m-%d")
@@ -132,6 +115,13 @@ jobs:
           echo "" >> release_notes.md
           echo "### Changes" >> release_notes.md
           echo "- Update release details as needed" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### SHA256 Checksums" >> release_notes.md
+
+          for f in release-files/*; do
+            HASH=$(shasum -a 256 "$f" | awk '{print $1}')
+            echo "- $(basename $f): $HASH" >> release_notes.md
+          done
 
       - name: Publish Release
         uses: softprops/action-gh-release@v2
