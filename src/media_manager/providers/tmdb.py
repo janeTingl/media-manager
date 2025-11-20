@@ -6,23 +6,25 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
-import requests
+import requests  # type: ignore[import-untyped]
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
 )
 
 from media_manager.logging import get_logger
+from media_manager.settings import get_settings
+
 from .base import BaseProvider, ProviderError, ProviderResult
 
 
 class TMDBProvider(BaseProvider):
     """Provider for TMDB API."""
 
-    API_BASE = "https://api.themoviedb.org/3"
-    IMAGE_BASE = "https://image.tmdb.org/t/p"
+    DEFAULT_API_BASE = "https://api.themoviedb.org/3"
+    DEFAULT_IMAGE_BASE = "https://image.tmdb.org/t/p"
     CACHE_DIR = Path.home() / ".media-manager" / "tmdb_cache"
 
     def __init__(self, api_key: str | None = None) -> None:
@@ -34,13 +36,40 @@ class TMDBProvider(BaseProvider):
         super().__init__(api_key)
         self._logger = get_logger().get_logger(__name__)
         self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        self._settings = get_settings()
+
+    @property
+    def api_base(self) -> str:
+        """Get the configured TMDB API base URL."""
+        custom_base = self._settings.get_tmdb_api_base()
+        if custom_base:
+            return custom_base.rstrip("/")
+        return self.DEFAULT_API_BASE
+
+    @property
+    def image_base(self) -> str:
+        """Get the configured TMDB image base URL."""
+        custom_base = self._settings.get_tmdb_image_base()
+        if custom_base:
+            return custom_base.rstrip("/")
+        return self.DEFAULT_IMAGE_BASE
+
+    @property
+    def effective_api_key(self) -> str | None:
+        """Get the effective API key (alternative or main)."""
+        alt_key = self._settings.get_tmdb_api_key_alternative()
+        if alt_key:
+            return alt_key
+        return self.api_key
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
         retry=retry_if_exception_type(requests.RequestException),
     )
-    def _api_call(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _api_call(
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Make an API call to TMDB.
 
         Args:
@@ -53,22 +82,24 @@ class TMDBProvider(BaseProvider):
         Raises:
             ProviderError: If API key is not set or API call fails
         """
-        if not self.api_key:
+        api_key = self.effective_api_key
+        if not api_key:
             raise ProviderError("TMDB API key is not configured")
 
         if params is None:
             params = {}
 
-        params["api_key"] = self.api_key
+        params["api_key"] = api_key
 
         try:
             response = requests.get(
-                f"{self.API_BASE}{endpoint}",
+                f"{self.api_base}{endpoint}",
                 params=params,
                 timeout=10,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
         except requests.RequestException as exc:
             self._logger.error(f"TMDB API error: {exc}")
             raise ProviderError(f"TMDB API call failed: {exc}") from exc
@@ -98,8 +129,10 @@ class TMDBProvider(BaseProvider):
         if cache_path.exists():
             try:
                 import json
-                with open(cache_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+
+                with open(cache_path, encoding="utf-8") as f:
+                    data: dict[str, Any] = json.load(f)
+                    return data
             except Exception as exc:
                 self._logger.debug(f"Failed to load cache: {exc}")
         return None
@@ -114,6 +147,7 @@ class TMDBProvider(BaseProvider):
         cache_path = self._get_cache_path(key)
         try:
             import json
+
             with open(cache_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as exc:
@@ -192,7 +226,9 @@ class TMDBProvider(BaseProvider):
             return self._parse_movie_details(cached)
 
         try:
-            response = self._api_call(f"/movie/{external_id}", {"append_to_response": "credits,videos,images"})
+            response = self._api_call(
+                f"/movie/{external_id}", {"append_to_response": "credits,videos,images"}
+            )
             self._save_to_cache(cache_key, response)
             return self._parse_movie_details(response)
         except ProviderError:
@@ -201,7 +237,9 @@ class TMDBProvider(BaseProvider):
             self._logger.error(f"Failed to get movie details: {exc}")
             raise ProviderError(f"Failed to get movie details: {exc}") from exc
 
-    def get_tv_details(self, external_id: str, season: int | None = None, episode: int | None = None) -> ProviderResult:
+    def get_tv_details(
+        self, external_id: str, season: int | None = None, episode: int | None = None
+    ) -> ProviderResult:
         """Get full details for a TV series or episode.
 
         Args:
@@ -295,7 +333,9 @@ class TMDBProvider(BaseProvider):
             self._logger.warning(f"Failed to get trailers: {exc}")
             return []
 
-    def _parse_search_results(self, response: dict[str, Any], media_type: str) -> list[ProviderResult]:
+    def _parse_search_results(
+        self, response: dict[str, Any], media_type: str
+    ) -> list[ProviderResult]:
         """Parse search results from API response.
 
         Args:
@@ -317,10 +357,10 @@ class TMDBProvider(BaseProvider):
                     year = int(item["release_date"][:4])
                 poster_url = None
                 if item.get("poster_path"):
-                    poster_url = f"{self.IMAGE_BASE}/w342{item['poster_path']}"
+                    poster_url = f"{self.image_base}/w342{item['poster_path']}"
                 fanart_url = None
                 if item.get("backdrop_path"):
-                    fanart_url = f"{self.IMAGE_BASE}/w1280{item['backdrop_path']}"
+                    fanart_url = f"{self.image_base}/w1280{item['backdrop_path']}"
             else:  # TV
                 title = item.get("name", "")
                 year = None
@@ -328,10 +368,10 @@ class TMDBProvider(BaseProvider):
                     year = int(item["first_air_date"][:4])
                 poster_url = None
                 if item.get("poster_path"):
-                    poster_url = f"{self.IMAGE_BASE}/w342{item['poster_path']}"
+                    poster_url = f"{self.image_base}/w342{item['poster_path']}"
                 fanart_url = None
                 if item.get("backdrop_path"):
-                    fanart_url = f"{self.IMAGE_BASE}/w1280{item['backdrop_path']}"
+                    fanart_url = f"{self.image_base}/w1280{item['backdrop_path']}"
 
             confidence = (item.get("popularity", 0) / 100.0) * 0.5 + 0.5
             confidence = min(1.0, max(0.0, confidence))
@@ -378,10 +418,10 @@ class TMDBProvider(BaseProvider):
 
         poster_url = None
         if response.get("poster_path"):
-            poster_url = f"{self.IMAGE_BASE}/w342{response['poster_path']}"
+            poster_url = f"{self.image_base}/w342{response['poster_path']}"
         fanart_url = None
         if response.get("backdrop_path"):
-            fanart_url = f"{self.IMAGE_BASE}/w1280{response['backdrop_path']}"
+            fanart_url = f"{self.image_base}/w1280{response['backdrop_path']}"
 
         year = None
         if response.get("release_date"):
@@ -435,10 +475,10 @@ class TMDBProvider(BaseProvider):
 
         poster_url = None
         if response.get("poster_path"):
-            poster_url = f"{self.IMAGE_BASE}/w342{response['poster_path']}"
+            poster_url = f"{self.image_base}/w342{response['poster_path']}"
         fanart_url = None
         if response.get("backdrop_path"):
-            fanart_url = f"{self.IMAGE_BASE}/w1280{response['backdrop_path']}"
+            fanart_url = f"{self.image_base}/w1280{response['backdrop_path']}"
 
         year = None
         if response.get("first_air_date"):
@@ -447,7 +487,11 @@ class TMDBProvider(BaseProvider):
         # Get runtime from first season if available
         runtime = None
         if response.get("episode_run_time"):
-            runtime = response["episode_run_time"][0] if response["episode_run_time"] else None
+            runtime = (
+                response["episode_run_time"][0]
+                if response["episode_run_time"]
+                else None
+            )
 
         genres = [g["name"] for g in response.get("genres", [])]
 

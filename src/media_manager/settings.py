@@ -415,6 +415,40 @@ class SettingsManager(QObject):
     def set_provider_timeout(self, timeout: int) -> None:
         self.set_provider_setting("timeout", int(timeout))
 
+    def get_tmdb_api_base(self) -> str:
+        """Get TMDB API base URL (default or alternative)."""
+        result = self.get_provider_setting(
+            "tmdb_api_base", "https://api.themoviedb.org/3"
+        )
+        return str(result) if result else "https://api.themoviedb.org/3"
+
+    def set_tmdb_api_base(self, url: str | None) -> None:
+        """Set alternative TMDB API base URL."""
+        self.set_provider_setting("tmdb_api_base", url.strip() if url else "")
+
+    def get_tmdb_image_base(self) -> str:
+        """Get TMDB image base URL (default or alternative)."""
+        result = self.get_provider_setting(
+            "tmdb_image_base", "https://image.tmdb.org/t/p"
+        )
+        return str(result) if result else "https://image.tmdb.org/t/p"
+
+    def set_tmdb_image_base(self, url: str | None) -> None:
+        """Set alternative TMDB image base URL."""
+        self.set_provider_setting("tmdb_image_base", url.strip() if url else "")
+
+    def get_tmdb_api_key_alternative(self) -> str | None:
+        """Get alternative TMDB API key (if different from main key)."""
+        result = self.get_provider_setting("tmdb_api_key_alternative")
+        return str(result) if isinstance(result, str) else None
+
+    def set_tmdb_api_key_alternative(self, api_key: str | None) -> None:
+        """Set alternative TMDB API key."""
+        normalized = api_key.strip() if api_key else ""
+        self.set_provider_setting(
+            "tmdb_api_key_alternative", normalized if normalized else None
+        )
+
     # ------------------------------------------------------------------
     # Cache settings
     # ------------------------------------------------------------------
