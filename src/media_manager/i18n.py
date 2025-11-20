@@ -9,6 +9,10 @@ from typing import Iterator, Sequence
 from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
+from media_manager.logging import get_logger
+
+logger = get_logger().get_logger(__name__)
+
 # Ordered so that the UI displays languages in a predictable order.
 LANGUAGE_MAP: dict[str, str] = {
     "en_US": "English",
@@ -50,61 +54,132 @@ def normalize_language_code(language: str | None) -> str:
 
 def install_translators(app: QApplication, language: str | None) -> None:
     """Install both application and Qt translators for the requested language."""
-    locale = QLocale(normalize_language_code(language))
+    normalized_lang = normalize_language_code(language)
+    logger.info(
+        f"Installing translators for language: {language} (normalized: {normalized_lang})"
+    )
+    logger.info(f"Running in PyInstaller mode: {hasattr(sys, '_MEIPASS')}")
+    if hasattr(sys, "_MEIPASS"):
+        logger.info(f"PyInstaller _MEIPASS path: {sys._MEIPASS}")
+
+    locale = QLocale(normalized_lang)
+    logger.info(f"QLocale name: {locale.name()}")
     translators: list[QTranslator] = []
 
     app_translator = _load_app_translator(app, locale)
     if app_translator is not None:
         translators.append(app_translator)
+        logger.info("Application translator loaded successfully")
+    else:
+        logger.warning("Failed to load application translator")
 
-    translators.extend(_load_qt_translators(app, locale))
+    qt_translators = _load_qt_translators(app, locale)
+    translators.extend(qt_translators)
+    logger.info(f"Loaded {len(qt_translators)} Qt translators")
 
     # Keep translators referenced on the application instance to avoid GC.
     if translators:
         app._installed_translators = translators  # type: ignore[attr-defined]
+        logger.info(f"Total {len(translators)} translators installed")
+    else:
+        logger.warning("No translators were installed")
 
 
 def _load_app_translator(app: QApplication, locale: QLocale) -> QTranslator | None:
     """Load the media manager translation for the given locale if available."""
-    for path in _iter_translation_search_paths():
+    logger.info(
+        f"Loading app translator for locale: {locale.name()}, basename: {TRANSLATION_BASENAME}"
+    )
+
+    search_paths = list(_iter_translation_search_paths())
+    logger.info(f"Translation search paths: {search_paths}")
+
+    for path in search_paths:
+        logger.info(f"Trying to load translation from: {path}")
+
+        # Check if path exists and list its contents
+        if path.exists():
+            qm_files = list(path.glob("*.qm"))
+            logger.info(f"  Path exists. QM files found: {[f.name for f in qm_files]}")
+        else:
+            logger.warning("  Path does not exist!")
+            continue
+
         translator = QTranslator(app)
-        if translator.load(
+
+        # Expected filename pattern: media_manager_zh_CN.qm
+        expected_filename = f"{TRANSLATION_BASENAME}_{locale.name()}.qm"
+        logger.info(f"  Looking for file: {expected_filename}")
+
+        load_result = translator.load(
             locale,
             TRANSLATION_BASENAME,
             "_",
             str(path),
-        ):
+        )
+
+        if load_result:
+            logger.info(f"  ✓ Successfully loaded translator from {path}")
             app.installTranslator(translator)
             return translator
+        else:
+            logger.warning(f"  ✗ Failed to load translator from {path}")
+
+    logger.error(
+        f"Could not load translation for locale {locale.name()} from any search path"
+    )
     return None
 
 
 def _load_qt_translators(app: QApplication, locale: QLocale) -> list[QTranslator]:
     """Load Qt base translations for the locale (qtbase/qt)."""
+    qt_trans_path = _qt_translations_path()
+    logger.info(f"Loading Qt translators from: {qt_trans_path}")
+
     translators: list[QTranslator] = []
     prefixes = ("qtbase", "qt")
     for prefix in prefixes:
         translator = QTranslator(app)
-        if translator.load(f"{prefix}_{locale.name()}", _qt_translations_path()):
+        filename = f"{prefix}_{locale.name()}"
+        logger.info(f"  Trying to load Qt translator: {filename}")
+
+        if translator.load(filename, qt_trans_path):
             app.installTranslator(translator)
             translators.append(translator)
+            logger.info(f"  ✓ Loaded {filename}")
+        else:
+            logger.warning(f"  ✗ Failed to load {filename}")
+
     return translators
 
 
 def _iter_translation_search_paths() -> Iterator[Path]:
     """Yield candidate directories that may contain compiled QM files."""
     candidates: list[Path] = []
+
     if hasattr(sys, "_MEIPASS"):
         meipass_base = Path(sys._MEIPASS)
+        logger.info(f"PyInstaller mode detected, _MEIPASS: {meipass_base}")
         candidates.append(meipass_base / "resources" / "i18n")
+        logger.info(f"Added PyInstaller candidate path: {candidates[-1]}")
+
     package_dir = Path(__file__).resolve().parent
-    candidates.append(package_dir / "resources" / "i18n")
+    package_path = package_dir / "resources" / "i18n"
+    candidates.append(package_path)
+    logger.info(f"Added package candidate path: {package_path}")
 
     seen: set[Path] = set()
     for candidate in candidates:
+        logger.info(f"Checking candidate path: {candidate}")
+        logger.info(f"  Exists: {candidate.exists()}")
+        logger.info(f"  Already seen: {candidate in seen}")
+
         if candidate.exists() and candidate not in seen:
             seen.add(candidate)
+            logger.info("  → Yielding this path")
             yield candidate
+        else:
+            logger.warning("  → Skipping this path")
 
 
 def _qt_translations_path() -> str:
@@ -112,9 +187,15 @@ def _qt_translations_path() -> str:
     if hasattr(sys, "_MEIPASS"):
         meipass_base = Path(sys._MEIPASS)
         bundled = meipass_base / "PySide6" / "translations"
+        logger.info(f"Checking for bundled Qt translations at: {bundled}")
+        logger.info(f"  Exists: {bundled.exists()}")
         if bundled.exists():
+            logger.info(f"Using bundled Qt translations path: {bundled}")
             return str(bundled)
-    return QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)
+
+    qt_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
+    logger.info(f"Using system Qt translations path: {qt_path}")
+    return qt_path
 
 
 __all__ = [
