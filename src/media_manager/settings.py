@@ -449,6 +449,18 @@ class SettingsManager(QObject):
             "tmdb_api_key_alternative", normalized if normalized else None
         )
 
+    def get_tvdb_api_key_alternative(self) -> str | None:
+        """Get alternative TVDB API key (if different from main key)."""
+        result = self.get_provider_setting("tvdb_api_key_alternative")
+        return str(result) if isinstance(result, str) else None
+
+    def set_tvdb_api_key_alternative(self, api_key: str | None) -> None:
+        """Set alternative TVDB API key."""
+        normalized = api_key.strip() if api_key else ""
+        self.set_provider_setting(
+            "tvdb_api_key_alternative", normalized if normalized else None
+        )
+
     # ------------------------------------------------------------------
     # Cache settings
     # ------------------------------------------------------------------
