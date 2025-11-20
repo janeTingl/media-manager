@@ -61,7 +61,7 @@ def install_translators(app: QApplication, language: str | None) -> None:
 
     # Keep translators referenced on the application instance to avoid GC.
     if translators:
-        setattr(app, "_installed_translators", translators)
+        app._installed_translators = translators  # type: ignore[attr-defined]
 
 
 def _load_app_translator(app: QApplication, locale: QLocale) -> QTranslator | None:
@@ -95,7 +95,8 @@ def _iter_translation_search_paths() -> Iterator[Path]:
     """Yield candidate directories that may contain compiled QM files."""
     candidates: list[Path] = []
     if hasattr(sys, "_MEIPASS"):
-        candidates.append(Path(getattr(sys, "_MEIPASS")) / "resources" / "i18n")
+        meipass_base = Path(sys._MEIPASS)
+        candidates.append(meipass_base / "resources" / "i18n")
     package_dir = Path(__file__).resolve().parent
     candidates.append(package_dir / "resources" / "i18n")
 
@@ -109,10 +110,11 @@ def _iter_translation_search_paths() -> Iterator[Path]:
 def _qt_translations_path() -> str:
     """Return the path that contains Qt translation files."""
     if hasattr(sys, "_MEIPASS"):
-        bundled = Path(getattr(sys, "_MEIPASS")) / "PySide6" / "translations"
+        meipass_base = Path(sys._MEIPASS)
+        bundled = meipass_base / "PySide6" / "translations"
         if bundled.exists():
             return str(bundled)
-    return QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+    return QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)
 
 
 __all__ = [

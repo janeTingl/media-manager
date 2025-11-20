@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+# ruff: noqa
 
 block_cipher = None
 
@@ -7,7 +7,7 @@ from PySide6.QtCore import QLibraryInfo
 entry_script = 'src/media_manager/main.py'
 
 # 获取 PySide6 翻译文件路径
-translations_path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+translations_path = QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)
 
 a = Analysis(
     [entry_script],
@@ -17,6 +17,7 @@ a = Analysis(
     datas=[
         ('assets/*', 'assets'),
         ('config/*', 'config'),
+        ('src/media_manager/resources/i18n/*.qm', 'resources/i18n'),
 
         # 加入 Qt 中文翻译文件（关键）
         (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
