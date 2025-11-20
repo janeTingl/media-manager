@@ -29,6 +29,7 @@ from .library_manager_dialog import LibraryManagerDialog
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
 from .settings import SettingsManager, get_settings
+from .tmdb_settings_dialog import TMDBSettingsDialog
 
 
 class BasePreferencesSection(QWidget):
@@ -404,6 +405,12 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         tmdb_widget.setLayout(tmdb_container)
         form.addRow(self.tr("TMDB API key:"), tmdb_widget)
 
+        self.tmdb_settings_button = QPushButton(
+            self.tr("Configure Alternative TMDB Endpoints")
+        )
+        self.tmdb_settings_button.clicked.connect(self._on_tmdb_settings)
+        form.addRow("", self.tmdb_settings_button)
+
         self.tvdb_key_edit = QLineEdit()
         self.tvdb_key_edit.setPlaceholderText(self.tr("TVDB API key"))
         self.tvdb_error_label = QLabel()
@@ -431,6 +438,13 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
 
         layout.addLayout(form)
         layout.addStretch()
+
+    def _on_tmdb_settings(self) -> None:
+        """Open TMDB settings dialog for alternative endpoints."""
+        dialog = TMDBSettingsDialog(self._settings, self)
+        if dialog.exec():
+            dialog.save_settings()
+            self._settings.save_settings()
 
     def refresh(self) -> None:
         self.tmdb_key_edit.setText(self._settings.get_tmdb_api_key() or "")
