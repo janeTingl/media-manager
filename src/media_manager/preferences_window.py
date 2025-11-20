@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .i18n import get_language_choices
 from .library_manager_dialog import LibraryManagerDialog
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
@@ -38,7 +39,7 @@ class BasePreferencesSection(QWidget):
         super().__init__(parent)
         self._settings = settings
 
-    def apply(self) -> Tuple[bool, Optional[str]]:
+    def apply(self) -> tuple[bool, str | None]:
         """Apply current widget values to the settings manager."""
         return True, None
 
@@ -60,7 +61,7 @@ class PreferencesWindow(QDialog):
     ) -> None:
         super().__init__(parent)
         self._settings = settings or get_settings()
-        self.setWindowTitle("Preferences")
+        self.setWindowTitle(self.tr("Preferences"))
         self.setMinimumSize(780, 580)
 
         layout = QVBoxLayout(self)
@@ -71,22 +72,22 @@ class PreferencesWindow(QDialog):
 
         # Build tabs
         self._libraries_section = LibrariesPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._libraries_section, "Libraries")
+        self._add_section(self._libraries_section, self.tr("Libraries"))
 
         self._metadata_section = MetadataPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._metadata_section, "Metadata")
+        self._add_section(self._metadata_section, self.tr("Metadata"))
 
         self._providers_section = ProvidersPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._providers_section, "Providers")
+        self._add_section(self._providers_section, self.tr("Providers"))
 
         self._downloads_section = DownloadsPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._downloads_section, "Downloads")
+        self._add_section(self._downloads_section, self.tr("Downloads"))
 
         self._ui_section = UIPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._ui_section, "UI")
+        self._add_section(self._ui_section, self.tr("UI"))
 
         self._advanced_section = AdvancedPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._advanced_section, "Advanced")
+        self._add_section(self._advanced_section, self.tr("Advanced"))
 
         # Dialog buttons
         self._button_box = QDialogButtonBox(QDialogButtonBox.Apply | QDialogButtonBox.Close)
@@ -105,7 +106,11 @@ class PreferencesWindow(QDialog):
             success, error_message = section.apply()
             if not success:
                 if error_message:
-                    QMessageBox.warning(self, f"{title} Settings", error_message)
+                    QMessageBox.warning(
+                        self,
+                        self.tr("{title} Settings").format(title=title),
+                        error_message,
+                    )
                 self._tab_widget.setCurrentWidget(section)
                 return
 
@@ -135,23 +140,23 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.default_library_combo = QComboBox()
-        form.addRow("Default library:", self.default_library_combo)
+        form.addRow(self.tr("Default library:"), self.default_library_combo)
 
-        self.auto_restore_checkbox = QCheckBox("Restore last active library on startup")
+        self.auto_restore_checkbox = QCheckBox(self.tr("Restore last active library on startup"))
         form.addRow("", self.auto_restore_checkbox)
 
         root_layout = QHBoxLayout()
         self.library_root_edit = QLineEdit()
-        self.library_root_edit.setPlaceholderText("/path/to/default/library")
-        browse_button = QPushButton("Browse…")
+        self.library_root_edit.setPlaceholderText(self.tr("/path/to/default/library"))
+        browse_button = QPushButton(self.tr("Browse…"))
         browse_button.clicked.connect(self._on_browse_root)
         root_layout.addWidget(self.library_root_edit)
         root_layout.addWidget(browse_button)
-        form.addRow("Library root:", root_layout)
+        form.addRow(self.tr("Library root:"), root_layout)
 
         layout.addLayout(form)
 
-        manage_button = QPushButton("Manage Libraries…")
+        manage_button = QPushButton(self.tr("Manage Libraries…"))
         manage_button.clicked.connect(self._on_manage_libraries)
         layout.addWidget(manage_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
@@ -168,7 +173,11 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         try:
             libraries = self._repository.get_active()
         except Exception as exc:  # pragma: no cover - defensive fallback
-            QMessageBox.warning(self, "Libraries", f"Failed to load libraries: {exc}")
+            QMessageBox.warning(
+                self,
+                self.tr("Libraries"),
+                self.tr("Failed to load libraries: {error}").format(error=exc),
+            )
             libraries = []
 
         for library in libraries:
@@ -176,7 +185,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             self._libraries.append((library.name, library.id))
 
         if not libraries:
-            self.default_library_combo.addItem("No libraries available", None)
+            self.default_library_combo.addItem(self.tr("No libraries available"), None)
             self.default_library_combo.setEnabled(False)
         else:
             self.default_library_combo.setEnabled(True)
@@ -196,7 +205,11 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             self.library_root_edit.setText(str(root_setting))
 
     def _on_browse_root(self) -> None:
-        directory = QFileDialog.getExistingDirectory(self, "Select Library Root", self.library_root_edit.text())
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            self.tr("Select Library Root"),
+            self.library_root_edit.text(),
+        )
         if directory:
             self.library_root_edit.setText(directory)
 
@@ -207,7 +220,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         dialog.library_deleted.connect(lambda _: self.refresh())
         dialog.exec()
 
-    def apply(self) -> Tuple[bool, Optional[str]]:
+    def apply(self) -> tuple[bool, str | None]:
         root_text = self.library_root_edit.text().strip()
         if root_text:
             root_path = Path(root_text)
@@ -302,7 +315,7 @@ class MetadataPreferencesWidget(BasePreferencesSection):
         if nfo_subfolder:
             self.nfo_subfolder_edit.setText(nfo_subfolder)
 
-    def apply(self) -> Tuple[bool, Optional[str]]:
+    def apply(self) -> tuple[bool, str | None]:
         self._settings.set_rename_template("movie", self.movie_template_edit.text().strip())
         self._settings.set_rename_template("tv_episode", self.tv_template_edit.text().strip())
 
@@ -392,7 +405,7 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         self.tmdb_error_label.clear()
         self.tvdb_error_label.clear()
 
-    def apply(self) -> Tuple[bool, Optional[str]]:
+    def apply(self) -> tuple[bool, str | None]:
         tmdb_key = self.tmdb_key_edit.text().strip()
         tvdb_key = self.tvdb_key_edit.text().strip()
 

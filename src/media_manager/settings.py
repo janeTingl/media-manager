@@ -8,10 +8,11 @@ from typing import Any, cast
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
+from media_manager.i18n import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, normalize_language_code
+
 DEFAULT_SETTINGS_PATH = Path.home() / ".media-manager" / "settings.json"
 
-DEFAULT_LANGUAGE = "zh-CN"
-SUPPORTED_UI_LANGUAGES: tuple[str, ...] = (DEFAULT_LANGUAGE,)
+SUPPORTED_UI_LANGUAGES: tuple[str, ...] = SUPPORTED_LANGUAGES
 
 LIBRARY_DOMAIN = "library_settings"
 PROVIDER_DOMAIN = "providers"
@@ -101,14 +102,16 @@ class SettingsManager(QObject):
             self._get_domain(domain)
 
     def _ensure_language_defaults(self) -> None:
-        """Ensure UI and help locales default to Simplified Chinese."""
+        """Normalize persisted UI/help locales so they match supported values."""
         ui_settings = self._get_domain(UI_DOMAIN)
-        if ui_settings.get("language") not in SUPPORTED_UI_LANGUAGES:
-            ui_settings["language"] = DEFAULT_LANGUAGE
+        language = normalize_language_code(ui_settings.get("language"))
+        ui_settings["language"] = language
 
         help_locale = ui_settings.get("help_locale")
-        if help_locale not in SUPPORTED_UI_LANGUAGES:
-            ui_settings["help_locale"] = DEFAULT_LANGUAGE
+        if help_locale is None:
+            ui_settings["help_locale"] = language
+        else:
+            ui_settings["help_locale"] = normalize_language_code(help_locale)
 
     def _migrate_legacy_schema(self) -> None:
         """Migrate legacy flat keys into the new domain-based schema."""
@@ -693,21 +696,21 @@ class SettingsManager(QObject):
 
     def get_language(self) -> str:
         """Get the UI language/locale setting."""
-        return str(self.get_ui_setting("language", DEFAULT_LANGUAGE))
+        value = self.get_ui_setting("language", DEFAULT_LANGUAGE)
+        return normalize_language_code(value)
 
     def set_language(self, language: str) -> None:
         """Set the UI language/locale setting."""
-        normalized = language if language in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
-        self.set_ui_setting("language", normalized)
+        self.set_ui_setting("language", normalize_language_code(language))
 
     def get_help_locale(self) -> str:
         """Get the help documentation locale (falls back to UI language)."""
-        return str(self.get_ui_setting("help_locale", self.get_language()))
+        value = self.get_ui_setting("help_locale", self.get_language())
+        return normalize_language_code(value)
 
     def set_help_locale(self, locale: str) -> None:
         """Set the help documentation locale."""
-        normalized = locale if locale in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
-        self.set_ui_setting("help_locale", normalized)
+        self.set_ui_setting("help_locale", normalize_language_code(locale))
 
     # ------------------------------------------------------------------
     # Advanced settings
