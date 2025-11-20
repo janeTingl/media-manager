@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, Signal, QTimer, QSize
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QComboBox,
@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QProgressBar,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
@@ -97,7 +96,7 @@ class DashboardWidget(QWidget):
     # Signals
     data_updated = Signal()
 
-    def __init__(self, parent: Optional[QMainWindow] = None) -> None:
+    def __init__(self, parent: QMainWindow | None = None) -> None:
         """Initialize dashboard widget.
 
         Args:
@@ -108,7 +107,7 @@ class DashboardWidget(QWidget):
         self._logger = logger
         self._stats_service = StatsService()
         self._library_repository = LibraryRepository()
-        self._current_library_id: Optional[int] = None
+        self._current_library_id: int | None = None
         self._auto_refresh_timer = QTimer()
         self._auto_refresh_timer.timeout.connect(self._refresh_data)
 
@@ -150,9 +149,9 @@ class DashboardWidget(QWidget):
         layout = QHBoxLayout()
 
         # Library filter
-        layout.addWidget(QLabel("Library:"))
+        layout.addWidget(QLabel(self.tr("Library:")))
         self.library_combo = QComboBox()
-        self.library_combo.addItem("All Libraries", None)
+        self.library_combo.addItem(self.tr("All Libraries"), None)
         libraries = self._library_repository.get_active()
         for lib in libraries:
             self.library_combo.addItem(lib.name, lib.id)
@@ -162,7 +161,7 @@ class DashboardWidget(QWidget):
         layout.addSpacing(20)
 
         # Date range filters
-        layout.addWidget(QLabel("From:"))
+        layout.addWidget(QLabel(self.tr("From:")))
         self.date_from = QDateEdit()
         self.date_from.setDate(
             (datetime.utcnow()).replace(day=1).date()
@@ -170,14 +169,14 @@ class DashboardWidget(QWidget):
         self.date_from.dateChanged.connect(self._on_date_changed)
         layout.addWidget(self.date_from)
 
-        layout.addWidget(QLabel("To:"))
+        layout.addWidget(QLabel(self.tr("To:")))
         self.date_to = QDateEdit()
         self.date_to.setDate(datetime.utcnow().date())
         self.date_to.dateChanged.connect(self._on_date_changed)
         layout.addWidget(self.date_to)
 
         # Refresh button
-        refresh_btn = QPushButton("Refresh")
+        refresh_btn = QPushButton(self.tr("Refresh"))
         refresh_btn.clicked.connect(self._refresh_data)
         layout.addWidget(refresh_btn)
 
@@ -189,19 +188,19 @@ class DashboardWidget(QWidget):
         """Create summary stat cards."""
         layout = QHBoxLayout()
 
-        self.card_total = StatsCard("Total Items", "0")
+        self.card_total = StatsCard(self.tr("Total Items"), "0")
         layout.addWidget(self.card_total)
 
-        self.card_movies = StatsCard("Movies", "0")
+        self.card_movies = StatsCard(self.tr("Movies"), "0")
         layout.addWidget(self.card_movies)
 
-        self.card_tv = StatsCard("TV Shows", "0")
+        self.card_tv = StatsCard(self.tr("TV Shows"), "0")
         layout.addWidget(self.card_tv)
 
-        self.card_runtime = StatsCard("Total Runtime", "0 hours")
+        self.card_runtime = StatsCard(self.tr("Total Runtime"), self.tr("0 hours"))
         layout.addWidget(self.card_runtime)
 
-        self.card_storage = StatsCard("Storage", "0 GB")
+        self.card_storage = StatsCard(self.tr("Storage"), self.tr("0 GB"))
         layout.addWidget(self.card_storage)
 
         return layout
@@ -211,10 +210,12 @@ class DashboardWidget(QWidget):
         layout = QHBoxLayout()
 
         # Top Directors
-        layout.addWidget(self._create_top_list_group("Top Directors", "directors"))
+        layout.addWidget(
+            self._create_top_list_group(self.tr("Top Directors"), "directors")
+        )
 
         # Top Actors
-        layout.addWidget(self._create_top_list_group("Top Actors", "actors"))
+        layout.addWidget(self._create_top_list_group(self.tr("Top Actors"), "actors"))
 
         return layout
 
@@ -241,7 +242,7 @@ class DashboardWidget(QWidget):
 
     def _create_recent_activity_group(self) -> QGroupBox:
         """Create recent activity group."""
-        group = QGroupBox("Recent Activity")
+        group = QGroupBox(self.tr("Recent Activity"))
         layout = QVBoxLayout(group)
 
         self.activity_widget = QWidget()
@@ -336,9 +337,7 @@ class DashboardWidget(QWidget):
         for activity in activities:
             timestamp = datetime.fromisoformat(activity["timestamp"])
             time_str = timestamp.strftime("%Y-%m-%d %H:%M")
-            label = QLabel(
-                f"[{time_str}] {activity['type']}: {activity['title']}"
-            )
+            label = QLabel(f"[{time_str}] {activity['type']}: {activity['title']}")
             label.setStyleSheet("color: #555555; padding: 4px 0px;")
             label.setWordWrap(True)
             self.activity_layout.addWidget(label)
