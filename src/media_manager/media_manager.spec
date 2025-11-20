@@ -7,7 +7,7 @@ from PySide6.QtCore import QLibraryInfo
 entry_script = 'src/media_manager/main.py'
 
 # 获取 PySide6 翻译文件路径
-translations_path = QLibraryInfo.location(QLibraryInfo.LibraryPath.TranslationsPath)
+translations_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
 
 a = Analysis(
     [entry_script],
@@ -41,23 +41,11 @@ exe = EXE(
     a.datas,
 
     name='影藏·媒体管理器',
+    debug=False,           # Set to True for debugging
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=False,
     console=False,         # GUI 程序必须 False
     icon=None,             # 若需要图标：icon='icon.ico'
-
-    # 单文件关键参数
-    exclude_binaries=True,
-    strip=False,
-    upx=False,
-    runtime_tmpdir=None
-)
-
-# —— 单文件的其他内容统一放这 —— #
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=False,
-    name='影藏·媒体管理器'
+    disable_windowed_traceback=False,
 )
