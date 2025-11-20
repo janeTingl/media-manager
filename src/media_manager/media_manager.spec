@@ -15,14 +15,16 @@ a = Analysis(
     binaries=[],
 
     datas=[
-        ('assets/*', 'assets'),
-        ('config/*', 'config'),
-        ('src/media_manager/resources/i18n/*.qm', 'resources/i18n'),
-
-        # 加入 Qt 中文翻译文件（关键）
-        (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
-        (translations_path + '/qt_zh_CN.qm', 'PySide6/translations'),
-    ],
+    ('assets/*', 'assets'),
+    ('config/*', 'config'),
+    ('src/media_manager/resources/i18n/media_manager_zh_CN.qm', 'resources/i18n'),
+    ('src/media_manager/resources/i18n/media_manager_de_DE.qm', 'resources/i18n'),
+    ('src/media_manager/resources/i18n/media_manager_en_US.qm', 'resources/i18n'),
+    
+    # 加入 Qt 中文翻译文件（关键）
+    (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
+    (translations_path + '/qt_zh_CN.qm', 'PySide6/translations'),
+],
 
     hiddenimports=[],
     hookspath=[],
