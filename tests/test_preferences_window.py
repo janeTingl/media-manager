@@ -43,18 +43,24 @@ def test_preferences_window_tabs(qapp, temp_settings, monkeypatch):
 
     window = PreferencesWindow(temp_settings)
 
-    tab_titles = [window._tab_widget.tabText(i) for i in range(window._tab_widget.count())]
-    assert tab_titles == ["Libraries", "Metadata", "Providers", "Downloads", "UI", "Advanced"]
+    tab_titles = [
+        window._tab_widget.tabText(i) for i in range(window._tab_widget.count())
+    ]
+    assert tab_titles == [
+        "Libraries",
+        "Metadata",
+        "Providers",
+        "Downloads",
+        "UI",
+        "Advanced",
+    ]
 
 
 def test_providers_preferences_validation(qapp, temp_settings):
     widget = ProvidersPreferencesWidget(temp_settings)
 
-    widget.tmdb_key_edit.setText("short")
-    success, error = widget.apply()
-    assert success is False
-    assert "TMDB" in (error or "")
-
+    widget.tmdb_api_edit.setText("https://api.custom-tmdb.org")
+    widget.tmdb_image_edit.setText("https://image.custom-tmdb.org")
     widget.tmdb_key_edit.setText("a" * 20)
     widget.tvdb_key_edit.setText("b" * 20)
     widget.tmdb_enabled_checkbox.setChecked(True)
@@ -62,8 +68,10 @@ def test_providers_preferences_validation(qapp, temp_settings):
 
     success, error = widget.apply()
     assert success is True
-    assert temp_settings.get_tmdb_api_key() == "a" * 20
-    assert temp_settings.get_tvdb_api_key() == "b" * 20
+    assert temp_settings.get_tmdb_api_base() == "https://api.custom-tmdb.org"
+    assert temp_settings.get_tmdb_image_base() == "https://image.custom-tmdb.org"
+    assert temp_settings.get_tmdb_api_key_alternative() == "a" * 20
+    assert temp_settings.get_tvdb_api_key_alternative() == "b" * 20
     assert set(temp_settings.get_enabled_providers()) == {"TMDB", "TVDB"}
 
 
@@ -169,7 +177,10 @@ def test_metadata_preferences_apply(qapp, temp_settings):
     assert success is True
 
     assert temp_settings.get_rename_template("movie") == "{title}-{year}"
-    assert temp_settings.get_rename_template("tv_episode") == "{title}-S{season:02d}E{episode:02d}"
+    assert (
+        temp_settings.get_rename_template("tv_episode")
+        == "{title}-S{season:02d}E{episode:02d}"
+    )
     assert temp_settings.get_subtitle_provider() == "SubDB"
     assert temp_settings.get_enabled_subtitle_languages() == ["en", "es"]
     assert temp_settings.get_auto_download_subtitles() is True

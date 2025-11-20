@@ -314,17 +314,30 @@ File Extensions:
 
 ### API Keys
 
-**Note:** Currently using mock data. API key support coming in future versions.
+Configure metadata providers in Edit → Preferences → Providers:
 
 ```
-External Services:
+Alternative TMDB API Address:
+[https://api.themoviedb.org..................]
 
-TMDB API Key:
+Alternative TMDB Image Address:
+[https://image.tmdb.org.....................]
+
+Alternative TMDB API Key:
 [Enter your API key........................]
 
-TVDB API Key:
+Alternative TVDB API Key:
 [Enter your API key........................]
+
+☑ Enable TMDB provider
+☑ Enable TVDB provider
+
+Retry attempts: [3]
+API timeout (seconds): [10]
 ```
+
+**Note:** The API address fields can be left empty to use default endpoints. 
+Custom addresses are useful when using proxy services or alternative TMDB/TVDB mirrors.
 
 ### Poster Download Settings
 
