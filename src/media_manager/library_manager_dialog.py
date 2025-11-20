@@ -47,78 +47,82 @@ class LibraryFormWidget(QWidget):
 
         # Name field
         self.name_edit = QLineEdit()
-        self.name_edit.setPlaceholderText("e.g., My Movie Collection")
-        layout.addRow("Name:", self.name_edit)
+        self.name_edit.setPlaceholderText(self.tr("e.g., My Movie Collection"))
+        layout.addRow(self.tr("Name:"), self.name_edit)
 
         # Path field
         path_layout = QHBoxLayout()
         self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText("/path/to/media/folder")
+        self.path_edit.setPlaceholderText(self.tr("/path/to/media/folder"))
         path_layout.addWidget(self.path_edit)
-        self.browse_button = QPushButton("Browse...")
+        self.browse_button = QPushButton(self.tr("Browse..."))
         self.browse_button.clicked.connect(self._on_browse_path)
         path_layout.addWidget(self.browse_button)
-        layout.addRow("Library Path:", path_layout)
+        layout.addRow(self.tr("Library Path:"), path_layout)
 
         # Media type combo
         self.media_type_combo = QComboBox()
-        self.media_type_combo.addItems(["movie", "tv", "mixed"])
-        layout.addRow("Media Type:", self.media_type_combo)
+        self.media_type_combo.addItems(
+            [self.tr("movie"), self.tr("tv"), self.tr("mixed")]
+        )
+        layout.addRow(self.tr("Media Type:"), self.media_type_combo)
 
         # Default destination field
         dest_layout = QHBoxLayout()
         self.default_dest_edit = QLineEdit()
-        self.default_dest_edit.setPlaceholderText("/path/to/destination (optional)")
+        self.default_dest_edit.setPlaceholderText(
+            self.tr("/path/to/destination (optional)")
+        )
         dest_layout.addWidget(self.default_dest_edit)
-        self.browse_dest_button = QPushButton("Browse...")
+        self.browse_dest_button = QPushButton(self.tr("Browse..."))
         self.browse_dest_button.clicked.connect(self._on_browse_destination)
         dest_layout.addWidget(self.browse_dest_button)
-        layout.addRow("Default Destination:", dest_layout)
+        layout.addRow(self.tr("Default Destination:"), dest_layout)
 
         # Scan roots group
-        scan_group = QGroupBox("Scan Roots")
+        scan_group = QGroupBox(self.tr("Scan Roots"))
         scan_layout = QVBoxLayout(scan_group)
-        
+
         self.scan_roots_list = QListWidget()
         scan_layout.addWidget(self.scan_roots_list)
-        
+
         scan_buttons_layout = QHBoxLayout()
-        self.add_scan_root_button = QPushButton("Add Root...")
+        self.add_scan_root_button = QPushButton(self.tr("Add Root..."))
         self.add_scan_root_button.clicked.connect(self._on_add_scan_root)
         scan_buttons_layout.addWidget(self.add_scan_root_button)
-        
-        self.remove_scan_root_button = QPushButton("Remove")
+
+        self.remove_scan_root_button = QPushButton(self.tr("Remove"))
         self.remove_scan_root_button.clicked.connect(self._on_remove_scan_root)
         scan_buttons_layout.addWidget(self.remove_scan_root_button)
         scan_layout.addLayout(scan_buttons_layout)
-        
+
         layout.addRow(scan_group)
 
         # Color picker
         color_layout = QHBoxLayout()
-        self.color_label = QLabel("No color selected")
+        self.color_label = QLabel(self.tr("No color selected"))
         self.color_label.setStyleSheet("padding: 5px; border: 1px solid gray;")
         color_layout.addWidget(self.color_label)
-        self.pick_color_button = QPushButton("Pick Color...")
+        self.pick_color_button = QPushButton(self.tr("Pick Color..."))
         self.pick_color_button.clicked.connect(self._on_pick_color)
         color_layout.addWidget(self.pick_color_button)
-        layout.addRow("Color:", color_layout)
+        layout.addRow(self.tr("Color:"), color_layout)
 
         # Active checkbox
-        self.active_checkbox = QCheckBox("Active")
+        self.active_checkbox = QCheckBox(self.tr("Active"))
         self.active_checkbox.setChecked(True)
-        layout.addRow("Status:", self.active_checkbox)
+        layout.addRow(self.tr("Status:"), self.active_checkbox)
 
         # Description field
         self.description_edit = QTextEdit()
-        self.description_edit.setPlaceholderText("Optional description...")
+        self.description_edit.setPlaceholderText(self.tr("Optional description..."))
         self.description_edit.setMaximumHeight(80)
-        layout.addRow("Description:", self.description_edit)
+        layout.addRow(self.tr("Description:"), self.description_edit)
 
     def _on_browse_path(self) -> None:
         """Handle browse path button click."""
         folder = QFileDialog.getExistingDirectory(
-            self, "Select Library Path", self.path_edit.text()
+            self, self.tr("Select Library Path"), self.path_edit.text()
         )
         if folder:
             self.path_edit.setText(folder)
@@ -126,14 +130,14 @@ class LibraryFormWidget(QWidget):
     def _on_browse_destination(self) -> None:
         """Handle browse destination button click."""
         folder = QFileDialog.getExistingDirectory(
-            self, "Select Default Destination", self.default_dest_edit.text()
+            self, self.tr("Select Default Destination"), self.default_dest_edit.text()
         )
         if folder:
             self.default_dest_edit.setText(folder)
 
     def _on_add_scan_root(self) -> None:
         """Handle add scan root button click."""
-        folder = QFileDialog.getExistingDirectory(self, "Select Scan Root")
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Select Scan Root"))
         if folder:
             self.scan_roots_list.addItem(folder)
 
@@ -170,7 +174,9 @@ class LibraryFormWidget(QWidget):
                 for root in scan_roots:
                     self.scan_roots_list.addItem(root)
             except json.JSONDecodeError:
-                self._logger.warning(f"Failed to parse scan roots: {library.scan_roots}")
+                self._logger.warning(
+                    f"Failed to parse scan roots: {library.scan_roots}"
+                )
 
         # Load color
         if library.color:

@@ -22,7 +22,6 @@ from PySide6.QtWidgets import (
 
 from .batch_operations_service import (
     BatchOperationConfig,
-    BatchOperationSummary,
     BatchOperationsService,
 )
 from .persistence.models import MediaItem
@@ -56,17 +55,19 @@ class BatchOperationsDialog(QDialog):
         self._apply_defaults()
 
     def _setup_ui(self) -> None:
-        self.setWindowTitle("Batch Operations")
+        self.setWindowTitle(self.tr("Batch Operations"))
         self.resize(520, 420)
 
         layout = QVBoxLayout(self)
 
-        self.selection_label = QLabel(f"{len(self._items)} items selected")
+        self.selection_label = QLabel(
+            self.tr("{count} items selected").format(count=len(self._items))
+        )
         self.selection_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.selection_label)
 
         # Rename option
-        self.rename_checkbox = QCheckBox("Rename using templates")
+        self.rename_checkbox = QCheckBox(self.tr("Rename using templates"))
         layout.addWidget(self.rename_checkbox)
 
         # Move option
@@ -75,7 +76,7 @@ class BatchOperationsDialog(QDialog):
         move_layout.setContentsMargins(0, 0, 0, 0)
         move_layout.setSpacing(8)
 
-        self.move_checkbox = QCheckBox("Move to library")
+        self.move_checkbox = QCheckBox(self.tr("Move to library"))
         self.library_combo = QComboBox()
         self.library_combo.setEnabled(False)
         self.move_checkbox.toggled.connect(self.library_combo.setEnabled)
@@ -85,7 +86,7 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(move_container)
 
         # Delete option
-        self.delete_checkbox = QCheckBox("Delete files (permanent)")
+        self.delete_checkbox = QCheckBox(self.tr("Delete files (permanent)"))
         layout.addWidget(self.delete_checkbox)
 
         # Tags assignment
@@ -94,9 +95,9 @@ class BatchOperationsDialog(QDialog):
         tags_layout.setContentsMargins(0, 0, 0, 0)
         tags_layout.setSpacing(8)
 
-        self.tags_checkbox = QCheckBox("Assign tags")
+        self.tags_checkbox = QCheckBox(self.tr("Assign tags"))
         self.tags_edit = QLineEdit()
-        self.tags_edit.setPlaceholderText("Comma-separated tags")
+        self.tags_edit.setPlaceholderText(self.tr("Comma-separated tags"))
         self.tags_edit.setEnabled(False)
         self.tags_checkbox.toggled.connect(self.tags_edit.setEnabled)
 
@@ -105,7 +106,9 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(tags_container)
 
         # Metadata overrides
-        self.metadata_checkbox = QCheckBox("Override metadata (genres, rating)")
+        self.metadata_checkbox = QCheckBox(
+            self.tr("Override metadata (genres, rating)")
+        )
         layout.addWidget(self.metadata_checkbox)
 
         self.metadata_fields_widget = QWidget()
@@ -113,15 +116,15 @@ class BatchOperationsDialog(QDialog):
         metadata_layout.setContentsMargins(26, 0, 0, 0)
 
         self.genres_edit = QLineEdit()
-        self.genres_edit.setPlaceholderText("Comma-separated genres")
+        self.genres_edit.setPlaceholderText(self.tr("Comma-separated genres"))
 
         self.rating_spin = QSpinBox()
         self.rating_spin.setRange(0, 100)
-        self.rating_spin.setSuffix(" / 100")
+        self.rating_spin.setSuffix(self.tr(" / 100"))
         self.rating_spin.setValue(0)
 
-        metadata_layout.addRow("Genres", self.genres_edit)
-        metadata_layout.addRow("Rating", self.rating_spin)
+        metadata_layout.addRow(self.tr("Genres"), self.genres_edit)
+        metadata_layout.addRow(self.tr("Rating"), self.rating_spin)
 
         self.metadata_fields_widget.setEnabled(False)
         self.metadata_checkbox.toggled.connect(self.metadata_fields_widget.setEnabled)
@@ -129,7 +132,7 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(self.metadata_fields_widget)
 
         # Provider re-sync
-        self.resync_checkbox = QCheckBox("Re-sync metadata from providers")
+        self.resync_checkbox = QCheckBox(self.tr("Re-sync metadata from providers"))
         layout.addWidget(self.resync_checkbox)
 
         # Progress section
@@ -144,7 +147,9 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(self.status_label)
 
         # Dialog buttons
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
         self.button_box.accepted.connect(self._on_apply_clicked)
         self.button_box.rejected.connect(self.reject)
         layout.addWidget(self.button_box)
@@ -159,21 +164,25 @@ class BatchOperationsDialog(QDialog):
         if not libraries:
             self.move_checkbox.setEnabled(False)
             self.library_combo.setEnabled(False)
-            self.move_checkbox.setToolTip("No active libraries available")
+            self.move_checkbox.setToolTip(self.tr("No active libraries available"))
 
     def _apply_defaults(self) -> None:
         defaults = self._settings.get_batch_defaults()
         if not defaults:
             return
 
-        self.rename_checkbox.setChecked(bool(defaults.get("rename", self.rename_checkbox.isChecked())))
+        self.rename_checkbox.setChecked(
+            bool(defaults.get("rename", self.rename_checkbox.isChecked()))
+        )
         move_default = bool(defaults.get("move", self.move_checkbox.isChecked()))
         self.move_checkbox.setChecked(move_default)
         delete_default = bool(defaults.get("delete", self.delete_checkbox.isChecked()))
         self.delete_checkbox.setChecked(delete_default)
         tags_default = bool(defaults.get("tags", self.tags_checkbox.isChecked()))
         self.tags_checkbox.setChecked(tags_default)
-        metadata_default = bool(defaults.get("metadata", self.metadata_checkbox.isChecked()))
+        metadata_default = bool(
+            defaults.get("metadata", self.metadata_checkbox.isChecked())
+        )
         self.metadata_checkbox.setChecked(metadata_default)
         resync_default = bool(defaults.get("resync", self.resync_checkbox.isChecked()))
         self.resync_checkbox.setChecked(resync_default)
@@ -207,18 +216,29 @@ class BatchOperationsDialog(QDialog):
         config = self._build_config()
 
         if not self._has_selected_operations(config):
-            QMessageBox.information(self, "No Operations", "Select at least one batch operation to apply.")
+            QMessageBox.information(
+                self,
+                self.tr("No Operations"),
+                self.tr("Select at least one batch operation to apply."),
+            )
             return
 
-        if config.move_library_id is not None and self.library_combo.currentData() is None:
-            QMessageBox.warning(self, "Select Library", "Choose a target library for the move operation.")
+        if (
+            config.move_library_id is not None
+            and self.library_combo.currentData() is None
+        ):
+            QMessageBox.warning(
+                self,
+                self.tr("Select Library"),
+                self.tr("Choose a target library for the move operation."),
+            )
             return
 
         if config.delete_files:
             confirm = QMessageBox.question(
                 self,
-                "Confirm Deletion",
-                "This will permanently delete the selected files. Continue?",
+                self.tr("Confirm Deletion"),
+                self.tr("This will permanently delete the selected files. Continue?"),
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No,
             )
@@ -228,15 +248,23 @@ class BatchOperationsDialog(QDialog):
         self._execute_operations(config)
 
     def _build_config(self) -> BatchOperationConfig:
-        target_library_id = self.library_combo.currentData() if self.move_checkbox.isChecked() else None
-        genres_value = self.genres_edit.text() if self.metadata_checkbox.isChecked() else None
+        target_library_id = (
+            self.library_combo.currentData() if self.move_checkbox.isChecked() else None
+        )
+        genres_value = (
+            self.genres_edit.text() if self.metadata_checkbox.isChecked() else None
+        )
         rating_value = (
-            float(self.rating_spin.value()) if self.metadata_checkbox.isChecked() else None
+            float(self.rating_spin.value())
+            if self.metadata_checkbox.isChecked()
+            else None
         )
 
         tags = []
         if self.tags_checkbox.isChecked():
-            tags = [tag.strip() for tag in self.tags_edit.text().split(",") if tag.strip()]
+            tags = [
+                tag.strip() for tag in self.tags_edit.text().split(",") if tag.strip()
+            ]
 
         config = BatchOperationConfig(
             rename=self.rename_checkbox.isChecked(),
@@ -265,7 +293,7 @@ class BatchOperationsDialog(QDialog):
     def _execute_operations(self, config: BatchOperationConfig) -> None:
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
-        self.status_label.setText("Starting batch operations...")
+        self.status_label.setText(self.tr("Starting batch operations..."))
 
         def progress_callback(current: int, total: int, message: str) -> None:
             self.progress_bar.setMaximum(total)
@@ -276,11 +304,15 @@ class BatchOperationsDialog(QDialog):
         try:
             summary = self._service.perform(self._items, config, progress_callback)
         except Exception as exc:  # pragma: no cover - UI feedback path
-            QMessageBox.critical(self, "Batch Operation Failed", str(exc))
-            self.status_label.setText("Batch operation failed")
+            QMessageBox.critical(self, self.tr("Batch Operation Failed"), str(exc))
+            self.status_label.setText(self.tr("Batch operation failed"))
             return
 
-        self.status_label.setText("Batch operations completed")
-        QMessageBox.information(self, "Batch Operations", summary.to_message() or "Completed")
+        self.status_label.setText(self.tr("Batch operations completed"))
+        QMessageBox.information(
+            self,
+            self.tr("Batch Operations"),
+            summary.to_message() or self.tr("Completed"),
+        )
         self.operations_completed.emit(summary)
         self.accept()
