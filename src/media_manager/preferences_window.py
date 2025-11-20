@@ -29,7 +29,6 @@ from .library_manager_dialog import LibraryManagerDialog
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
 from .settings import SettingsManager, get_settings
-from .tmdb_settings_dialog import TMDBSettingsDialog
 
 
 class BasePreferencesSection(QWidget):
@@ -381,8 +380,6 @@ class MetadataPreferencesWidget(BasePreferencesSection):
 class ProvidersPreferencesWidget(BasePreferencesSection):
     """Preferences section for metadata providers and API keys."""
 
-    API_KEY_MIN_LENGTH = 16
-
     def __init__(
         self, settings: SettingsManager, parent: QWidget | None = None
     ) -> None:
@@ -394,33 +391,23 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
-        self.tmdb_key_edit = QLineEdit()
-        self.tmdb_key_edit.setPlaceholderText(self.tr("TMDB API key"))
-        self.tmdb_error_label = QLabel()
-        self.tmdb_error_label.setStyleSheet("color: #c62828;")
-        tmdb_container = QVBoxLayout()
-        tmdb_container.addWidget(self.tmdb_key_edit)
-        tmdb_container.addWidget(self.tmdb_error_label)
-        tmdb_widget = QWidget()
-        tmdb_widget.setLayout(tmdb_container)
-        form.addRow(self.tr("TMDB API key:"), tmdb_widget)
+        self.tmdb_api_edit = QLineEdit()
+        self.tmdb_api_edit.setPlaceholderText("https://api.themoviedb.org")
+        form.addRow(self.tr("Alternative TMDB API Address:"), self.tmdb_api_edit)
 
-        self.tmdb_settings_button = QPushButton(
-            self.tr("Configure Alternative API Endpoints")
-        )
-        self.tmdb_settings_button.clicked.connect(self._on_tmdb_settings)
-        form.addRow("", self.tmdb_settings_button)
+        self.tmdb_image_edit = QLineEdit()
+        self.tmdb_image_edit.setPlaceholderText("https://image.tmdb.org")
+        form.addRow(self.tr("Alternative TMDB Image Address:"), self.tmdb_image_edit)
+
+        self.tmdb_key_edit = QLineEdit()
+        self.tmdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.tmdb_key_edit.setPlaceholderText(self.tr("TMDB API key"))
+        form.addRow(self.tr("Alternative TMDB API Key:"), self.tmdb_key_edit)
 
         self.tvdb_key_edit = QLineEdit()
+        self.tvdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
         self.tvdb_key_edit.setPlaceholderText(self.tr("TVDB API key"))
-        self.tvdb_error_label = QLabel()
-        self.tvdb_error_label.setStyleSheet("color: #c62828;")
-        tvdb_container = QVBoxLayout()
-        tvdb_container.addWidget(self.tvdb_key_edit)
-        tvdb_container.addWidget(self.tvdb_error_label)
-        tvdb_widget = QWidget()
-        tvdb_widget.setLayout(tvdb_container)
-        form.addRow(self.tr("TVDB API key:"), tvdb_widget)
+        form.addRow(self.tr("Alternative TVDB API Key:"), self.tvdb_key_edit)
 
         self.tmdb_enabled_checkbox = QCheckBox(self.tr("Enable TMDB provider"))
         form.addRow("", self.tmdb_enabled_checkbox)
@@ -439,16 +426,21 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         layout.addLayout(form)
         layout.addStretch()
 
-    def _on_tmdb_settings(self) -> None:
-        """Open settings dialog for alternative TMDB/TVDB endpoints."""
-        dialog = TMDBSettingsDialog(self._settings, self)
-        if dialog.exec():
-            dialog.save_settings()
-            self._settings.save_settings()
-
     def refresh(self) -> None:
-        self.tmdb_key_edit.setText(self._settings.get_tmdb_api_key() or "")
-        self.tvdb_key_edit.setText(self._settings.get_tvdb_api_key() or "")
+        api_base = self._settings.get_tmdb_api_base()
+        if api_base and api_base != "https://api.themoviedb.org/3":
+            self.tmdb_api_edit.setText(api_base)
+        else:
+            self.tmdb_api_edit.setText("")
+
+        image_base = self._settings.get_tmdb_image_base()
+        if image_base and image_base != "https://image.tmdb.org/t/p":
+            self.tmdb_image_edit.setText(image_base)
+        else:
+            self.tmdb_image_edit.setText("")
+
+        self.tmdb_key_edit.setText(self._settings.get_tmdb_api_key_alternative() or "")
+        self.tvdb_key_edit.setText(self._settings.get_tvdb_api_key_alternative() or "")
 
         enabled = set(self._settings.get_enabled_providers())
         self.tmdb_enabled_checkbox.setChecked("TMDB" in enabled)
@@ -457,25 +449,11 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         self.retry_spin.setValue(self._settings.get_provider_retry_count())
         self.timeout_spin.setValue(self._settings.get_provider_timeout())
 
-        self.tmdb_error_label.clear()
-        self.tvdb_error_label.clear()
-
     def apply(self) -> tuple[bool, str | None]:
-        tmdb_key = self.tmdb_key_edit.text().strip()
-        tvdb_key = self.tvdb_key_edit.text().strip()
-
-        if tmdb_key and not self._is_valid_api_key(tmdb_key):
-            self.tmdb_error_label.setText(self.tr("Invalid TMDB API key"))
-            return False, self.tr("TMDB API key must be at least 16 characters.")
-        self.tmdb_error_label.clear()
-
-        if tvdb_key and not self._is_valid_api_key(tvdb_key):
-            self.tvdb_error_label.setText(self.tr("Invalid TVDB API key"))
-            return False, self.tr("TVDB API key must be at least 16 characters.")
-        self.tvdb_error_label.clear()
-
-        self._settings.set_tmdb_api_key(tmdb_key)
-        self._settings.set_tvdb_api_key(tvdb_key)
+        self._settings.set_tmdb_api_base(self.tmdb_api_edit.text().strip())
+        self._settings.set_tmdb_image_base(self.tmdb_image_edit.text().strip())
+        self._settings.set_tmdb_api_key_alternative(self.tmdb_key_edit.text().strip())
+        self._settings.set_tvdb_api_key_alternative(self.tvdb_key_edit.text().strip())
 
         enabled: list[str] = []
         if self.tmdb_enabled_checkbox.isChecked():
@@ -488,10 +466,6 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         self._settings.set_provider_timeout(self.timeout_spin.value())
 
         return True, None
-
-    @classmethod
-    def _is_valid_api_key(cls, key: str) -> bool:
-        return len(key.strip()) >= cls.API_KEY_MIN_LENGTH
 
 
 class DownloadsPreferencesWidget(BasePreferencesSection):
