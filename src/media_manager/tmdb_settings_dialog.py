@@ -1,4 +1,4 @@
-"""TMDB Settings Dialog for configuring alternative TMDB endpoints."""
+"""Settings Dialog for configuring alternative TMDB and TVDB endpoints."""
 
 from __future__ import annotations
 
@@ -19,19 +19,20 @@ if TYPE_CHECKING:
 
 
 class TMDBSettingsDialog(QDialog):
-    """Dialog for configuring alternative TMDB API endpoints and credentials."""
+    """Dialog for configuring alternative TMDB and TVDB API endpoints and credentials."""
 
     def __init__(
         self, settings: SettingsManager, parent: QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.settings = settings
-        self.setWindowTitle(self.tr("TMDB Alternative Endpoints"))
+        self.setWindowTitle(self.tr("Alternative API Endpoints"))
         self.setMinimumWidth(500)
 
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
+        # TMDB settings
         self.tmdb_api_edit = QLineEdit(self)
         self.tmdb_api_edit.setPlaceholderText("https://api.themoviedb.org")
         form.addRow(self.tr("Alternative TMDB API Address:"), self.tmdb_api_edit)
@@ -46,6 +47,14 @@ class TMDBSettingsDialog(QDialog):
             self.tr("Leave empty to use main API key")
         )
         form.addRow(self.tr("Alternative TMDB API Key:"), self.tmdb_key_edit)
+
+        # TVDB settings
+        self.tvdb_key_edit = QLineEdit(self)
+        self.tvdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.tvdb_key_edit.setPlaceholderText(
+            self.tr("Leave empty to use main API key")
+        )
+        form.addRow(self.tr("Alternative TVDB API Key:"), self.tvdb_key_edit)
 
         layout.addLayout(form)
 
@@ -72,11 +81,15 @@ class TMDBSettingsDialog(QDialog):
         else:
             self.tmdb_image_edit.setText("")
 
-        alt_key = self.settings.get_tmdb_api_key_alternative()
-        self.tmdb_key_edit.setText(alt_key or "")
+        tmdb_alt_key = self.settings.get_tmdb_api_key_alternative()
+        self.tmdb_key_edit.setText(tmdb_alt_key or "")
+
+        tvdb_alt_key = self.settings.get_tvdb_api_key_alternative()
+        self.tvdb_key_edit.setText(tvdb_alt_key or "")
 
     def save_settings(self) -> None:
         """Save dialog field values to settings."""
         self.settings.set_tmdb_api_base(self.tmdb_api_edit.text().strip())
         self.settings.set_tmdb_image_base(self.tmdb_image_edit.text().strip())
         self.settings.set_tmdb_api_key_alternative(self.tmdb_key_edit.text().strip())
+        self.settings.set_tvdb_api_key_alternative(self.tvdb_key_edit.text().strip())

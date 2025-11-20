@@ -7,15 +7,17 @@ import json
 from pathlib import Path
 from typing import Any
 
-import requests
+import requests  # type: ignore[import-untyped]
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
 )
 
 from media_manager.logging import get_logger
+from media_manager.settings import get_settings
+
 from .base import BaseProvider, ProviderError, ProviderResult
 
 
@@ -35,18 +37,29 @@ class TVDBProvider(BaseProvider):
         self._logger = get_logger().get_logger(__name__)
         self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
         self._token: str | None = None
+        self._settings = get_settings()
+
+    @property
+    def effective_api_key(self) -> str | None:
+        """Get the effective API key (alternative or main)."""
+        alt_key = self._settings.get_tvdb_api_key_alternative()
+        if alt_key:
+            return alt_key
+        return self.api_key
 
     def _authenticate(self) -> None:
         """Authenticate and get token for TVDB API v4."""
-        if not self.api_key:
+        if not self.effective_api_key:
             raise ProviderError("TVDB API key is not configured")
 
         cache_key = "tvdb_token"
-        cache_path = self.CACHE_DIR / f"{hashlib.md5(cache_key.encode()).hexdigest()}.json"
+        cache_path = (
+            self.CACHE_DIR / f"{hashlib.md5(cache_key.encode()).hexdigest()}.json"
+        )
 
         if cache_path.exists():
             try:
-                with open(cache_path, "r", encoding="utf-8") as f:
+                with open(cache_path, encoding="utf-8") as f:
                     data = json.load(f)
                     self._token = data.get("token")
                     if self._token:
@@ -57,7 +70,7 @@ class TVDBProvider(BaseProvider):
         try:
             response = requests.post(
                 f"{self.API_BASE}/login",
-                json={"apikey": self.api_key},
+                json={"apikey": self.effective_api_key},
                 timeout=10,
             )
             response.raise_for_status()
@@ -80,7 +93,9 @@ class TVDBProvider(BaseProvider):
         wait=wait_exponential(multiplier=1, min=2, max=10),
         retry=retry_if_exception_type((requests.RequestException, TimeoutError)),
     )
-    def _api_call(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _api_call(
+        self, endpoint: str, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Make an API call to TVDB.
 
         Args:
@@ -108,7 +123,8 @@ class TVDBProvider(BaseProvider):
                 timeout=10,
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
         except requests.RequestException as exc:
             self._logger.error(f"TVDB API error: {exc}")
             raise ProviderError(f"TVDB API call failed: {exc}") from exc
@@ -137,8 +153,9 @@ class TVDBProvider(BaseProvider):
         cache_path = self._get_cache_path(key)
         if cache_path.exists():
             try:
-                with open(cache_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                with open(cache_path, encoding="utf-8") as f:
+                    data: dict[str, Any] = json.load(f)
+                    return data
             except Exception as exc:
                 self._logger.debug(f"Failed to load cache: {exc}")
         return None
@@ -235,7 +252,9 @@ class TVDBProvider(BaseProvider):
             self._logger.error(f"Failed to get movie details: {exc}")
             raise ProviderError(f"Failed to get movie details: {exc}") from exc
 
-    def get_tv_details(self, external_id: str, season: int | None = None, episode: int | None = None) -> ProviderResult:
+    def get_tv_details(
+        self, external_id: str, season: int | None = None, episode: int | None = None
+    ) -> ProviderResult:
         """Get full details for a TV series or episode.
 
         Args:
@@ -253,7 +272,9 @@ class TVDBProvider(BaseProvider):
                 return self._parse_details(cached, "tv")
 
             try:
-                response = self._api_call(f"/series/{external_id}/episodes/default/{season}/{episode}")
+                response = self._api_call(
+                    f"/series/{external_id}/episodes/default/{season}/{episode}"
+                )
                 self._save_to_cache(cache_key, response)
                 return self._parse_details(response, "tv")
             except ProviderError:
@@ -268,7 +289,9 @@ class TVDBProvider(BaseProvider):
                 return self._parse_details(cached, "tv")
 
             try:
-                response = self._api_call(f"/series/{external_id}", {"extended": "full"})
+                response = self._api_call(
+                    f"/series/{external_id}", {"extended": "full"}
+                )
                 self._save_to_cache(cache_key, response)
                 return self._parse_details(response, "tv")
             except ProviderError:
@@ -289,7 +312,9 @@ class TVDBProvider(BaseProvider):
         """
         try:
             endpoint_type = "movies" if media_type == "movie" else "series"
-            response = self._api_call(f"/{endpoint_type}/{external_id}", {"extended": "full"})
+            response = self._api_call(
+                f"/{endpoint_type}/{external_id}", {"extended": "full"}
+            )
             cast_list = []
 
             # Extract actors from characters
@@ -320,7 +345,7 @@ class TVDBProvider(BaseProvider):
         try:
             endpoint_type = "movies" if media_type == "movie" else "series"
             response = self._api_call(f"/{endpoint_type}/{external_id}")
-            trailers = []
+            trailers: list[str] = []
 
             data = response.get("data", {})
             if isinstance(data, dict):
@@ -333,7 +358,9 @@ class TVDBProvider(BaseProvider):
             self._logger.warning(f"Failed to get trailers: {exc}")
             return []
 
-    def _parse_search_results(self, response: dict[str, Any], media_type: str) -> list[ProviderResult]:
+    def _parse_search_results(
+        self, response: dict[str, Any], media_type: str
+    ) -> list[ProviderResult]:
         """Parse search results from API response.
 
         Args:
@@ -382,7 +409,9 @@ class TVDBProvider(BaseProvider):
 
         return results
 
-    def _parse_details(self, response: dict[str, Any], media_type: str) -> ProviderResult:
+    def _parse_details(
+        self, response: dict[str, Any], media_type: str
+    ) -> ProviderResult:
         """Parse details from API response.
 
         Args:
@@ -416,7 +445,9 @@ class TVDBProvider(BaseProvider):
         if data.get("thumbnail"):
             fanart_url = data["thumbnail"]
 
-        aired_date = data.get("first_air_date") or data.get("date") or data.get("air_date")
+        aired_date = (
+            data.get("first_air_date") or data.get("date") or data.get("air_date")
+        )
 
         companies = []
         if media_type == "tv" and "companies" in data:

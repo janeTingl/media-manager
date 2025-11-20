@@ -406,7 +406,7 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         form.addRow(self.tr("TMDB API key:"), tmdb_widget)
 
         self.tmdb_settings_button = QPushButton(
-            self.tr("Configure Alternative TMDB Endpoints")
+            self.tr("Configure Alternative API Endpoints")
         )
         self.tmdb_settings_button.clicked.connect(self._on_tmdb_settings)
         form.addRow("", self.tmdb_settings_button)
@@ -440,7 +440,7 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
         layout.addStretch()
 
     def _on_tmdb_settings(self) -> None:
-        """Open TMDB settings dialog for alternative endpoints."""
+        """Open settings dialog for alternative TMDB/TVDB endpoints."""
         dialog = TMDBSettingsDialog(self._settings, self)
         if dialog.exec():
             dialog.save_settings()
