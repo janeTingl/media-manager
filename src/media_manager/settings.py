@@ -8,10 +8,15 @@ from typing import Any, cast
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
+from media_manager.i18n import (
+    DEFAULT_LANGUAGE,
+    SUPPORTED_LANGUAGES,
+    normalize_language_code,
+)
+
 DEFAULT_SETTINGS_PATH = Path.home() / ".media-manager" / "settings.json"
 
-DEFAULT_LANGUAGE = "zh-CN"
-SUPPORTED_UI_LANGUAGES: tuple[str, ...] = (DEFAULT_LANGUAGE,)
+SUPPORTED_UI_LANGUAGES: tuple[str, ...] = SUPPORTED_LANGUAGES
 
 LIBRARY_DOMAIN = "library_settings"
 PROVIDER_DOMAIN = "providers"
@@ -101,14 +106,16 @@ class SettingsManager(QObject):
             self._get_domain(domain)
 
     def _ensure_language_defaults(self) -> None:
-        """Ensure UI and help locales default to Simplified Chinese."""
+        """Normalize persisted UI/help locales so they match supported values."""
         ui_settings = self._get_domain(UI_DOMAIN)
-        if ui_settings.get("language") not in SUPPORTED_UI_LANGUAGES:
-            ui_settings["language"] = DEFAULT_LANGUAGE
+        language = normalize_language_code(ui_settings.get("language"))
+        ui_settings["language"] = language
 
         help_locale = ui_settings.get("help_locale")
-        if help_locale not in SUPPORTED_UI_LANGUAGES:
-            ui_settings["help_locale"] = DEFAULT_LANGUAGE
+        if help_locale is None:
+            ui_settings["help_locale"] = language
+        else:
+            ui_settings["help_locale"] = normalize_language_code(help_locale)
 
     def _migrate_legacy_schema(self) -> None:
         """Migrate legacy flat keys into the new domain-based schema."""
@@ -167,7 +174,11 @@ class SettingsManager(QObject):
         if legacy_window_state and "main_window.state" not in ui_layouts:
             ui_layouts["main_window.state"] = legacy_window_state
 
-        for legacy_key in ("last_active_library_id", "default_library_id", "library_root"):
+        for legacy_key in (
+            "last_active_library_id",
+            "default_library_id",
+            "library_root",
+        ):
             if legacy_key in self._settings and legacy_key not in library_settings:
                 library_settings[legacy_key] = self._settings.pop(legacy_key)
 
@@ -311,14 +322,14 @@ class SettingsManager(QObject):
 
     def get_last_active_library_id(self) -> int | None:
         value = self.get_library_setting("last_active_library_id")
-        return cast(int | None, value)
+        return value if isinstance(value, int) else None
 
     def set_last_active_library_id(self, library_id: int | None) -> None:
         self.set_library_setting("last_active_library_id", library_id)
 
     def get_default_library_id(self) -> int | None:
         value = self.get_library_setting("default_library_id")
-        return cast(int | None, value)
+        return value if isinstance(value, int) else None
 
     def set_default_library_id(self, library_id: int | None) -> None:
         self.set_library_setting("default_library_id", library_id)
@@ -333,11 +344,14 @@ class SettingsManager(QObject):
         provider_keys = self._get_provider_keys_mutable()
         if service in provider_keys:
             provider_keys.pop(service, None)
-            self._emit_change(f"{PROVIDER_DOMAIN}.api_keys.{service}", None, "providers")
+            self._emit_change(
+                f"{PROVIDER_DOMAIN}.api_keys.{service}", None, "providers"
+            )
 
     def get_api_key(self, service: str) -> str | None:
         provider_keys = self._get_provider_keys_mutable()
-        return cast(str | None, provider_keys.get(service))
+        value = provider_keys.get(service)
+        return value if isinstance(value, str) else None
 
     def set_api_key(self, service: str, api_key: str | None) -> None:
         provider_keys = self._get_provider_keys_mutable()
@@ -346,7 +360,11 @@ class SettingsManager(QObject):
             provider_keys[service] = normalized
         else:
             provider_keys.pop(service, None)
-        self._emit_change(f"{PROVIDER_DOMAIN}.api_keys.{service}", provider_keys.get(service), "providers")
+        self._emit_change(
+            f"{PROVIDER_DOMAIN}.api_keys.{service}",
+            provider_keys.get(service),
+            "providers",
+        )
 
     def get_tmdb_api_key(self) -> str | None:
         return self.get_api_key("tmdb")
@@ -379,7 +397,9 @@ class SettingsManager(QObject):
     def set_enabled_providers(self, providers_list: list[str]) -> None:
         providers = self._get_domain(PROVIDER_DOMAIN)
         providers["enabled_providers"] = list(providers_list)
-        self._emit_change(f"{PROVIDER_DOMAIN}.enabled_providers", list(providers_list), "providers")
+        self._emit_change(
+            f"{PROVIDER_DOMAIN}.enabled_providers", list(providers_list), "providers"
+        )
 
     def get_provider_retry_count(self) -> int:
         value = self.get_provider_setting("retry_count", 3)
@@ -436,7 +456,8 @@ class SettingsManager(QObject):
 
     def get_redis_url(self) -> str | None:
         """Get Redis connection URL."""
-        return self.get_cache_setting("redis_url")
+        value = self.get_cache_setting("redis_url")
+        return value if isinstance(value, str) else None
 
     def set_redis_url(self, url: str | None) -> None:
         """Set Redis connection URL."""
@@ -444,7 +465,8 @@ class SettingsManager(QObject):
 
     def get_disk_cache_dir(self) -> str | None:
         """Get disk cache directory."""
-        return self.get_cache_setting("disk_cache_dir")
+        value = self.get_cache_setting("disk_cache_dir")
+        return value if isinstance(value, str) else None
 
     def set_disk_cache_dir(self, directory: str | None) -> None:
         """Set disk cache directory."""
@@ -453,10 +475,10 @@ class SettingsManager(QObject):
     def get_cache_dir(self) -> str | None:
         poster_settings = self._get_poster_settings()
         cache_dir = poster_settings.get("cache_dir")
-        if cache_dir:
-            return cast(str | None, cache_dir)
+        if isinstance(cache_dir, str) and cache_dir:
+            return cache_dir
         cache_setting = self.get_cache_setting("poster_cache_dir")
-        return cast(str | None, cache_setting)
+        return cache_setting if isinstance(cache_setting, str) else None
 
     def set_cache_dir(self, cache_dir: str | None) -> None:
         poster_settings = self._get_poster_settings()
@@ -466,7 +488,9 @@ class SettingsManager(QObject):
         else:
             poster_settings.pop("cache_dir", None)
             self.set_cache_setting("poster_cache_dir", None)
-        self._emit_change(f"{DOWNLOAD_DOMAIN}.poster_settings.cache_dir", cache_dir, "downloads")
+        self._emit_change(
+            f"{DOWNLOAD_DOMAIN}.poster_settings.cache_dir", cache_dir, "downloads"
+        )
 
     # ------------------------------------------------------------------
     # Metadata and rename templates
@@ -474,7 +498,8 @@ class SettingsManager(QObject):
     def get_target_folder(self, media_type: str) -> str | None:
         folders = self._settings.get("target_folders", {})
         if isinstance(folders, dict):
-            return cast(str | None, folders.get(media_type))
+            value = folders.get(media_type)
+            return value if isinstance(value, str) else None
         return None
 
     def set_target_folder(self, media_type: str, folder: str) -> None:
@@ -487,7 +512,8 @@ class SettingsManager(QObject):
 
     def get_rename_template(self, template_name: str) -> str | None:
         templates = self._get_rename_templates()
-        return cast(str | None, templates.get(template_name))
+        value = templates.get(template_name)
+        return value if isinstance(value, str) else None
 
     def set_rename_template(self, template_name: str, template: str) -> None:
         templates = self._get_rename_templates()
@@ -495,7 +521,11 @@ class SettingsManager(QObject):
             templates[template_name] = template
         else:
             templates.pop(template_name, None)
-        self._emit_change(f"{METADATA_DOMAIN}.rename_templates.{template_name}", templates.get(template_name), "metadata")
+        self._emit_change(
+            f"{METADATA_DOMAIN}.rename_templates.{template_name}",
+            templates.get(template_name),
+            "metadata",
+        )
 
     # ------------------------------------------------------------------
     # Poster settings
@@ -507,7 +537,9 @@ class SettingsManager(QObject):
     def set_poster_setting(self, key: str, value: Any) -> None:
         poster_settings = self._get_poster_settings()
         poster_settings[key] = value
-        self._emit_change(f"{DOWNLOAD_DOMAIN}.poster_settings.{key}", value, "downloads")
+        self._emit_change(
+            f"{DOWNLOAD_DOMAIN}.poster_settings.{key}", value, "downloads"
+        )
 
     def get_enabled_poster_types(self) -> list[str]:
         types = self.get_poster_setting("enabled_types", ["poster"])
@@ -553,7 +585,9 @@ class SettingsManager(QObject):
     def set_subtitle_setting(self, key: str, value: Any) -> None:
         subtitle_settings = self._get_subtitle_settings()
         subtitle_settings[key] = value
-        self._emit_change(f"{DOWNLOAD_DOMAIN}.subtitle_settings.{key}", value, "downloads")
+        self._emit_change(
+            f"{DOWNLOAD_DOMAIN}.subtitle_settings.{key}", value, "downloads"
+        )
 
     def get_enabled_subtitle_languages(self) -> list[str]:
         languages = self.get_subtitle_setting("enabled_languages", ["en"])
@@ -584,8 +618,8 @@ class SettingsManager(QObject):
 
     def get_subtitle_cache_dir(self) -> str | None:
         cache_dir = self.get_subtitle_setting("cache_dir")
-        if cache_dir:
-            return cast(str | None, cache_dir)
+        if isinstance(cache_dir, str) and cache_dir:
+            return cache_dir
         return None
 
     def set_subtitle_cache_dir(self, cache_dir: str | None) -> None:
@@ -610,7 +644,8 @@ class SettingsManager(QObject):
         self.set_nfo_setting("enabled", bool(enabled))
 
     def get_nfo_target_subfolder(self) -> str | None:
-        return cast(str | None, self.get_nfo_setting("target_subfolder"))
+        value = self.get_nfo_setting("target_subfolder")
+        return value if isinstance(value, str) else None
 
     def set_nfo_target_subfolder(self, subfolder: str | None) -> None:
         nfo_settings = self._get_nfo_settings()
@@ -618,7 +653,9 @@ class SettingsManager(QObject):
             nfo_settings["target_subfolder"] = subfolder
         else:
             nfo_settings.pop("target_subfolder", None)
-        self._emit_change(f"{DOWNLOAD_DOMAIN}.nfo_settings.target_subfolder", subfolder, "downloads")
+        self._emit_change(
+            f"{DOWNLOAD_DOMAIN}.nfo_settings.target_subfolder", subfolder, "downloads"
+        )
 
     # ------------------------------------------------------------------
     # Trailer settings
@@ -693,21 +730,21 @@ class SettingsManager(QObject):
 
     def get_language(self) -> str:
         """Get the UI language/locale setting."""
-        return str(self.get_ui_setting("language", DEFAULT_LANGUAGE))
+        value = self.get_ui_setting("language", DEFAULT_LANGUAGE)
+        return normalize_language_code(value)
 
     def set_language(self, language: str) -> None:
         """Set the UI language/locale setting."""
-        normalized = language if language in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
-        self.set_ui_setting("language", normalized)
+        self.set_ui_setting("language", normalize_language_code(language))
 
     def get_help_locale(self) -> str:
         """Get the help documentation locale (falls back to UI language)."""
-        return str(self.get_ui_setting("help_locale", self.get_language()))
+        value = self.get_ui_setting("help_locale", self.get_language())
+        return normalize_language_code(value)
 
     def set_help_locale(self, locale: str) -> None:
         """Set the help documentation locale."""
-        normalized = locale if locale in SUPPORTED_UI_LANGUAGES else DEFAULT_LANGUAGE
-        self.set_ui_setting("help_locale", normalized)
+        self.set_ui_setting("help_locale", normalize_language_code(locale))
 
     # ------------------------------------------------------------------
     # Advanced settings
@@ -730,13 +767,17 @@ class SettingsManager(QObject):
     def set_batch_defaults(self, defaults: dict[str, Any]) -> None:
         advanced = self._get_domain(ADVANCED_DOMAIN)
         advanced["batch_defaults"] = dict(defaults)
-        self._emit_change(f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced")
+        self._emit_change(
+            f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced"
+        )
 
     def update_batch_defaults(self, **kwargs: Any) -> None:
         defaults = self._get_batch_defaults_mutable()
         for key, value in kwargs.items():
             defaults[key] = value
-        self._emit_change(f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced")
+        self._emit_change(
+            f"{ADVANCED_DOMAIN}.batch_defaults", dict(defaults), "advanced"
+        )
 
 
 _settings_instance: SettingsManager | None = None
