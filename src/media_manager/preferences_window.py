@@ -61,7 +61,7 @@ class PreferencesWindow(QDialog):
     ) -> None:
         super().__init__(parent)
         self._settings = settings or get_settings()
-        self.setWindowTitle(self.tr("Preferences"))
+        self.setWindowTitle("偏好设置")
         self.setMinimumSize(780, 580)
 
         layout = QVBoxLayout(self)
@@ -74,26 +74,26 @@ class PreferencesWindow(QDialog):
         self._libraries_section = LibrariesPreferencesWidget(
             self._settings, parent=self
         )
-        self._add_section(self._libraries_section, self.tr("Libraries"))
+        self._add_section(self._libraries_section, "媒体库")
 
         self._metadata_section = MetadataPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._metadata_section, self.tr("Metadata"))
+        self._add_section(self._metadata_section, "元数据")
 
         self._providers_section = ProvidersPreferencesWidget(
             self._settings, parent=self
         )
-        self._add_section(self._providers_section, self.tr("Providers"))
+        self._add_section(self._providers_section, "提供商")
 
         self._downloads_section = DownloadsPreferencesWidget(
             self._settings, parent=self
         )
-        self._add_section(self._downloads_section, self.tr("Downloads"))
+        self._add_section(self._downloads_section, "下载")
 
         self._ui_section = UIPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._ui_section, self.tr("UI"))
+        self._add_section(self._ui_section, "界面")
 
         self._advanced_section = AdvancedPreferencesWidget(self._settings, parent=self)
-        self._add_section(self._advanced_section, self.tr("Advanced"))
+        self._add_section(self._advanced_section, "高级")
 
         # Dialog buttons
         buttons = (
@@ -122,7 +122,7 @@ class PreferencesWindow(QDialog):
                 if error_message:
                     QMessageBox.warning(
                         self,
-                        self.tr("{title} Settings").format(title=title),
+                        f"{title}设置",
                         error_message,
                     )
                 self._tab_widget.setCurrentWidget(section)
@@ -154,25 +154,23 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.default_library_combo = QComboBox()
-        form.addRow(self.tr("Default library:"), self.default_library_combo)
+        form.addRow("默认媒体库：", self.default_library_combo)
 
-        self.auto_restore_checkbox = QCheckBox(
-            self.tr("Restore last active library on startup")
-        )
+        self.auto_restore_checkbox = QCheckBox("启动时恢复上次活动的媒体库")
         form.addRow("", self.auto_restore_checkbox)
 
         root_layout = QHBoxLayout()
         self.library_root_edit = QLineEdit()
-        self.library_root_edit.setPlaceholderText(self.tr("/path/to/default/library"))
-        browse_button = QPushButton(self.tr("Browse…"))
+        self.library_root_edit.setPlaceholderText("/path/to/default/library")
+        browse_button = QPushButton("浏览...")
         browse_button.clicked.connect(self._on_browse_root)
         root_layout.addWidget(self.library_root_edit)
         root_layout.addWidget(browse_button)
-        form.addRow(self.tr("Library root:"), root_layout)
+        form.addRow("媒体库根目录：", root_layout)
 
         layout.addLayout(form)
 
-        manage_button = QPushButton(self.tr("Manage Libraries…"))
+        manage_button = QPushButton("管理媒体库...")
         manage_button.clicked.connect(self._on_manage_libraries)
         layout.addWidget(manage_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
@@ -191,8 +189,8 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
         except Exception as exc:  # pragma: no cover - defensive fallback
             QMessageBox.warning(
                 self,
-                self.tr("Libraries"),
-                self.tr("Failed to load libraries: {error}").format(error=exc),
+                "媒体库",
+                f"加载媒体库失败：{exc}",
             )
             libraries = []
 
@@ -201,7 +199,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             self._libraries.append((library.name, library.id))
 
         if not libraries:
-            self.default_library_combo.addItem(self.tr("No libraries available"), None)
+            self.default_library_combo.addItem("没有可用的媒体库", None)
             self.default_library_combo.setEnabled(False)
         else:
             self.default_library_combo.setEnabled(True)
@@ -225,7 +223,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
     def _on_browse_root(self) -> None:
         directory = QFileDialog.getExistingDirectory(
             self,
-            self.tr("Select Library Root"),
+            "选择媒体库根目录",
             self.library_root_edit.text(),
         )
         if directory:
@@ -245,9 +243,7 @@ class LibrariesPreferencesWidget(BasePreferencesSection):
             try:
                 root_path.mkdir(parents=True, exist_ok=True)
             except OSError as exc:
-                return False, self.tr("Unable to access library root: {error}").format(
-                    error=exc
-                )
+                return False, f"无法访问媒体库根目录：{exc}"
             self._settings.set_library_setting("library_root", str(root_path))
         else:
             self._settings.set_library_setting("library_root", None)
@@ -280,14 +276,14 @@ class MetadataPreferencesWidget(BasePreferencesSection):
         form = QFormLayout()
 
         self.movie_template_edit = QLineEdit()
-        self.movie_template_edit.setPlaceholderText(self.tr("{title} ({year})"))
-        form.addRow(self.tr("Movie rename template:"), self.movie_template_edit)
+        self.movie_template_edit.setPlaceholderText("{title} ({year})")
+        form.addRow("电影重命名模板：", self.movie_template_edit)
 
         self.tv_template_edit = QLineEdit()
         self.tv_template_edit.setPlaceholderText(
-            self.tr("{title} - S{season:02d}E{episode:02d}")
+            "{title} - S{season:02d}E{episode:02d}"
         )
-        form.addRow(self.tr("TV episode template:"), self.tv_template_edit)
+        form.addRow("剧集重命名模板：", self.tv_template_edit)
 
         self.subtitle_provider_combo = QComboBox()
         self.subtitle_provider_combo.addItems(
@@ -298,23 +294,21 @@ class MetadataPreferencesWidget(BasePreferencesSection):
                 "Podnapisi",
             ]
         )
-        form.addRow(self.tr("Subtitle provider:"), self.subtitle_provider_combo)
+        form.addRow("字幕提供商：", self.subtitle_provider_combo)
 
         self.subtitle_languages_edit = QLineEdit()
-        self.subtitle_languages_edit.setPlaceholderText(self.tr("en, es, fr"))
-        form.addRow(self.tr("Subtitle languages:"), self.subtitle_languages_edit)
+        self.subtitle_languages_edit.setPlaceholderText("zh, en, es, fr")
+        form.addRow("字幕语言：", self.subtitle_languages_edit)
 
-        self.subtitle_auto_checkbox = QCheckBox(
-            self.tr("Automatically download subtitles")
-        )
+        self.subtitle_auto_checkbox = QCheckBox("自动下载字幕")
         form.addRow("", self.subtitle_auto_checkbox)
 
-        self.nfo_enabled_checkbox = QCheckBox(self.tr("Generate NFO metadata files"))
+        self.nfo_enabled_checkbox = QCheckBox("生成 NFO 元数据文件")
         form.addRow("", self.nfo_enabled_checkbox)
 
         self.nfo_subfolder_edit = QLineEdit()
-        self.nfo_subfolder_edit.setPlaceholderText(self.tr("optional/subfolder"))
-        form.addRow(self.tr("NFO subfolder:"), self.nfo_subfolder_edit)
+        self.nfo_subfolder_edit.setPlaceholderText("可选子文件夹")
+        form.addRow("NFO 子文件夹：", self.nfo_subfolder_edit)
 
         layout.addLayout(form)
         layout.addStretch()
@@ -392,35 +386,35 @@ class ProvidersPreferencesWidget(BasePreferencesSection):
 
         self.tmdb_api_edit = QLineEdit()
         self.tmdb_api_edit.setPlaceholderText("https://api.themoviedb.org")
-        form.addRow(self.tr("Alternative TMDB API Address:"), self.tmdb_api_edit)
+        form.addRow("备用 TMDB API 地址：", self.tmdb_api_edit)
 
         self.tmdb_image_edit = QLineEdit()
         self.tmdb_image_edit.setPlaceholderText("https://image.tmdb.org")
-        form.addRow(self.tr("Alternative TMDB Image Address:"), self.tmdb_image_edit)
+        form.addRow("备用 TMDB 图片地址：", self.tmdb_image_edit)
 
         self.tmdb_key_edit = QLineEdit()
         self.tmdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.tmdb_key_edit.setPlaceholderText(self.tr("TMDB API key"))
-        form.addRow(self.tr("Alternative TMDB API Key:"), self.tmdb_key_edit)
+        self.tmdb_key_edit.setPlaceholderText("TMDB API 密钥")
+        form.addRow("备用 TMDB API 密钥：", self.tmdb_key_edit)
 
         self.tvdb_key_edit = QLineEdit()
         self.tvdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.tvdb_key_edit.setPlaceholderText(self.tr("TVDB API key"))
-        form.addRow(self.tr("Alternative TVDB API Key:"), self.tvdb_key_edit)
+        self.tvdb_key_edit.setPlaceholderText("TVDB API 密钥")
+        form.addRow("备用 TVDB API 密钥：", self.tvdb_key_edit)
 
-        self.tmdb_enabled_checkbox = QCheckBox(self.tr("Enable TMDB provider"))
+        self.tmdb_enabled_checkbox = QCheckBox("启用 TMDB 提供商")
         form.addRow("", self.tmdb_enabled_checkbox)
 
-        self.tvdb_enabled_checkbox = QCheckBox(self.tr("Enable TVDB provider"))
+        self.tvdb_enabled_checkbox = QCheckBox("启用 TVDB 提供商")
         form.addRow("", self.tvdb_enabled_checkbox)
 
         self.retry_spin = QSpinBox()
         self.retry_spin.setRange(0, 10)
-        form.addRow(self.tr("Retry attempts:"), self.retry_spin)
+        form.addRow("重试次数：", self.retry_spin)
 
         self.timeout_spin = QSpinBox()
         self.timeout_spin.setRange(5, 300)
-        form.addRow(self.tr("API timeout (seconds):"), self.timeout_spin)
+        form.addRow("API 超时（秒）：", self.timeout_spin)
 
         layout.addLayout(form)
         layout.addStretch()
@@ -483,10 +477,10 @@ class DownloadsPreferencesWidget(BasePreferencesSection):
         layout.addWidget(self.poster_settings_widget)
 
         trailer_layout = QHBoxLayout()
-        trailer_layout.addWidget(QLabel(self.tr("Trailer quality:")))
+        trailer_layout.addWidget(QLabel("预告片质量："))
         self.trailer_quality_combo = QComboBox()
         quality_choices = [
-            ("auto", self.tr("Auto")),
+            ("auto", "自动"),
             ("720p", "720p"),
             ("1080p", "1080p"),
             ("4K", "4K"),
@@ -544,18 +538,16 @@ class UIPreferencesWidget(BasePreferencesSection):
 
         self.theme_combo = QComboBox()
         theme_labels = {
-            "system": self.tr("System"),
-            "light": self.tr("Light"),
-            "dark": self.tr("Dark"),
+            "system": "系统",
+            "light": "浅色",
+            "dark": "深色",
         }
         for theme in self.THEMES:
             self.theme_combo.addItem(theme_labels.get(theme, theme.title()), theme)
-        form.addRow(self.tr("Theme:"), self.theme_combo)
+        form.addRow("主题：", self.theme_combo)
 
         # 语言固定为简体中文，不再显示语言选择
-        self.remember_layout_checkbox = QCheckBox(
-            self.tr("Remember window layout between sessions")
-        )
+        self.remember_layout_checkbox = QCheckBox("在会话之间记住窗口布局")
         form.addRow("", self.remember_layout_checkbox)
 
         layout.addLayout(form)
@@ -595,41 +587,39 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
 
-        cache_group = QGroupBox(self.tr("Caching"))
+        cache_group = QGroupBox("缓存")
         cache_layout = QFormLayout(cache_group)
 
         cache_dir_layout = QHBoxLayout()
         self.cache_dir_edit = QLineEdit()
-        self.cache_dir_edit.setPlaceholderText(self.tr("/path/to/cache"))
-        cache_browse = QPushButton(self.tr("Browse…"))
+        self.cache_dir_edit.setPlaceholderText("/path/to/cache")
+        cache_browse = QPushButton("浏览...")
         cache_browse.clicked.connect(self._on_browse_cache)
         cache_dir_layout.addWidget(self.cache_dir_edit)
         cache_dir_layout.addWidget(cache_browse)
-        cache_layout.addRow(self.tr("Shared cache directory:"), cache_dir_layout)
+        cache_layout.addRow("共享缓存目录：", cache_dir_layout)
 
         self.cache_ttl_spin = QSpinBox()
         self.cache_ttl_spin.setRange(1, 1440)
-        cache_layout.addRow(
-            self.tr("Provider cache TTL (minutes):"), self.cache_ttl_spin
-        )
+        cache_layout.addRow("提供商缓存 TTL（分钟）：", self.cache_ttl_spin)
 
         layout.addWidget(cache_group)
 
-        logging_group = QGroupBox(self.tr("Logging"))
+        logging_group = QGroupBox("日志")
         logging_layout = QFormLayout(logging_group)
         self.logging_combo = QComboBox()
         for level in self.LOG_LEVELS:
             self.logging_combo.addItem(level, level)
-        logging_layout.addRow(self.tr("Log level:"), self.logging_combo)
+        logging_layout.addRow("日志级别：", self.logging_combo)
         layout.addWidget(logging_group)
 
-        batch_group = QGroupBox(self.tr("Batch operation defaults"))
+        batch_group = QGroupBox("批量操作默认设置")
         batch_layout = QFormLayout(batch_group)
 
-        self.batch_rename_checkbox = QCheckBox(self.tr("Rename using templates"))
+        self.batch_rename_checkbox = QCheckBox("使用模板重命名")
         batch_layout.addRow("", self.batch_rename_checkbox)
 
-        self.batch_move_checkbox = QCheckBox(self.tr("Move to library"))
+        self.batch_move_checkbox = QCheckBox("移动到媒体库")
         move_layout = QHBoxLayout()
         self.batch_move_combo = QComboBox()
         self.batch_move_combo.setEnabled(False)
@@ -637,10 +627,10 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         move_layout.addWidget(self.batch_move_combo)
         batch_layout.addRow(self.batch_move_checkbox, move_layout)
 
-        self.batch_delete_checkbox = QCheckBox(self.tr("Delete source files"))
+        self.batch_delete_checkbox = QCheckBox("删除源文件")
         batch_layout.addRow("", self.batch_delete_checkbox)
 
-        self.batch_tags_checkbox = QCheckBox(self.tr("Assign tags"))
+        self.batch_tags_checkbox = QCheckBox("分配标签")
         self.batch_tags_edit = QLineEdit()
         self.batch_tags_edit.setEnabled(False)
         self.batch_tags_checkbox.toggled.connect(self.batch_tags_edit.setEnabled)
@@ -648,10 +638,10 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         tag_layout.addWidget(self.batch_tags_edit)
         batch_layout.addRow(self.batch_tags_checkbox, tag_layout)
 
-        self.batch_metadata_checkbox = QCheckBox(self.tr("Override metadata"))
+        self.batch_metadata_checkbox = QCheckBox("覆盖元数据")
         metadata_layout = QHBoxLayout()
         self.batch_genres_edit = QLineEdit()
-        self.batch_genres_edit.setPlaceholderText(self.tr("genre1, genre2"))
+        self.batch_genres_edit.setPlaceholderText("类型1, 类型2")
         self.batch_genres_edit.setEnabled(False)
         self.batch_rating_spin = QSpinBox()
         self.batch_rating_spin.setRange(0, 100)
@@ -662,7 +652,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         metadata_layout.addWidget(self.batch_rating_spin)
         batch_layout.addRow(self.batch_metadata_checkbox, metadata_layout)
 
-        self.batch_resync_checkbox = QCheckBox(self.tr("Re-sync provider metadata"))
+        self.batch_resync_checkbox = QCheckBox("重新同步提供商元数据")
         batch_layout.addRow("", self.batch_resync_checkbox)
 
         layout.addWidget(batch_group)
@@ -733,7 +723,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
         for library in libraries:
             self.batch_move_combo.addItem(library.name, library.id)
         if not libraries:
-            self.batch_move_combo.addItem(self.tr("No libraries"), None)
+            self.batch_move_combo.addItem("没有媒体库", None)
             self.batch_move_combo.setEnabled(False)
         else:
             self.batch_move_combo.setEnabled(True)
@@ -741,7 +731,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
     def _on_browse_cache(self) -> None:
         directory = QFileDialog.getExistingDirectory(
             self,
-            self.tr("Select Cache Directory"),
+            "选择缓存目录",
             self.cache_dir_edit.text(),
         )
         if directory:
@@ -754,9 +744,7 @@ class AdvancedPreferencesWidget(BasePreferencesSection):
             try:
                 cache_path.mkdir(parents=True, exist_ok=True)
             except OSError as exc:
-                return False, self.tr(
-                    "Unable to access cache directory: {error}"
-                ).format(error=exc)
+                return False, f"无法访问缓存目录：{exc}"
             self._settings.set_cache_setting("shared_cache_dir", str(cache_path))
         else:
             self._settings.set_cache_setting("shared_cache_dir", None)

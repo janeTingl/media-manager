@@ -2,37 +2,34 @@
 
 from __future__ import annotations
 
-import json
-from typing import Any, Optional
+from typing import Any
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
-    QAbstractItemView,
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QGroupBox,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
     QLineEdit,
-    QSpinBox,
-    QTabWidget,
-    QTableWidget,
-    QTableWidgetItem,
-    QTextEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QWidget,
-    QMessageBox,
-    QComboBox,
-    QCheckBox,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from .logging import get_logger
-from .persistence.models import MediaItem, Credit, Person, Tag, Collection, Favorite
-from .persistence.repositories import UnitOfWork, transactional_context, Repository
+from .persistence.models import Collection, Favorite, MediaItem, Tag
+from .persistence.repositories import transactional_context
 
 
 class MetadataEditorWidget(QWidget):
@@ -58,7 +55,7 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(self)
 
         # Title bar with media info
-        self.title_label = QLabel("No media selected")
+        self.title_label = QLabel("未选择媒体")
         self.title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
         layout.addWidget(self.title_label)
 
@@ -67,35 +64,35 @@ class MetadataEditorWidget(QWidget):
         layout.addWidget(self.tab_widget)
 
         # Create tabs
-        self.tab_widget.addTab(self._create_general_info_tab(), "General")
-        self.tab_widget.addTab(self._create_episodic_tab(), "Episodic")
-        self.tab_widget.addTab(self._create_ratings_tab(), "Ratings")
-        self.tab_widget.addTab(self._create_genres_keywords_tab(), "Genres & Keywords")
-        self.tab_widget.addTab(self._create_collections_tab(), "Collections & Tags")
-        self.tab_widget.addTab(self._create_cast_crew_tab(), "Cast & Crew")
+        self.tab_widget.addTab(self._create_general_info_tab(), "常规")
+        self.tab_widget.addTab(self._create_episodic_tab(), "剧集")
+        self.tab_widget.addTab(self._create_ratings_tab(), "评分")
+        self.tab_widget.addTab(self._create_genres_keywords_tab(), "类型和关键词")
+        self.tab_widget.addTab(self._create_collections_tab(), "收藏和标签")
+        self.tab_widget.addTab(self._create_cast_crew_tab(), "演员和工作人员")
 
         # Action buttons
         button_layout = QHBoxLayout()
         layout.addLayout(button_layout)
 
-        self.save_button = QPushButton("Save")
+        self.save_button = QPushButton("保存")
         self.save_button.clicked.connect(self._on_save_clicked)
         self.save_button.setEnabled(False)
         button_layout.addWidget(self.save_button)
 
-        self.reset_button = QPushButton("Reset")
+        self.reset_button = QPushButton("重置")
         self.reset_button.clicked.connect(self._on_reset_clicked)
         self.reset_button.setEnabled(False)
         button_layout.addWidget(self.reset_button)
 
         button_layout.addStretch()
 
-        self.open_tmdb_button = QPushButton("Open in TMDB")
+        self.open_tmdb_button = QPushButton("在 TMDB 中打开")
         self.open_tmdb_button.clicked.connect(self._on_open_tmdb_clicked)
         self.open_tmdb_button.setEnabled(False)
         button_layout.addWidget(self.open_tmdb_button)
 
-        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button = QPushButton("刷新")
         self.refresh_button.clicked.connect(self._on_refresh_clicked)
         self.refresh_button.setEnabled(False)
         button_layout.addWidget(self.refresh_button)
@@ -106,53 +103,53 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Title
-        title_group = QGroupBox("Title")
+        title_group = QGroupBox("标题")
         title_layout = QVBoxLayout(title_group)
         self.title_input = QLineEdit()
         self.title_input.textChanged.connect(self._on_field_changed)
-        title_layout.addWidget(QLabel("Title:"))
+        title_layout.addWidget(QLabel("标题："))
         title_layout.addWidget(self.title_input)
         layout.addWidget(title_group)
 
         # Original Title
-        orig_title_group = QGroupBox("Original Title")
+        orig_title_group = QGroupBox("原始标题")
         orig_title_layout = QVBoxLayout(orig_title_group)
         self.original_title_input = QLineEdit()
         self.original_title_input.textChanged.connect(self._on_field_changed)
-        orig_title_layout.addWidget(QLabel("Original Title:"))
+        orig_title_layout.addWidget(QLabel("原始标题："))
         orig_title_layout.addWidget(self.original_title_input)
         layout.addWidget(orig_title_group)
 
         # Year
-        year_group = QGroupBox("Year")
+        year_group = QGroupBox("年份")
         year_layout = QVBoxLayout(year_group)
         self.year_input = QSpinBox()
         self.year_input.setMinimum(1800)
         self.year_input.setMaximum(2100)
         self.year_input.setValue(2024)
         self.year_input.valueChanged.connect(self._on_field_changed)
-        year_layout.addWidget(QLabel("Year:"))
+        year_layout.addWidget(QLabel("年份："))
         year_layout.addWidget(self.year_input)
         layout.addWidget(year_group)
 
         # Runtime
-        runtime_group = QGroupBox("Runtime")
+        runtime_group = QGroupBox("时长")
         runtime_layout = QVBoxLayout(runtime_group)
         self.runtime_input = QSpinBox()
         self.runtime_input.setMinimum(0)
         self.runtime_input.setMaximum(1000)
         self.runtime_input.setSuffix(" minutes")
         self.runtime_input.valueChanged.connect(self._on_field_changed)
-        runtime_layout.addWidget(QLabel("Runtime:"))
+        runtime_layout.addWidget(QLabel("时长："))
         runtime_layout.addWidget(self.runtime_input)
         layout.addWidget(runtime_group)
 
         # Plot/Description
-        plot_group = QGroupBox("Plot / Description")
+        plot_group = QGroupBox("剧情 / 描述")
         plot_layout = QVBoxLayout(plot_group)
         self.plot_input = QTextEdit()
         self.plot_input.textChanged.connect(self._on_field_changed)
-        plot_layout.addWidget(QLabel("Plot:"))
+        plot_layout.addWidget(QLabel("剧情："))
         plot_layout.addWidget(self.plot_input)
         layout.addWidget(plot_group)
 
@@ -165,36 +162,36 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Season
-        season_group = QGroupBox("Season")
+        season_group = QGroupBox("季")
         season_layout = QVBoxLayout(season_group)
         self.season_input = QSpinBox()
         self.season_input.setMinimum(0)
         self.season_input.setMaximum(100)
         self.season_input.setValue(1)
         self.season_input.valueChanged.connect(self._on_field_changed)
-        season_layout.addWidget(QLabel("Season:"))
+        season_layout.addWidget(QLabel("季："))
         season_layout.addWidget(self.season_input)
         layout.addWidget(season_group)
 
         # Episode
-        episode_group = QGroupBox("Episode")
+        episode_group = QGroupBox("集")
         episode_layout = QVBoxLayout(episode_group)
         self.episode_input = QSpinBox()
         self.episode_input.setMinimum(0)
         self.episode_input.setMaximum(1000)
         self.episode_input.setValue(1)
         self.episode_input.valueChanged.connect(self._on_field_changed)
-        episode_layout.addWidget(QLabel("Episode:"))
+        episode_layout.addWidget(QLabel("集："))
         episode_layout.addWidget(self.episode_input)
         layout.addWidget(episode_group)
 
         # Aired Date
-        aired_group = QGroupBox("Aired Date")
+        aired_group = QGroupBox("播出日期")
         aired_layout = QVBoxLayout(aired_group)
         self.aired_input = QLineEdit()
-        self.aired_input.setPlaceholderText("YYYY-MM-DD")
+        self.aired_input.setPlaceholderText("年-月-日")
         self.aired_input.textChanged.connect(self._on_field_changed)
-        aired_layout.addWidget(QLabel("Aired:"))
+        aired_layout.addWidget(QLabel("播出："))
         aired_layout.addWidget(self.aired_input)
         layout.addWidget(aired_group)
 
@@ -207,14 +204,14 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Rating
-        rating_group = QGroupBox("Rating")
+        rating_group = QGroupBox("评分")
         rating_layout = QVBoxLayout(rating_group)
         self.rating_input = QSpinBox()
         self.rating_input.setMinimum(0)
         self.rating_input.setMaximum(100)
         self.rating_input.setSuffix(" / 100")
         self.rating_input.valueChanged.connect(self._on_field_changed)
-        rating_layout.addWidget(QLabel("Rating:"))
+        rating_layout.addWidget(QLabel("评分："))
         rating_layout.addWidget(self.rating_input)
         layout.addWidget(rating_group)
 
@@ -227,23 +224,23 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Genres (stored as JSON in description for now)
-        genres_group = QGroupBox("Genres")
+        genres_group = QGroupBox("类型")
         genres_layout = QVBoxLayout(genres_group)
         self.genres_input = QLineEdit()
-        self.genres_input.setPlaceholderText("Comma-separated genres")
+        self.genres_input.setPlaceholderText("逗号分隔的类型")
         self.genres_input.textChanged.connect(self._on_field_changed)
-        genres_layout.addWidget(QLabel("Genres (comma-separated):"))
+        genres_layout.addWidget(QLabel("类型（逗号分隔）："))
         genres_layout.addWidget(self.genres_input)
         layout.addWidget(genres_group)
 
         # Keywords
-        keywords_group = QGroupBox("Keywords")
+        keywords_group = QGroupBox("关键词")
         keywords_layout = QVBoxLayout(keywords_group)
         self.keywords_input = QTextEdit()
         self.keywords_input.setMaximumHeight(100)
-        self.keywords_input.setPlaceholderText("One per line")
+        self.keywords_input.setPlaceholderText("每行一个")
         self.keywords_input.textChanged.connect(self._on_field_changed)
-        keywords_layout.addWidget(QLabel("Keywords (one per line):"))
+        keywords_layout.addWidget(QLabel("关键词（每行一个）："))
         keywords_layout.addWidget(self.keywords_input)
         layout.addWidget(keywords_group)
 
@@ -257,24 +254,24 @@ class MetadataEditorWidget(QWidget):
 
         # Favorite checkbox
         favorite_layout = QHBoxLayout()
-        self.favorite_checkbox = QCheckBox("Mark as Favorite")
+        self.favorite_checkbox = QCheckBox("标记为收藏")
         self.favorite_checkbox.toggled.connect(self._on_field_changed)
         favorite_layout.addWidget(self.favorite_checkbox)
         favorite_layout.addStretch()
         layout.addLayout(favorite_layout)
 
         # Collections
-        collections_group = QGroupBox("Collections")
+        collections_group = QGroupBox("收藏")
         collections_layout = QVBoxLayout(collections_group)
-        
+
         self.collections_list = QListWidget()
         self.collections_list.setMaximumHeight(120)
         self.collections_list.setSelectionMode(QListWidget.MultiSelection)
-        collections_layout.addWidget(QLabel("Select Collections:"))
+        collections_layout.addWidget(QLabel("选择收藏："))
         collections_layout.addWidget(self.collections_list)
 
         collections_btn_layout = QHBoxLayout()
-        add_collection_btn = QPushButton("Add Collection")
+        add_collection_btn = QPushButton("添加收藏")
         add_collection_btn.clicked.connect(self._on_add_collection)
         collections_btn_layout.addWidget(add_collection_btn)
         collections_btn_layout.addStretch()
@@ -282,24 +279,24 @@ class MetadataEditorWidget(QWidget):
         layout.addWidget(collections_group)
 
         # Tags
-        tags_group = QGroupBox("Tags")
+        tags_group = QGroupBox("标签")
         tags_layout = QVBoxLayout(tags_group)
-        
+
         self.tags_list = QListWidget()
         self.tags_list.setMaximumHeight(120)
         self.tags_list.setSelectionMode(QListWidget.MultiSelection)
-        tags_layout.addWidget(QLabel("Select Tags:"))
+        tags_layout.addWidget(QLabel("选择标签："))
         tags_layout.addWidget(self.tags_list)
-        
+
         tag_input_layout = QHBoxLayout()
         self.tags_input = QLineEdit()
-        self.tags_input.setPlaceholderText("Type new tag name...")
+        self.tags_input.setPlaceholderText("输入新标签名称...")
         tag_input_layout.addWidget(self.tags_input)
-        
-        add_tag_btn = QPushButton("Add New Tag")
+
+        add_tag_btn = QPushButton("添加新标签")
         add_tag_btn.clicked.connect(self._on_add_new_tag)
         tag_input_layout.addWidget(add_tag_btn)
-        
+
         tags_layout.addLayout(tag_input_layout)
         layout.addWidget(tags_group)
 
@@ -312,11 +309,11 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Cast table
-        cast_group = QGroupBox("Cast")
+        cast_group = QGroupBox("演员")
         cast_layout = QVBoxLayout(cast_group)
         self.cast_table = QTableWidget()
         self.cast_table.setColumnCount(4)
-        self.cast_table.setHorizontalHeaderLabels(["Name", "Character", "", ""])
+        self.cast_table.setHorizontalHeaderLabels(["姓名", "角色", "", ""])
         self.cast_table.horizontalHeader().setStretchLastSection(False)
         self.cast_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.cast_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -324,7 +321,7 @@ class MetadataEditorWidget(QWidget):
         cast_layout.addWidget(self.cast_table)
 
         cast_btn_layout = QHBoxLayout()
-        add_cast_btn = QPushButton("Add Cast Member")
+        add_cast_btn = QPushButton("添加演员")
         add_cast_btn.clicked.connect(self._on_add_cast_member)
         cast_btn_layout.addWidget(add_cast_btn)
         cast_btn_layout.addStretch()
@@ -332,11 +329,11 @@ class MetadataEditorWidget(QWidget):
         layout.addWidget(cast_group)
 
         # Crew table
-        crew_group = QGroupBox("Crew")
+        crew_group = QGroupBox("工作人员")
         crew_layout = QVBoxLayout(crew_group)
         self.crew_table = QTableWidget()
         self.crew_table.setColumnCount(4)
-        self.crew_table.setHorizontalHeaderLabels(["Name", "Role", "", ""])
+        self.crew_table.setHorizontalHeaderLabels(["姓名", "职位", "", ""])
         self.crew_table.horizontalHeader().setStretchLastSection(False)
         self.crew_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.crew_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -344,7 +341,7 @@ class MetadataEditorWidget(QWidget):
         crew_layout.addWidget(self.crew_table)
 
         crew_btn_layout = QHBoxLayout()
-        add_crew_btn = QPushButton("Add Crew Member")
+        add_crew_btn = QPushButton("添加工作人员")
         add_crew_btn.clicked.connect(self._on_add_crew_member)
         crew_btn_layout.addWidget(add_crew_btn)
         crew_btn_layout.addStretch()
@@ -367,11 +364,11 @@ class MetadataEditorWidget(QWidget):
 
         if media_item is None:
             self._clear_form()
-            self.title_label.setText("No media selected")
+            self.title_label.setText("未选择媒体")
             self._disable_controls()
         else:
             self._load_media_item(media_item)
-            self.title_label.setText(f"Editing: {media_item.title}")
+            self.title_label.setText(f"编辑：{media_item.title}")
             self._enable_controls()
 
         self._is_dirty = False
@@ -419,42 +416,48 @@ class MetadataEditorWidget(QWidget):
 
         # Load cast and crew
         self._load_cast_crew(media_item)
-        
+
         # Load favorite status
         self.favorite_checkbox.setChecked(len(media_item.favorites) > 0)
 
     def _load_collections(self, media_item: MediaItem) -> None:
         """Load collections for the media item."""
         from .search_service import SearchService
+
         search_service = SearchService()
         all_collections = search_service.get_available_collections()
-        
+
         self.collections_list.clear()
         selected_collection_ids = {c.id for c in media_item.collections}
-        
+
         for collection in all_collections:
             item = QListWidgetItem(collection.name)
             item.setData(Qt.UserRole, collection.id)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(Qt.Checked if collection.id in selected_collection_ids else Qt.Unchecked)
+            item.setCheckState(
+                Qt.Checked if collection.id in selected_collection_ids else Qt.Unchecked
+            )
             self.collections_list.addItem(item)
 
     def _load_tags(self, media_item: MediaItem) -> None:
         """Load tags for the media item."""
         from .search_service import SearchService
+
         search_service = SearchService()
         all_tags = search_service.get_available_tags()
-        
+
         self.tags_list.clear()
         selected_tag_ids = {t.id for t in media_item.tags}
-        
+
         for tag in all_tags:
             item = QListWidgetItem(tag.name)
             item.setData(Qt.UserRole, tag.id)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(Qt.Checked if tag.id in selected_tag_ids else Qt.Unchecked)
+            item.setCheckState(
+                Qt.Checked if tag.id in selected_tag_ids else Qt.Unchecked
+            )
             self.tags_list.addItem(item)
-        
+
         self.tags_input.clear()
 
     def _load_cast_crew(self, media_item: MediaItem) -> None:
@@ -464,9 +467,16 @@ class MetadataEditorWidget(QWidget):
 
         for credit in media_item.credits:
             if credit.role == "actor":
-                self._add_cast_row(credit.person.name, credit.character_name or "", credit.id, credit.person.id)
+                self._add_cast_row(
+                    credit.person.name,
+                    credit.character_name or "",
+                    credit.id,
+                    credit.person.id,
+                )
             else:
-                self._add_crew_row(credit.person.name, credit.role, credit.id, credit.person.id)
+                self._add_crew_row(
+                    credit.person.name, credit.role, credit.id, credit.person.id
+                )
 
     def _clear_form(self) -> None:
         """Clear all form fields."""
@@ -514,8 +524,12 @@ class MetadataEditorWidget(QWidget):
 
     def _update_button_states(self) -> None:
         """Update button enabled states based on dirty flag."""
-        self.save_button.setEnabled(self._is_dirty and self._current_media_item is not None)
-        self.reset_button.setEnabled(self._is_dirty and self._current_media_item is not None)
+        self.save_button.setEnabled(
+            self._is_dirty and self._current_media_item is not None
+        )
+        self.reset_button.setEnabled(
+            self._is_dirty and self._current_media_item is not None
+        )
 
     @Slot()
     def _on_field_changed(self) -> None:
@@ -591,7 +605,9 @@ class MetadataEditorWidget(QWidget):
         if tmdb_id:
             import webbrowser
 
-            media_type = "movie" if self._current_media_item.media_type == "movie" else "tv"
+            media_type = (
+                "movie" if self._current_media_item.media_type == "movie" else "tv"
+            )
             url = f"https://www.themoviedb.org/{media_type}/{tmdb_id}"
             webbrowser.open(url)
             self._logger.info(f"Opened TMDB URL: {url}")
@@ -612,7 +628,7 @@ class MetadataEditorWidget(QWidget):
         # For now, just show a message
         QMessageBox.information(
             self,
-            "Refresh",
+            "刷新",
             "Refresh functionality would fetch fresh data from TMDB/TVDB.",
         )
 
@@ -624,7 +640,9 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(dialog)
 
         collection_input = QLineEdit()
-        collection_input.setPlaceholderText("Enter collection name (e.g., 'Watchlist', 'Kids')")
+        collection_input.setPlaceholderText(
+            "Enter collection name (e.g., 'Watchlist', 'Kids')"
+        )
         layout.addWidget(QLabel("Collection Name:"))
         layout.addWidget(collection_input)
 
@@ -650,7 +668,10 @@ class MetadataEditorWidget(QWidget):
                         if existing:
                             collection = existing[0]
                         else:
-                            collection = Collection(name=name, description=description_input.toPlainText() or None)
+                            collection = Collection(
+                                name=name,
+                                description=description_input.toPlainText() or None,
+                            )
                             collection_repo.create(collection)
 
                     # Reload collections
@@ -659,7 +680,9 @@ class MetadataEditorWidget(QWidget):
                     self._update_button_states()
                 except Exception as e:
                     self._logger.error(f"Error creating collection: {e}")
-                    QMessageBox.critical(self, "Error", f"Failed to create collection: {str(e)}")
+                    QMessageBox.critical(
+                        self, "Error", f"Failed to create collection: {str(e)}"
+                    )
 
     @Slot()
     def _on_add_new_tag(self) -> None:
@@ -675,7 +698,9 @@ class MetadataEditorWidget(QWidget):
                 existing = tag_repo.filter_by(name=tag_name)
 
                 if existing:
-                    QMessageBox.information(self, "Tag Exists", f"Tag '{tag_name}' already exists.")
+                    QMessageBox.information(
+                        self, "Tag Exists", f"Tag '{tag_name}' already exists."
+                    )
                 else:
                     tag = Tag(name=tag_name)
                     tag_repo.create(tag)
@@ -693,7 +718,7 @@ class MetadataEditorWidget(QWidget):
     def _on_add_cast_member(self) -> None:
         """Handle add cast member button click."""
         dialog = QDialog(self)
-        dialog.setWindowTitle("Add Cast Member")
+        dialog.setWindowTitle("添加演员")
         layout = QVBoxLayout(dialog)
 
         name_input = QLineEdit()
@@ -718,7 +743,7 @@ class MetadataEditorWidget(QWidget):
     def _on_add_crew_member(self) -> None:
         """Handle add crew member button click."""
         dialog = QDialog(self)
-        dialog.setWindowTitle("Add Crew Member")
+        dialog.setWindowTitle("添加工作人员")
         layout = QVBoxLayout(dialog)
 
         name_input = QLineEdit()
@@ -754,7 +779,13 @@ class MetadataEditorWidget(QWidget):
         remove_btn.clicked.connect(lambda: self.collections_table.removeRow(row))
         self.collections_table.setCellWidget(row, 1, remove_btn)
 
-    def _add_cast_row(self, name: str, character: str, credit_id: int | None, person_id: int | None = None) -> None:
+    def _add_cast_row(
+        self,
+        name: str,
+        character: str,
+        credit_id: int | None,
+        person_id: int | None = None,
+    ) -> None:
         """Add a row to the cast table."""
         row = self.cast_table.rowCount()
         self.cast_table.insertRow(row)
@@ -780,7 +811,9 @@ class MetadataEditorWidget(QWidget):
         remove_btn.clicked.connect(lambda: self.cast_table.removeRow(row))
         self.cast_table.setCellWidget(row, 3, remove_btn)
 
-    def _add_crew_row(self, name: str, role: str, credit_id: int | None, person_id: int | None = None) -> None:
+    def _add_crew_row(
+        self, name: str, role: str, credit_id: int | None, person_id: int | None = None
+    ) -> None:
         """Add a row to the crew table."""
         row = self.crew_table.rowCount()
         self.crew_table.insertRow(row)
@@ -821,7 +854,9 @@ class MetadataEditorWidget(QWidget):
         year = self.year_input.value()
         if year < 1800 or year > 2100:
             self.validation_error.emit("Year must be between 1800 and 2100")
-            QMessageBox.warning(self, "Validation Error", "Year must be between 1800 and 2100")
+            QMessageBox.warning(
+                self, "Validation Error", "Year must be between 1800 and 2100"
+            )
             return False
 
         # Validate aired date format if provided
@@ -858,8 +893,12 @@ class MetadataEditorWidget(QWidget):
         self._current_media_item.description = self.plot_input.toPlainText() or None
         genres_text = self.genres_input.text().strip()
         self._current_media_item.genres = genres_text or None
-        self._current_media_item.season = self.season_input.value() if self.season_input.value() > 0 else None
-        self._current_media_item.episode = self.episode_input.value() if self.episode_input.value() > 0 else None
+        self._current_media_item.season = (
+            self.season_input.value() if self.season_input.value() > 0 else None
+        )
+        self._current_media_item.episode = (
+            self.episode_input.value() if self.episode_input.value() > 0 else None
+        )
         self._current_media_item.aired_date = self.aired_input.text() or None
         rating = self.rating_input.value()
         self._current_media_item.rating = float(rating) if rating > 0 else None
@@ -895,15 +934,15 @@ class MetadataEditorWidget(QWidget):
         # 3. Creating/updating Credit records
         # For now, this is a placeholder
         pass
-    
+
     def _on_view_person_clicked(self, person_id: int) -> None:
         """Handle view person details button click.
-        
+
         Args:
             person_id: Database person ID
         """
         from .entity_detail_dialog import EntityDetailDialog
-        
+
         dialog = EntityDetailDialog(self)
         dialog.show_person(person_id)
         dialog.exec()
@@ -917,48 +956,50 @@ class MetadataEditorWidget(QWidget):
             # Save tags
             tag_repo = uow.get_repository(Tag)
             selected_tag_ids = []
-            
+
             for i in range(self.tags_list.count()):
                 item = self.tags_list.item(i)
                 if item.checkState() == Qt.Checked:
                     tag_id = item.data(Qt.UserRole)
                     selected_tag_ids.append(tag_id)
-            
+
             # Clear existing tags and add selected ones
             self._current_media_item.tags = []
             for tag_id in selected_tag_ids:
                 tag = tag_repo.read(tag_id)
                 if tag:
                     self._current_media_item.tags.append(tag)
-            
+
             # Save collections
             collection_repo = uow.get_repository(Collection)
             selected_collection_ids = []
-            
+
             for i in range(self.collections_list.count()):
                 item = self.collections_list.item(i)
                 if item.checkState() == Qt.Checked:
                     collection_id = item.data(Qt.UserRole)
                     selected_collection_ids.append(collection_id)
-            
+
             # Clear existing collections and add selected ones
             self._current_media_item.collections = []
             for collection_id in selected_collection_ids:
                 collection = collection_repo.read(collection_id)
                 if collection:
                     self._current_media_item.collections.append(collection)
-            
+
             # Save favorite status
             favorite_repo = uow.get_repository(Favorite)
             is_favorite = self.favorite_checkbox.isChecked()
-            existing_favorite = favorite_repo.filter_by(media_item_id=self._current_media_item.id)
-            
+            existing_favorite = favorite_repo.filter_by(
+                media_item_id=self._current_media_item.id
+            )
+
             if is_favorite and not existing_favorite:
                 favorite = Favorite(media_item_id=self._current_media_item.id)
                 favorite_repo.create(favorite)
             elif not is_favorite and existing_favorite:
                 favorite_repo.delete(existing_favorite[0].id)
-        
+
         except Exception as e:
             self._logger.error(f"Error saving collections and tags: {e}")
             raise

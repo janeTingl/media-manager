@@ -23,7 +23,7 @@ class TestHelpCenterDialog:
         dialog = HelpCenterDialog()
         qtbot.addWidget(dialog)
 
-        assert dialog.windowTitle() == "Help Center"
+        assert dialog.windowTitle() == "帮助中心"
         assert dialog._topics_list is not None
         assert dialog._content_browser is not None
 
@@ -74,6 +74,7 @@ class TestHelpCenterDialog:
 
             # Find all local href links
             import re
+
             links = re.findall(r'href="([^"]+\.html)"', content)
 
             for link in links:
@@ -101,7 +102,9 @@ class TestHelpCenterDialog:
 
         for topic in topics:
             topic_file = docs_path / topic["file"]
-            assert topic_file.exists(), f"Chinese help file should exist: {topic['file']}"
+            assert (
+                topic_file.exists()
+            ), f"Chinese help file should exist: {topic['file']}"
 
     def test_topic_navigation(self, qtbot: QtBot) -> None:
         """Test navigating between topics."""
@@ -124,7 +127,8 @@ class TestHelpCenterDialog:
         qtbot.addWidget(dialog)
 
         initial_visible = sum(
-            1 for i in range(dialog._topics_list.count())
+            1
+            for i in range(dialog._topics_list.count())
             if not dialog._topics_list.item(i).isHidden()
         )
 
@@ -132,7 +136,8 @@ class TestHelpCenterDialog:
         dialog._search_box.setText("library")
 
         visible_after = sum(
-            1 for i in range(dialog._topics_list.count())
+            1
+            for i in range(dialog._topics_list.count())
             if not dialog._topics_list.item(i).isHidden()
         )
 
@@ -310,4 +315,6 @@ class TestHelpIntegration:
             assert "title" in topic, f"Topic missing 'title': {topic}"
             assert "file" in topic, f"Topic missing 'file': {topic}"
             assert "keywords" in topic, f"Topic missing 'keywords': {topic}"
-            assert isinstance(topic["keywords"], list), f"Keywords should be a list: {topic}"
+            assert isinstance(
+                topic["keywords"], list
+            ), f"Keywords should be a list: {topic}"

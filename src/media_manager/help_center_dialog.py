@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
 from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
@@ -30,20 +29,22 @@ class HelpCenterDialog(QDialog):
 
     topic_changed = Signal(str)  # topic_id
 
-    def __init__(self, parent: Optional[QWidget] = None, initial_topic: str = "welcome") -> None:
+    def __init__(
+        self, parent: QWidget | None = None, initial_topic: str = "welcome"
+    ) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
         self._docs_path = Path(__file__).parent.parent.parent / "docs"
-        
+
         # Get locale from settings
         settings = get_settings()
         self._current_locale = settings.get_help_locale()
-        
+
         self._topics = []
         self._history = []
         self._history_index = -1
 
-        self.setWindowTitle("Help Center")
+        self.setWindowTitle("帮助中心")
         self.resize(900, 700)
 
         self._setup_ui()
@@ -89,12 +90,12 @@ class HelpCenterDialog(QDialog):
         toolbar_layout.setContentsMargins(10, 5, 10, 5)
 
         # Navigation buttons
-        self._back_button = QPushButton("◀ Back")
+        self._back_button = QPushButton("◀ 后退")
         self._back_button.setEnabled(False)
         self._back_button.clicked.connect(self._navigate_back)
         toolbar_layout.addWidget(self._back_button)
 
-        self._forward_button = QPushButton("Forward ▶")
+        self._forward_button = QPushButton("前进 ▶")
         self._forward_button.setEnabled(False)
         self._forward_button.clicked.connect(self._navigate_forward)
         toolbar_layout.addWidget(self._forward_button)
@@ -103,7 +104,7 @@ class HelpCenterDialog(QDialog):
 
         # Search box
         self._search_box = QLineEdit()
-        self._search_box.setPlaceholderText("Search help topics...")
+        self._search_box.setPlaceholderText("搜索帮助主题...")
         self._search_box.textChanged.connect(self._filter_topics)
         self._search_box.setMaximumWidth(300)
         toolbar_layout.addWidget(self._search_box)
@@ -111,7 +112,7 @@ class HelpCenterDialog(QDialog):
         toolbar_layout.addStretch()
 
         # Close button
-        close_button = QPushButton("Close")
+        close_button = QPushButton("关闭")
         close_button.clicked.connect(self.accept)
         toolbar_layout.addWidget(close_button)
 
@@ -196,9 +197,8 @@ class HelpCenterDialog(QDialog):
                 continue
 
             # Match against title and keywords
-            matches = (
-                search_lower in topic["title"].lower()
-                or any(search_lower in kw.lower() for kw in topic.get("keywords", []))
+            matches = search_lower in topic["title"].lower() or any(
+                search_lower in kw.lower() for kw in topic.get("keywords", [])
             )
 
             item.setHidden(not matches if search_text else False)
@@ -218,7 +218,7 @@ class HelpCenterDialog(QDialog):
         if not topic_file.exists():
             self._logger.error(f"Help file not found: {topic_file}")
             self._content_browser.setHtml(
-                f"<h1>Error</h1><p>Help topic file not found: {topic['file']}</p>"
+                f"<h1>错误</h1><p>帮助主题文件未找到：{topic['file']}</p>"
             )
             return
 
@@ -231,7 +231,10 @@ class HelpCenterDialog(QDialog):
             self._content_browser.setHtml(html_content, base_url)
 
             # Add to history
-            if self._history_index == -1 or self._history[self._history_index] != topic_id:
+            if (
+                self._history_index == -1
+                or self._history[self._history_index] != topic_id
+            ):
                 # Remove forward history if we're not at the end
                 if self._history_index < len(self._history) - 1:
                     self._history = self._history[: self._history_index + 1]
@@ -246,7 +249,7 @@ class HelpCenterDialog(QDialog):
 
         except OSError as e:
             self._logger.error(f"Failed to load help file: {e}")
-            self._content_browser.setHtml(f"<h1>Error</h1><p>Failed to load help content: {e}</p>")
+            self._content_browser.setHtml(f"<h1>错误</h1><p>加载帮助内容失败：{e}</p>")
 
     def _on_topic_selected(self, item: QListWidgetItem) -> None:
         """Handle topic selection from list."""
