@@ -200,7 +200,9 @@ class LibraryPostProcessor:
                     continue
 
                 try:
-                    conflict = self._handle_conflict(target_path, options.conflict_resolution)
+                    conflict = self._handle_conflict(
+                        target_path, options.conflict_resolution
+                    )
                 except Exception as exc:
                     message = f"Failed to prepare target path {target_path}: {exc}"
                     failure = PostProcessingItemResult(
@@ -274,7 +276,7 @@ class LibraryPostProcessor:
                         source=source_path,
                         target=final_target,
                         action="planned-copy" if options.copy_mode else "planned-move",
-                        message="Dry run",
+                        message="演练模式",
                     )
                     summary.processed.append(result)
                     if event_callback:
@@ -300,12 +302,16 @@ class LibraryPostProcessor:
                     if options.copy_mode:
                         shutil.copy2(source_path, final_target)
                         operations.append(
-                            _OperationRecord(OperationType.COPY, source_path, final_target)
+                            _OperationRecord(
+                                OperationType.COPY, source_path, final_target
+                            )
                         )
                     else:
                         shutil.move(source_path, final_target)
                         operations.append(
-                            _OperationRecord(OperationType.MOVE, source_path, final_target)
+                            _OperationRecord(
+                                OperationType.MOVE, source_path, final_target
+                            )
                         )
                         if options.cleanup_empty_dirs:
                             cleanup_dirs.add(source_path.parent)
@@ -379,9 +385,9 @@ class LibraryPostProcessor:
         if not configured and metadata.media_type is MediaType.MOVIE:
             configured = self._settings.get_target_folder("movies")
         elif not configured and metadata.media_type is MediaType.TV:
-            configured = self._settings.get_target_folder("tv") or self._settings.get_target_folder(
-                "tv_shows"
-            )
+            configured = self._settings.get_target_folder(
+                "tv"
+            ) or self._settings.get_target_folder("tv_shows")
 
         if configured:
             return Path(configured)
@@ -403,7 +409,9 @@ class LibraryPostProcessor:
             return _ConflictResult(new_target)
 
         if resolution is ConflictResolution.OVERWRITE:
-            temp_name = target_path.parent / f".__mm_backup_{uuid4().hex}{target_path.suffix}"
+            temp_name = (
+                target_path.parent / f".__mm_backup_{uuid4().hex}{target_path.suffix}"
+            )
             shutil.move(target_path, temp_name)
             return _ConflictResult(target_path, backup_path=temp_name)
 
@@ -429,7 +437,12 @@ class LibraryPostProcessor:
                     if record.target.exists():
                         record.target.unlink()
             except Exception as exc:
-                _LOGGER.error("Failed to rollback operation %s -> %s: %s", record.source, record.target, exc)
+                _LOGGER.error(
+                    "Failed to rollback operation %s -> %s: %s",
+                    record.source,
+                    record.target,
+                    exc,
+                )
 
         for backup in reversed(backups):
             try:
@@ -452,7 +465,9 @@ class LibraryPostProcessor:
                     elif backup.backup_path.is_dir():
                         shutil.rmtree(backup.backup_path)
             except Exception as exc:
-                _LOGGER.warning("Failed to remove backup file %s: %s", backup.backup_path, exc)
+                _LOGGER.warning(
+                    "Failed to remove backup file %s: %s", backup.backup_path, exc
+                )
 
     def _cleanup_directories(self, directories: Iterable[Path]) -> None:
         unique_directories = sorted(

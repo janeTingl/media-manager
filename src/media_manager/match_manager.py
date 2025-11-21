@@ -83,7 +83,10 @@ class MatchManager(QObject):
         self.matches_updated.emit(list(self._matches))
 
         # Update current match if it's the same one
-        if self._current_match and self._current_match.metadata.path == match.metadata.path:
+        if (
+            self._current_match
+            and self._current_match.metadata.path == match.metadata.path
+        ):
             self._current_match = match
             self.match_selected.emit(match)
 
@@ -92,7 +95,7 @@ class MatchManager(QObject):
         self._matches.clear()
         self._current_match = None
         self.matches_updated.emit([])
-        self.status_changed.emit("Queue cleared")
+        self.status_changed.emit("队列已清空")
 
     def select_match(self, match: MediaMatch) -> None:
         """Select a match for detailed view."""
@@ -111,9 +114,13 @@ class MatchManager(QObject):
         """Get the count of matched items."""
         return len([m for m in self._matches if m.is_matched()])
 
-    def download_posters(self, match: MediaMatch, poster_types: list[PosterType]) -> None:
+    def download_posters(
+        self, match: MediaMatch, poster_types: list[PosterType]
+    ) -> None:
         """Download posters for a specific match."""
-        worker = self._worker_manager.start_poster_download_worker([match], poster_types)
+        worker = self._worker_manager.start_poster_download_worker(
+            [match], poster_types
+        )
 
         # Connect signals
         worker.signals.poster_downloaded.connect(self._on_poster_downloaded)
@@ -130,7 +137,9 @@ class MatchManager(QObject):
             self.status_changed.emit("No matched items to download posters for")
             return
 
-        worker = self._worker_manager.start_poster_download_worker(matched_matches, poster_types)
+        worker = self._worker_manager.start_poster_download_worker(
+            matched_matches, poster_types
+        )
 
         # Connect signals
         worker.signals.poster_downloaded.connect(self._on_poster_downloaded)
@@ -138,7 +147,9 @@ class MatchManager(QObject):
         worker.signals.progress.connect(self._on_poster_progress)
         worker.signals.finished.connect(self._on_poster_download_finished)
 
-        self.status_changed.emit(f"Downloading posters for {len(matched_matches)} items...")
+        self.status_changed.emit(
+            f"Downloading posters for {len(matched_matches)} items..."
+        )
 
     def finalize_library(self, options: PostProcessingOptions):
         """Finalize matched media items into the organized library."""
@@ -147,7 +158,9 @@ class MatchManager(QObject):
             self.status_changed.emit("No matched items ready for finalization")
             return None
 
-        worker = self._worker_manager.start_post_processing_worker(matched_matches, options)
+        worker = self._worker_manager.start_post_processing_worker(
+            matched_matches, options
+        )
 
         worker.signals.item_processed.connect(self._on_finalize_processed)
         worker.signals.item_skipped.connect(self._on_finalize_skipped)
@@ -156,7 +169,9 @@ class MatchManager(QObject):
         worker.signals.finished.connect(self._on_finalize_finished)
         worker.signals.error.connect(self._on_finalize_error)
 
-        self.status_changed.emit(f"Starting library finalization for {len(matched_matches)} items")
+        self.status_changed.emit(
+            f"Starting library finalization for {len(matched_matches)} items"
+        )
         return worker
 
     @Slot(object)
@@ -183,9 +198,13 @@ class MatchManager(QObject):
         total = len(self._matches)
 
         if pending == 0:
-            self.status_changed.emit(f"Matching complete: {matched}/{total} items matched")
+            self.status_changed.emit(
+                f"Matching complete: {matched}/{total} items matched"
+            )
         else:
-            self.status_changed.emit(f"Matching complete: {matched} matched, {pending} need review")
+            self.status_changed.emit(
+                f"Matching complete: {matched} matched, {pending} need review"
+            )
 
     @Slot(list)
     def _on_search_completed(self, results: list[SearchResult]) -> None:
@@ -206,13 +225,17 @@ class MatchManager(QObject):
     def _on_poster_downloaded(self, match: MediaMatch, poster_info) -> None:
         """Handle successful poster download."""
         self.update_match(match)
-        self.status_changed.emit(f"Downloaded {poster_info.poster_type.value} for {match.metadata.title}")
+        self.status_changed.emit(
+            f"Downloaded {poster_info.poster_type.value} for {match.metadata.title}"
+        )
 
     @Slot(object, str)
     def _on_poster_failed(self, match: MediaMatch, error: str) -> None:
         """Handle poster download failure."""
         self.update_match(match)
-        self.status_changed.emit(f"Failed to download poster for {match.metadata.title}: {error}")
+        self.status_changed.emit(
+            f"Failed to download poster for {match.metadata.title}: {error}"
+        )
 
     @Slot(int, int)
     def _on_poster_progress(self, current: int, total: int) -> None:
@@ -238,7 +261,9 @@ class MatchManager(QObject):
     @Slot(object, str)
     def _on_finalize_failed(self, match: MediaMatch, message: str) -> None:
         """Handle a failed media item during finalization."""
-        self.status_changed.emit(f"Failed to finalize {match.metadata.title}: {message}")
+        self.status_changed.emit(
+            f"Failed to finalize {match.metadata.title}: {message}"
+        )
 
     @Slot(int, int)
     def _on_finalize_progress(self, current: int, total: int) -> None:

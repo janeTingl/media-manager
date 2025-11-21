@@ -72,21 +72,21 @@ class SearchResultsWidget(QWidget):
         toolbar.addSeparator()
 
         # Results count label
-        self.results_label = QLabel("No results")
+        self.results_label = QLabel("无结果")
         toolbar.addWidget(self.results_label)
 
         toolbar.addSeparator()
 
         # Pagination controls
-        self.prev_btn = QPushButton("Previous")
+        self.prev_btn = QPushButton("上一页")
         self.prev_btn.clicked.connect(self._on_previous_page)
         self.prev_btn.setEnabled(False)
         toolbar.addWidget(self.prev_btn)
 
-        self.page_label = QLabel("Page 1")
+        self.page_label = QLabel("第 1 页")
         toolbar.addWidget(self.page_label)
 
-        self.next_btn = QPushButton("Next")
+        self.next_btn = QPushButton("下一页")
         self.next_btn.clicked.connect(self._on_next_page)
         self.next_btn.setEnabled(False)
         toolbar.addWidget(self.next_btn)
@@ -175,21 +175,23 @@ class SearchResultsWidget(QWidget):
 
         # Update results label
         if total_count == 0:
-            self.results_label.setText("No results")
+            self.results_label.setText("无结果")
         elif result_count == total_count:
-            self.results_label.setText(f"{total_count} result(s)")
+            self.results_label.setText(f"{total_count} 个结果")
         else:
             page_start = self._current_page * self._current_criteria.page_size + 1
             page_end = min(page_start + result_count - 1, total_count)
             self.results_label.setText(
-                f"Showing {page_start}-{page_end} of {total_count} result(s)"
+                f"显示第 {page_start}-{page_end} 项，共 {total_count} 项"
             )
 
         # Update pagination
         self._total_pages = (
             total_count + self._current_criteria.page_size - 1
         ) // self._current_criteria.page_size
-        self.page_label.setText(f"Page {self._current_page + 1} of {self._total_pages}")
+        self.page_label.setText(
+            f"第 {self._current_page + 1} 页，共 {self._total_pages} 页"
+        )
 
         self.prev_btn.setEnabled(self._current_page > 0)
         self.next_btn.setEnabled(self._current_page < self._total_pages - 1)
@@ -214,8 +216,8 @@ class SearchResultsWidget(QWidget):
     def clear(self) -> None:
         """Clear results."""
         self._model.clear()
-        self.results_label.setText("No results")
-        self.page_label.setText("Page 1")
+        self.results_label.setText("无结果")
+        self.page_label.setText("第 1 页")
         self.prev_btn.setEnabled(False)
         self.next_btn.setEnabled(False)
         self._current_page = 0

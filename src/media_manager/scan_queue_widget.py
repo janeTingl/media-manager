@@ -120,21 +120,21 @@ class ScanQueueWidget(QWidget):
 
     def _create_finalize_group(self) -> QGroupBox:
         """Create the library finalization controls."""
-        group = QGroupBox("Library Finalization")
+        group = QGroupBox("媒体库完成")
         layout = QVBoxLayout(group)
 
         options_layout = QHBoxLayout()
-        self.dry_run_checkbox = QCheckBox("Dry run")
-        self.dry_run_checkbox.setToolTip("Simulate the operation without moving files")
+        self.dry_run_checkbox = QCheckBox("演练模式")
+        self.dry_run_checkbox.setToolTip("模拟操作而不移动文件")
         options_layout.addWidget(self.dry_run_checkbox)
 
-        self.copy_checkbox = QCheckBox("Copy instead of move")
-        self.copy_checkbox.setToolTip("Copy files and keep originals in place")
+        self.copy_checkbox = QCheckBox("复制而非移动")
+        self.copy_checkbox.setToolTip("复制文件并保留原件")
         options_layout.addWidget(self.copy_checkbox)
 
-        self.cleanup_checkbox = QCheckBox("Cleanup empty folders")
+        self.cleanup_checkbox = QCheckBox("清理空文件夹")
         self.cleanup_checkbox.setChecked(True)
-        self.cleanup_checkbox.setToolTip("Remove empty directories after moving files")
+        self.cleanup_checkbox.setToolTip("移动文件后删除空目录")
         options_layout.addWidget(self.cleanup_checkbox)
 
         layout.addLayout(options_layout)
@@ -451,14 +451,12 @@ class ScanQueueWidget(QWidget):
         pending = len([m for m in self._matches if m.needs_review()])
 
         if total == 0:
-            self.status_label.setText("Queue empty")
+            self.status_label.setText("队列为空")
         elif pending == 0:
-            self.status_label.setText(
-                f"All {total} items processed ({matched} matched)"
-            )
+            self.status_label.setText(f"所有 {total} 项已处理 ({matched} 个已匹配)")
         else:
             self.status_label.setText(
-                f"{total} items ({matched} matched, {pending} pending)"
+                f"{total} 项 ({matched} 个已匹配，{pending} 个待处理)"
             )
 
     def clear_queue_items(self) -> None:

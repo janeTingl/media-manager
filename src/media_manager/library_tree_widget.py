@@ -39,20 +39,20 @@ class LibraryTreeWidget(QWidget):
 
         # Button toolbar
         button_layout = QHBoxLayout()
-        
-        self.manage_button = QPushButton("Manage Libraries")
+
+        self.manage_button = QPushButton("管理媒体库")
         self.manage_button.clicked.connect(self._on_manage_clicked)
         button_layout.addWidget(self.manage_button)
-        
-        self.refresh_button = QPushButton("Refresh")
+
+        self.refresh_button = QPushButton("刷新")
         self.refresh_button.clicked.connect(self.load_libraries)
         button_layout.addWidget(self.refresh_button)
-        
+
         layout.addLayout(button_layout)
 
         # Tree widget
         self.tree = QTreeWidget()
-        self.tree.setHeaderLabel("Libraries")
+        self.tree.setHeaderLabel("媒体库")
         self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self._on_context_menu)
         self.tree.itemSelectionChanged.connect(self._on_selection_changed)
@@ -75,7 +75,8 @@ class LibraryTreeWidget(QWidget):
 
             # Apply color if set
             if library.color:
-                from PySide6.QtGui import QColor, QBrush
+                from PySide6.QtGui import QBrush, QColor
+
                 color = QColor(library.color)
                 library_item.setForeground(0, QBrush(color))
 
@@ -138,20 +139,20 @@ class LibraryTreeWidget(QWidget):
             return
 
         menu = QMenu(self)
-        
+
         # Get item type
         item_type = item.data(0, Qt.ItemDataRole.UserRole + 1)
-        
+
         if item_type == "library":
             # Context menu for library node
             expand_action = menu.addAction("Expand")
             expand_action.triggered.connect(lambda: item.setExpanded(True))
-            
+
             collapse_action = menu.addAction("Collapse")
             collapse_action.triggered.connect(lambda: item.setExpanded(False))
-            
+
             menu.addSeparator()
-            
+
             manage_action = menu.addAction("Manage Libraries...")
             manage_action.triggered.connect(self._on_manage_clicked)
         else:
@@ -184,17 +185,17 @@ class LibraryTreeWidget(QWidget):
         for i in range(self.tree.topLevelItemCount()):
             library_item = self.tree.topLevelItem(i)
             library = library_item.data(0, Qt.ItemDataRole.UserRole)
-            
+
             if library and library.id == library_id:
                 # Find the child node matching the media type
                 for j in range(library_item.childCount()):
                     child_item = library_item.child(j)
                     child_media_type = child_item.data(0, Qt.ItemDataRole.UserRole + 1)
-                    
+
                     if child_media_type == media_type:
                         self.tree.setCurrentItem(child_item)
                         return
-                
+
                 # If not found, select the first child
                 if library_item.childCount() > 0:
                     self.tree.setCurrentItem(library_item.child(0))

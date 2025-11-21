@@ -79,9 +79,7 @@ class SubtitleDownloader(QObject):
             self.search_failed.emit(error_msg)
             return []
 
-    def get_subtitle_path(
-        self, media_path: Path, language: SubtitleLanguage
-    ) -> Path:
+    def get_subtitle_path(self, media_path: Path, language: SubtitleLanguage) -> Path:
         """Get the standard local path for a subtitle file."""
         # Use language code in filename: movie.en.srt, show.es.srt, etc.
         subtitle_name = f"{media_path.stem}.{language.value}.srt"
@@ -128,6 +126,7 @@ class SubtitleDownloader(QObject):
             self._logger.info(f"Using cached subtitle: {cached_path}")
             try:
                 import shutil
+
                 shutil.copy2(cached_path, local_path)
                 subtitle_info.local_path = local_path
                 subtitle_info.download_status = DownloadStatus.COMPLETED
@@ -149,7 +148,7 @@ class SubtitleDownloader(QObject):
                 self.download_completed.emit(subtitle_id, str(subtitle_info.local_path))
             else:
                 self.download_failed.emit(
-                    subtitle_id, subtitle_info.error_message or "Download failed"
+                    subtitle_id, subtitle_info.error_message or "下载失败"
                 )
             return success
         finally:
@@ -166,11 +165,15 @@ class SubtitleDownloader(QObject):
         if subtitle_result is not None:
             for attempt in range(self._max_retries + 1):
                 if attempt > 0:
-                    self._logger.info(f"Retrying subtitle download (attempt {attempt + 1})")
+                    self._logger.info(
+                        f"Retrying subtitle download (attempt {attempt + 1})"
+                    )
                     time.sleep(self._retry_delay * attempt)
 
                 try:
-                    local_path = self.get_subtitle_path(media_path, subtitle_info.language)
+                    local_path = self.get_subtitle_path(
+                        media_path, subtitle_info.language
+                    )
                     success = self._provider.download(subtitle_result, str(local_path))
 
                     if success:
@@ -178,14 +181,18 @@ class SubtitleDownloader(QObject):
                         subtitle_info.download_status = DownloadStatus.COMPLETED
                         subtitle_info.file_size = local_path.stat().st_size
                         subtitle_info.error_message = None
-                        self._logger.info(f"Successfully downloaded subtitle: {local_path}")
+                        self._logger.info(
+                            f"Successfully downloaded subtitle: {local_path}"
+                        )
                         return True
                     else:
                         subtitle_info.error_message = "Provider download failed"
 
                 except Exception as exc:
                     subtitle_info.error_message = str(exc)
-                    self._logger.warning(f"Download attempt {attempt + 1} failed: {exc}")
+                    self._logger.warning(
+                        f"Download attempt {attempt + 1} failed: {exc}"
+                    )
 
                     if attempt == self._max_retries:
                         subtitle_info.download_status = DownloadStatus.FAILED
@@ -195,7 +202,9 @@ class SubtitleDownloader(QObject):
         url = subtitle_info.url
         for attempt in range(self._max_retries + 1):
             if attempt > 0:
-                self._logger.info(f"Retrying subtitle download (attempt {attempt + 1}): {url}")
+                self._logger.info(
+                    f"Retrying subtitle download (attempt {attempt + 1}): {url}"
+                )
                 time.sleep(self._retry_delay * attempt)
 
             try:
@@ -219,6 +228,7 @@ class SubtitleDownloader(QObject):
 
                     # Move to final location
                     import shutil
+
                     shutil.move(str(cached_path), str(local_path))
 
                     # Update subtitle info

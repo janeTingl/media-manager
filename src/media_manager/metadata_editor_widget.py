@@ -567,8 +567,8 @@ class MetadataEditorWidget(QWidget):
 
         except Exception as e:
             self._logger.error(f"Error saving metadata: {e}")
-            self.validation_error.emit(f"Error saving metadata: {str(e)}")
-            QMessageBox.critical(self, "Save Error", f"Error saving metadata: {str(e)}")
+            self.validation_error.emit(f"保存元数据时出错：{str(e)}")
+            QMessageBox.critical(self, "保存错误", f"保存元数据时出错：{str(e)}")
 
     @Slot()
     def _on_reset_clicked(self) -> None:
@@ -578,8 +578,8 @@ class MetadataEditorWidget(QWidget):
 
         reply = QMessageBox.question(
             self,
-            "Reset Changes",
-            "Are you sure you want to discard all changes?",
+            "重置更改",
+            "确定要放弃所有更改吗？",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -614,8 +614,8 @@ class MetadataEditorWidget(QWidget):
         else:
             QMessageBox.information(
                 self,
-                "No TMDB ID",
-                "This item does not have a TMDB ID.",
+                "无 TMDB ID",
+                "此项目没有 TMDB ID。",
             )
 
     @Slot()
@@ -629,7 +629,7 @@ class MetadataEditorWidget(QWidget):
         QMessageBox.information(
             self,
             "刷新",
-            "Refresh functionality would fetch fresh data from TMDB/TVDB.",
+            "刷新功能将从 TMDB/TVDB 获取最新数据。",
         )
 
     @Slot()
@@ -640,16 +640,14 @@ class MetadataEditorWidget(QWidget):
         layout = QVBoxLayout(dialog)
 
         collection_input = QLineEdit()
-        collection_input.setPlaceholderText(
-            "Enter collection name (e.g., 'Watchlist', 'Kids')"
-        )
-        layout.addWidget(QLabel("Collection Name:"))
+        collection_input.setPlaceholderText("输入合集名称（例如：'观看列表'、'儿童'）")
+        layout.addWidget(QLabel("合集名称："))
         layout.addWidget(collection_input)
 
         description_input = QTextEdit()
-        description_input.setPlaceholderText("Optional description")
+        description_input.setPlaceholderText("可选描述")
         description_input.setMaximumHeight(80)
-        layout.addWidget(QLabel("Description:"))
+        layout.addWidget(QLabel("描述："))
         layout.addWidget(description_input)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -680,16 +678,14 @@ class MetadataEditorWidget(QWidget):
                     self._update_button_states()
                 except Exception as e:
                     self._logger.error(f"Error creating collection: {e}")
-                    QMessageBox.critical(
-                        self, "Error", f"Failed to create collection: {str(e)}"
-                    )
+                    QMessageBox.critical(self, "错误", f"创建合集失败：{str(e)}")
 
     @Slot()
     def _on_add_new_tag(self) -> None:
         """Handle add new tag button click."""
         tag_name = self.tags_input.text().strip()
         if not tag_name:
-            QMessageBox.warning(self, "Invalid Input", "Please enter a tag name.")
+            QMessageBox.warning(self, "输入无效", "请输入标签名称。")
             return
 
         try:
@@ -699,7 +695,7 @@ class MetadataEditorWidget(QWidget):
 
                 if existing:
                     QMessageBox.information(
-                        self, "Tag Exists", f"Tag '{tag_name}' already exists."
+                        self, "标签已存在", f"标签 '{tag_name}' 已存在。"
                     )
                 else:
                     tag = Tag(name=tag_name)
@@ -712,7 +708,7 @@ class MetadataEditorWidget(QWidget):
             self._update_button_states()
         except Exception as e:
             self._logger.error(f"Error creating tag: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to create tag: {str(e)}")
+            QMessageBox.critical(self, "错误", f"创建标签失败：{str(e)}")
 
     @Slot()
     def _on_add_cast_member(self) -> None:
@@ -846,27 +842,25 @@ class MetadataEditorWidget(QWidget):
             True if valid, False otherwise
         """
         if not self.title_input.text().strip():
-            self.validation_error.emit("Title is required")
-            QMessageBox.warning(self, "Validation Error", "Title is required")
+            self.validation_error.emit("标题为必填项")
+            QMessageBox.warning(self, "验证错误", "标题为必填项")
             return False
 
         # Validate year
         year = self.year_input.value()
         if year < 1800 or year > 2100:
-            self.validation_error.emit("Year must be between 1800 and 2100")
-            QMessageBox.warning(
-                self, "Validation Error", "Year must be between 1800 and 2100"
-            )
+            self.validation_error.emit("年份必须在 1800 到 2100 之间")
+            QMessageBox.warning(self, "验证错误", "年份必须在 1800 到 2100 之间")
             return False
 
         # Validate aired date format if provided
         aired = self.aired_input.text().strip()
         if aired and not self._is_valid_date(aired):
-            self.validation_error.emit("Aired date must be in YYYY-MM-DD format")
+            self.validation_error.emit("播出日期必须采用 YYYY-MM-DD 格式")
             QMessageBox.warning(
                 self,
-                "Validation Error",
-                "Aired date must be in YYYY-MM-DD format",
+                "验证错误",
+                "播出日期必须采用 YYYY-MM-DD 格式",
             )
             return False
 

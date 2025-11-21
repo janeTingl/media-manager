@@ -497,7 +497,7 @@ class ImportMappingPage(QWizardPage):
             self.mapping_table.resizeColumnsToContents()
 
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"读取文件失败：{str(e)}")
+            QMessageBox.warning(self, "错误", f"读取文件失败：{str(e)}")
 
     def get_column_mapping(self) -> dict[str, str]:
         """Get the column mapping dictionary."""
@@ -524,12 +524,12 @@ class ImportConflictsPage(QWizardPage):
         self._service = service
         self._conflicts: list[ImportConflict] = []
 
-        self.setTitle("Conflict Detection")
-        self.setSubTitle("Review potential conflicts before importing.")
+        self.setTitle("冲突检测")
+        self.setSubTitle("在导入前查看潜在冲突。")
 
         layout = QVBoxLayout()
 
-        self.status_label = QLabel("Analyzing import data...")
+        self.status_label = QLabel("正在分析导入数据...")
         layout.addWidget(self.status_label)
 
         self.conflicts_table = QTableWidget()
@@ -559,7 +559,7 @@ class ImportConflictsPage(QWizardPage):
             self._conflicts = conflicts
 
             if conflicts:
-                self.status_label.setText(f"Found {len(conflicts)} potential conflicts")
+                self.status_label.setText(f"发现 {len(conflicts)} 个潜在冲突")
                 self.conflicts_table.setRowCount(len(conflicts))
 
                 for row, conflict in enumerate(conflicts):
@@ -578,11 +578,11 @@ class ImportConflictsPage(QWizardPage):
 
                 self.conflicts_table.resizeColumnsToContents()
             else:
-                self.status_label.setText("No conflicts detected. Ready to import.")
+                self.status_label.setText("未检测到冲突。准备导入。")
                 self.conflicts_table.setRowCount(0)
 
         except Exception as e:
-            self.status_label.setText(f"Error analyzing import: {str(e)}")
+            self.status_label.setText(f"分析导入时出错：{str(e)}")
 
 
 class ImportOptionsPage(QWizardPage):
@@ -594,29 +594,29 @@ class ImportOptionsPage(QWizardPage):
         super().__init__(parent)
         self._library_repo = library_repo
         self.setTitle("导入选项")
-        self.setSubTitle("Configure how to handle the import.")
+        self.setSubTitle("配置如何处理导入。")
 
         layout = QVBoxLayout()
 
         # Target library
-        library_group = QGroupBox("Target Library")
+        library_group = QGroupBox("目标媒体库")
         library_layout = QFormLayout()
 
         self.library_combo = QComboBox()
         self._load_libraries()
-        library_layout.addRow("Library:", self.library_combo)
+        library_layout.addRow("媒体库：", self.library_combo)
 
         library_group.setLayout(library_layout)
         layout.addWidget(library_group)
 
         # Merge strategy
-        strategy_group = QGroupBox("Conflict Resolution")
+        strategy_group = QGroupBox("冲突解决")
         strategy_layout = QVBoxLayout()
 
-        self.skip_radio = QRadioButton("Skip existing items")
+        self.skip_radio = QRadioButton("跳过现有项目")
         self.skip_radio.setChecked(True)
-        self.replace_radio = QRadioButton("Replace existing items")
-        self.update_radio = QRadioButton("Update existing items")
+        self.replace_radio = QRadioButton("替换现有项目")
+        self.update_radio = QRadioButton("更新现有项目")
 
         strategy_layout.addWidget(self.skip_radio)
         strategy_layout.addWidget(self.replace_radio)
@@ -626,13 +626,13 @@ class ImportOptionsPage(QWizardPage):
         layout.addWidget(strategy_group)
 
         # Additional options
-        options_group = QGroupBox("Additional Options")
+        options_group = QGroupBox("其他选项")
         options_layout = QVBoxLayout()
 
-        self.validate_files_check = QCheckBox("Validate file paths exist")
+        self.validate_files_check = QCheckBox("验证文件路径是否存在")
         self.validate_files_check.setChecked(True)
 
-        self.create_history_check = QCheckBox("Create history events")
+        self.create_history_check = QCheckBox("创建历史记录事件")
         self.create_history_check.setChecked(True)
 
         options_layout.addWidget(self.validate_files_check)
@@ -675,11 +675,11 @@ class ImportProgressPage(QWizardPage):
         super().__init__(parent)
         self._service = service
         self.setTitle("导入进度")
-        self.setSubTitle("Importing media metadata...")
+        self.setSubTitle("正在导入媒体元数据...")
 
         layout = QVBoxLayout()
 
-        self.status_label = QLabel("Ready to import")
+        self.status_label = QLabel("准备导入")
         layout.addWidget(self.status_label)
 
         self.progress_bar = QProgressBar()
@@ -712,7 +712,7 @@ class ImportProgressPage(QWizardPage):
             result = self._service.import_from_file(
                 file_path, options, column_mapping, self._on_progress
             )
-            self.status_label.setText("Import complete")
+            self.status_label.setText("导入完成")
             self.result_text.append(result.to_message())
 
             if result.errors:
@@ -723,7 +723,7 @@ class ImportProgressPage(QWizardPage):
                     self.result_text.append(f"  ... and {len(result.errors) - 10} more")
 
         except Exception as e:
-            self.status_label.setText("Import failed")
+            self.status_label.setText("导入失败")
             self.result_text.append(f"错误：{str(e)}")
 
     def _on_progress(self, current: int, total: int, message: str) -> None:
