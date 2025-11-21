@@ -10,7 +10,6 @@ from media_manager import (
     APP_ORGANIZATION_DOMAIN,
     APP_ORGANIZATION_NAME,
 )
-from media_manager.i18n import install_translators
 from media_manager.logging import get_logger, setup_logging
 from media_manager.main_window import MainWindow
 from media_manager.persistence.database import init_database_service
@@ -45,10 +44,6 @@ def main() -> int:
 
         # Get settings
         settings = get_settings()
-
-        # Install Chinese translators before any widgets are created
-        install_translators(app)
-        logger.info("简体中文翻译器已安装")
 
         # Initialize database service
         db_service = init_database_service(settings.get_database_url())

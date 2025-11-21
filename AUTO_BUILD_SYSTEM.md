@@ -8,7 +8,7 @@
 
 - ✅ **全自动化** - 从环境检查到生成安装包，一键完成
 - ✅ **跨平台支持** - Windows、macOS、Linux
-- ✅ **中文界面** - 自动编译和集成中文翻译文件
+- ✅ **中文界面** - 原生简体中文界面
 - ✅ **多种分发格式** - 便携版 ZIP、Windows 安装程序
 - ✅ **完整日志** - 详细记录每个构建步骤
 - ✅ **哈希验证** - 自动生成文件完整性校验码
@@ -33,11 +33,7 @@ project/
 │       ├── main.py            # 应用主入口
 │       ├── __init__.py        # 版本号定义
 │       ├── media_manager.spec # PyInstaller 配置
-│       └── resources/
-│           └── i18n/          # 编译后的翻译文件 (.qm)
-│
-├── translations/
-│   └── i18n/                  # 翻译源文件 (.ts)
+│       └── resources/         # 资源文件
 │
 ├── build/                     # 构建临时文件（自动生成）
 ├── dist/                      # 构建输出（自动生成）
@@ -124,18 +120,7 @@ python test_auto_build.py
 - `package/` - 打包文件
 - 清理所有 `__pycache__` 目录
 
-### 第 5 步：编译中文翻译
-
-- 查找 `translations/i18n/*.ts` 翻译源文件
-- 使用 `pyside6-lrelease` 编译为 `.qm` 文件
-- 输出到 `src/media_manager/resources/i18n/`
-- 这些文件会被 PyInstaller 打包进程序
-
-**支持的翻译工具：**
-- pyside6-lrelease（首选）
-- lrelease（备选）
-
-### 第 6 步：构建可执行文件
+### 第 5 步：构建可执行文件
 
 使用 PyInstaller 根据 `media_manager.spec` 配置：
 
@@ -147,11 +132,10 @@ python test_auto_build.py
 # 无控制台窗口（GUI 应用）
 --windowed
 
-# 包含中文翻译
+# 包含资源文件
 datas=[
-    ('src/media_manager/resources/i18n/*.qm', 'resources/i18n'),
-    # PySide6 Qt 翻译文件
-    ('translations_path/*_zh_CN.qm', 'PySide6/translations')
+    ('assets/*', 'assets'),
+    ('config/*', 'config'),
 ]
 ```
 
@@ -377,26 +361,7 @@ pip install PySide6 sqlalchemy sqlmodel requests tenacity openpyxl
 pip install -r requirements.txt
 ```
 
-#### 4. 翻译文件编译失败
-
-**问题：** `pyside6-lrelease: command not found`
-
-**影响：** 不会阻止构建，但可能缺少中文界面
-
-**解决：**
-```bash
-# 确保 PySide6 正确安装
-pip install --upgrade PySide6
-
-# 验证工具可用
-pyside6-lrelease --version
-
-# 或手动编译翻译
-cd translations/i18n
-pyside6-lrelease media_manager_zh_CN.ts -qm ../../src/media_manager/resources/i18n/media_manager_zh_CN.qm
-```
-
-#### 5. Inno Setup 未找到
+#### 4. Inno Setup 未找到
 
 **问题：** `未找到 Inno Setup，无法创建安装程序`
 
@@ -630,10 +595,9 @@ codesign --verify --verbose MediaManager.app
 |------|------|------|
 | 环境检查 | 10-30秒 | 首次运行需要安装依赖 |
 | 清理 | 5-10秒 | 删除旧文件 |
-| 编译翻译 | 5-15秒 | 取决于翻译文件数量 |
 | PyInstaller 构建 | 2-5分钟 | 取决于系统性能 |
 | 打包 | 30-60秒 | 创建 ZIP 和安装程序 |
-| **总计** | **3-7分钟** | 首次可能需要更长 |
+| **总计** | **3-6分钟** | 首次可能需要更长 |
 
 ### 文件大小估算
 
@@ -817,7 +781,6 @@ build-linux:
 - **快速开始**: `构建指南.md`
 - **详细文档**: `AUTO_BUILD_README.md`
 - **打包指南**: `PACKAGING_GUIDE.md`
-- **翻译指南**: `I18N_QUICK_REFERENCE.md`
 
 ---
 
