@@ -63,11 +63,11 @@ class MatchResolutionWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Current match info
-        info_group = QGroupBox("Current Match")
+        info_group = QGroupBox("当前匹配")
         info_layout = QVBoxLayout(info_group)
 
         # File info
-        self.file_label = QLabel("No file selected")
+        self.file_label = QLabel("未选择文件")
         self.file_label.setWordWrap(True)
         info_layout.addWidget(self.file_label)
 
@@ -89,15 +89,15 @@ class MatchResolutionWidget(QWidget):
         self.overview_text = QTextEdit()
         self.overview_text.setMaximumHeight(100)
         self.overview_text.setReadOnly(True)
-        info_layout.addWidget(QLabel("Overview:"))
+        info_layout.addWidget(QLabel("概述："))
         info_layout.addWidget(self.overview_text)
 
         # Poster section
-        poster_group = QGroupBox("Posters")
+        poster_group = QGroupBox("海报")
         poster_layout = QVBoxLayout(poster_group)
 
         # Poster preview
-        self.poster_label = QLabel("No poster available")
+        self.poster_label = QLabel("无海报")
         self.poster_label.setMinimumSize(150, 225)
         self.poster_label.setMaximumSize(150, 225)
         self.poster_label.setAlignment(Qt.AlignCenter)
@@ -114,11 +114,11 @@ class MatchResolutionWidget(QWidget):
         # Poster download buttons
         poster_buttons_layout = QHBoxLayout()
 
-        self.download_poster_button = QPushButton("Download Poster")
+        self.download_poster_button = QPushButton("下载海报")
         self.download_poster_button.clicked.connect(self._on_download_poster_clicked)
         poster_buttons_layout.addWidget(self.download_poster_button)
 
-        self.download_fanart_button = QPushButton("Download Fanart")
+        self.download_fanart_button = QPushButton("下载剧照")
         self.download_fanart_button.clicked.connect(self._on_download_fanart_clicked)
         poster_buttons_layout.addWidget(self.download_fanart_button)
 
@@ -128,7 +128,7 @@ class MatchResolutionWidget(QWidget):
         layout.addWidget(poster_group)
 
         # Action buttons
-        action_group = QGroupBox("Actions")
+        action_group = QGroupBox("操作")
         action_layout = QHBoxLayout(action_group)
 
         self.accept_button = QPushButton("接受匹配")
@@ -168,7 +168,7 @@ class MatchResolutionWidget(QWidget):
         layout.addWidget(search_group)
 
         # Search results
-        results_group = QGroupBox("Search Results")
+        results_group = QGroupBox("搜索结果")
         results_layout = QVBoxLayout(results_group)
 
         self.results_list = QListWidget()
@@ -176,7 +176,7 @@ class MatchResolutionWidget(QWidget):
         results_layout.addWidget(self.results_list)
 
         # Apply selected result button
-        self.apply_button = QPushButton("Apply Selected Result")
+        self.apply_button = QPushButton("应用所选结果")
         self.apply_button.clicked.connect(self._on_apply_result_clicked)
         self.apply_button.setEnabled(False)
         results_layout.addWidget(self.apply_button)
@@ -297,7 +297,7 @@ class MatchResolutionWidget(QWidget):
         from PySide6.QtGui import QPixmap
 
         if not image_path or not image_path.exists():
-            self.poster_label.setText("No image")
+            self.poster_label.setText("无图片")
             self.poster_label.setPixmap(QPixmap())
             return
 
@@ -311,11 +311,11 @@ class MatchResolutionWidget(QWidget):
                 self.poster_label.setPixmap(scaled_pixmap)
                 self.poster_label.setText("")
             else:
-                self.poster_label.setText("Invalid image")
+                self.poster_label.setText("无效图片")
                 self.poster_label.setPixmap(QPixmap())
         except Exception as exc:
             self._logger.error(f"Failed to load poster image: {exc}")
-            self.poster_label.setText("Load error")
+            self.poster_label.setText("加载错误")
             self.poster_label.setPixmap(QPixmap())
 
     def _update_action_buttons(self) -> None:

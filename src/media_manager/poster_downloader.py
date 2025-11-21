@@ -43,7 +43,10 @@ class PosterDownloader(QObject):
         self._cache_dir.mkdir(parents=True, exist_ok=True)
 
     def get_poster_path(
-        self, media_path: Path, poster_type: PosterType, size: PosterSize = PosterSize.MEDIUM
+        self,
+        media_path: Path,
+        poster_type: PosterType,
+        size: PosterSize = PosterSize.MEDIUM,
     ) -> Path:
         """Get the standard local path for a poster."""
         # Determine poster filename based on media file and type
@@ -83,7 +86,9 @@ class PosterDownloader(QObject):
             return False
 
         # Check if already exists locally
-        local_path = self.get_poster_path(media_path, poster_info.poster_type, poster_info.size)
+        local_path = self.get_poster_path(
+            media_path, poster_info.poster_type, poster_info.size
+        )
         if local_path.exists() and not force_download:
             self._logger.info(f"Poster already exists locally: {local_path}")
             poster_info.local_path = local_path
@@ -98,6 +103,7 @@ class PosterDownloader(QObject):
             try:
                 # Copy from cache to target location
                 import shutil
+
                 shutil.copy2(cached_path, local_path)
                 poster_info.local_path = local_path
                 poster_info.download_status = DownloadStatus.COMPLETED
@@ -116,7 +122,9 @@ class PosterDownloader(QObject):
             if success:
                 self.download_completed.emit(poster_id, str(poster_info.local_path))
             else:
-                self.download_failed.emit(poster_id, poster_info.error_message or "Download failed")
+                self.download_failed.emit(
+                    poster_id, poster_info.error_message or "下载失败"
+                )
             return success
         finally:
             self._downloading.discard(poster_id)
@@ -127,7 +135,9 @@ class PosterDownloader(QObject):
 
         for attempt in range(self._max_retries + 1):
             if attempt > 0:
-                self._logger.info(f"Retrying poster download (attempt {attempt + 1}): {url}")
+                self._logger.info(
+                    f"Retrying poster download (attempt {attempt + 1}): {url}"
+                )
                 time.sleep(self._retry_delay * attempt)  # Exponential backoff
 
             try:
@@ -159,11 +169,16 @@ class PosterDownloader(QObject):
                             if total_size > 0:
                                 int((downloaded / total_size) * 100)
                                 poster_id = self._get_poster_id(poster_info)
-                                self.download_progress.emit(poster_id, downloaded, total_size)
+                                self.download_progress.emit(
+                                    poster_id, downloaded, total_size
+                                )
 
                     # Move to final location
-                    local_path = self.get_poster_path(media_path, poster_info.poster_type, poster_info.size)
+                    local_path = self.get_poster_path(
+                        media_path, poster_info.poster_type, poster_info.size
+                    )
                     import shutil
+
                     shutil.move(str(cached_path), str(local_path))
 
                     # Update poster info

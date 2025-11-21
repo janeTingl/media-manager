@@ -299,7 +299,7 @@ class DetailPanel(QFrame):
             stars = "★" * int(item.rating / 2) + "☆" * (5 - int(item.rating / 2))
             self._metadata_labels["rating"].setText(f"{item.rating:.1f}/10 {stars}")
         else:
-            self._metadata_labels["rating"].setText("Not rated")
+            self._metadata_labels["rating"].setText("未评分")
 
         # Runtime
         if item.runtime:
@@ -308,7 +308,7 @@ class DetailPanel(QFrame):
             runtime_str = f"{hours}h {minutes}m" if hours else f"{minutes}m"
             self._metadata_labels["runtime"].setText(runtime_str)
         else:
-            self._metadata_labels["runtime"].setText("Unknown")
+            self._metadata_labels["runtime"].setText("未知")
 
         # Aired date
         if item.aired_date:

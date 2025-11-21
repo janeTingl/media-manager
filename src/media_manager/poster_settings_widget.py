@@ -277,7 +277,7 @@ class PosterSettingsWidget(QWidget):
                 QMessageBox.information(self, "缓存已清空", "海报缓存已被清空。")
             except Exception as exc:
                 self._logger.error(f"清空缓存失败：{exc}")
-                QMessageBox.warning(self, "Error", f"清空缓存失败：{exc}")
+                QMessageBox.warning(self, "错误", f"清空缓存失败：{exc}")
 
     def get_enabled_poster_types(self) -> list[PosterType]:
         """Get the list of enabled poster types."""

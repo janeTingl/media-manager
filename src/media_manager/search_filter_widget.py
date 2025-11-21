@@ -293,20 +293,16 @@ class SearchFilterWidget(QWidget):
             try:
                 criteria = self.get_criteria()
                 self._search_service.save_search(name, criteria, description or None)
-                QMessageBox.information(
-                    self, "Success", f"Search '{name}' saved successfully!"
-                )
+                QMessageBox.information(self, "成功", f"搜索 '{name}' 保存成功！")
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save search: {str(e)}")
+                QMessageBox.critical(self, "错误", f"保存搜索失败：{str(e)}")
 
     def _on_load_clicked(self) -> None:
         """Handle load search button click."""
         try:
             saved_searches = self._search_service.get_saved_searches()
             if not saved_searches:
-                QMessageBox.information(
-                    self, "No Saved Searches", "No saved searches found."
-                )
+                QMessageBox.information(self, "无已保存搜索", "未找到已保存的搜索。")
                 return
 
             items = [s.name for s in saved_searches]
@@ -323,7 +319,7 @@ class SearchFilterWidget(QWidget):
                     self._on_search_clicked()
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to load search: {str(e)}")
+            QMessageBox.critical(self, "错误", f"加载搜索失败：{str(e)}")
 
     def get_criteria(self) -> SearchCriteria:
         """Build search criteria from current UI state."""
