@@ -1,28 +1,31 @@
+# -*- mode: python ; coding: utf-8 -*-
 # ruff: noqa
-project_root = os.path.dirname(os.path.abspath(__file__))
 
-block_cipher = None
-
+import os
+import glob
 from PySide6.QtCore import QLibraryInfo
 
+project_root = os.path.dirname(os.path.abspath(__file__))
 entry_script = 'src/media_manager/main.py'
 
-# 获取 PySide6 翻译文件路径
+# ---- 获取 PySide6 中文翻译文件 ----
 translations_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
+qt_translation_files = glob.glob(os.path.join(translations_path, "*_zh_CN.qm"))
+
+block_cipher = None
 
 a = Analysis(
     [entry_script],
     pathex=['.'],
     binaries=[],
 
- datas=[
-    ('assets/*', 'assets'),
-    ('config/*', 'config'),
-    (os.path.join(project_root, 'src/media_manager/resources/i18n/media_manager_zh_CN.qm'), 'resources/i18n'),
-       
-    (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
-    (translations_path + '/qt_zh_CN.qm', 'PySide6/translations'),
-],
+    datas=[
+        ('assets/*', 'assets'),
+        ('config/*', 'config'),
+        ('src/media_manager/resources/i18n/media_manager_zh_CN.qm', 'resources/i18n'),
+    ]
+    +
+    [(f, "PySide6/translations") for f in qt_translation_files],
 
     hiddenimports=[],
     hookspath=[],
@@ -32,7 +35,6 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# —— 单文件核心 —— #
 exe = EXE(
     pyz,
     a.scripts,
@@ -40,12 +42,12 @@ exe = EXE(
     a.zipfiles,
     a.datas,
 
-    name='影藏·媒体管理器',
-    debug=False,           # Set to True for debugging
+    name='MediaManager',  # 生成的 EXE 文件名，不要中文！！
+    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
-    console=False,         # GUI 程序必须 False
-    icon=None,             # 若需要图标：icon='icon.ico'
-    disable_windowed_traceback=False,
+    console=False,
+
+    icon='icon.ico',
 )
