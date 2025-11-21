@@ -1,292 +1,287 @@
-# Changelog
+# 更新日志
 
-All notable changes to the 影藏·媒体管理器 project are documented in this file.
+影藏·媒体管理器项目的所有重要变更都记录在此文件中。
 
-## [Unreleased]
+## [未发布]
 
-### Planned Features
+### 计划功能
 
-- [ ] Real TMDB and TVDB API integration
-- [ ] Web interface with REST API
-- [ ] Mobile client application
-- [ ] Database backend (SQLite)
-- [ ] Plugin system for custom providers
-- [ ] Cloud storage integration (Google Drive, OneDrive)
-- [ ] Advanced media scanning (AI detection)
-- [ ] Batch rename without moving files
-- [ ] Media library analytics
-- [ ] Duplicate detection
-- [ ] Video codec analysis
-- [ ] Multi-language support (UI localization)
+- [ ] 真实的 TMDB 和 TVDB API 集成
+- [ ] Web 界面和 REST API
+- [ ] 移动端客户端应用
+- [ ] 数据库后端（SQLite）
+- [ ] 自定义提供者插件系统
+- [ ] 云存储集成（Google Drive、OneDrive）
+- [ ] 高级媒体扫描（AI 识别）
+- [ ] 批量重命名（无需移动文件）
+- [ ] 媒体库统计分析
+- [ ] 重复文件检测
+- [ ] 视频编码分析
 
 ## [0.1.0] - 2024-11-09
 
-### Initial Release - MVP Complete
+### 首次发布 - MVP 完成
 
-This is the first public release containing all planned v0.1.0 MVP features.
+这是第一个公开版本，包含所有计划的 v0.1.0 MVP 功能。
 
-### Core Features Implemented
+### 已实现的核心功能
 
-#### Scanning System
-- ✅ Filesystem scanning with configurable paths
-- ✅ Intelligent filename parsing
-- ✅ Movie and TV episode detection
-- ✅ Quality and release information extraction
-- ✅ Recursive directory traversal
-- ✅ Ignored directory support
-- ✅ Customizable video extensions
+#### 扫描系统
+- ✅ 支持可配置路径的文件系统扫描
+- ✅ 智能文件名解析
+- ✅ 电影和电视剧集检测
+- ✅ 质量和发布信息提取
+- ✅ 递归目录遍历
+- ✅ 忽略目录支持
+- ✅ 可自定义视频文件扩展名
 
-#### Matching System
-- ✅ Automatic media matching (mock data)
-- ✅ Manual search workflow
-- ✅ Confidence score calculation
-- ✅ Match status tracking (PENDING, MATCHED, MANUAL, SKIPPED)
-- ✅ Search result previews
-- ✅ Batch matching support
+#### 匹配系统
+- ✅ 自动媒体匹配（模拟数据）
+- ✅ 手动搜索工作流
+- ✅ 置信度分数计算
+- ✅ 匹配状态跟踪（待处理、已匹配、手动、跳过）
+- ✅ 搜索结果预览
+- ✅ 批量匹配支持
 
-#### Media Organization
-- ✅ Intelligent file renaming
-- ✅ Directory organization by media type
-- ✅ Customizable naming templates
-- ✅ Invalid character sanitization
-- ✅ Relative path generation
+#### 媒体整理
+- ✅ 智能文件重命名
+- ✅ 按媒体类型组织目录
+- ✅ 可自定义命名模板
+- ✅ 无效字符清理
+- ✅ 相对路径生成
 
-#### Poster Management
-- ✅ Multiple poster types (poster, fanart, banner, thumbnail)
-- ✅ Size selection (small, medium, large, original)
-- ✅ Download with retry logic
-- ✅ Intelligent caching with MD5 deduplication
-- ✅ Progress tracking
-- ✅ User-configurable settings
+#### 海报管理
+- ✅ 多种海报类型（海报、背景、横幅、缩略图）
+- ✅ 尺寸选择（小、中、大、原始）
+- ✅ 带重试逻辑的下载
+- ✅ 使用 MD5 去重的智能缓存
+- ✅ 进度跟踪
+- ✅ 用户可配置设置
 
-#### Subtitle Management
-- ✅ 10 language support (EN, ES, FR, DE, IT, PT, RU, ZH, JA, KO)
-- ✅ Multiple format support (SRT, ASS, SUB, VTT, SSA)
-- ✅ Provider abstraction (OpenSubtitles mock)
-- ✅ Download with retry logic
-- ✅ URL-based caching with MD5 hashing
-- ✅ Proper filename formatting (ISO 639-1 codes)
-- ✅ Movie and TV episode support
+#### 字幕管理
+- ✅ 支持 10 种语言（英、西、法、德、意、葡、俄、中、日、韩）
+- ✅ 支持多种格式（SRT、ASS、SUB、VTT、SSA）
+- ✅ 提供者抽象（OpenSubtitles 模拟）
+- ✅ 带重试逻辑的下载
+- ✅ 基于 URL 的缓存（MD5 哈希）
+- ✅ 正确的文件名格式（ISO 639-1 代码）
+- ✅ 支持电影和电视剧集
 
-#### Metadata Export (NFO)
-- ✅ XML NFO file generation
-- ✅ Movie schema support
-- ✅ TV episode schema support
-- ✅ UTF-8 encoding with full Unicode support
-- ✅ Cast member support
-- ✅ Provider-agnostic ID handling (TMDB, TVDB, generic)
-- ✅ Custom output location support
-- ✅ XML validation
+#### 元数据导出（NFO）
+- ✅ XML NFO 文件生成
+- ✅ 电影架构支持
+- ✅ 电视剧集架构支持
+- ✅ UTF-8 编码，完整 Unicode 支持
+- ✅ 演员信息支持
+- ✅ 提供者无关的 ID 处理（TMDB、TVDB、通用）
+- ✅ 自定义输出位置支持
+- ✅ XML 验证
 
-#### User Interface
-- ✅ Modern PySide6/Qt6 GUI
-- ✅ Scan Queue widget with filtering
-- ✅ Match Resolution widget
-- ✅ Resizable panes
-- ✅ Tab-based navigation
-- ✅ Status bar with progress
-- ✅ Preferences dialog
-- ✅ Poster preview display
-- ✅ Subtitle settings UI
+#### 用户界面
+- ✅ 现代化 PySide6/Qt6 GUI
+- ✅ 带过滤功能的扫描队列组件
+- ✅ 匹配解决组件
+- ✅ 可调整大小的窗格
+- ✅ 基于标签的导航
+- ✅ 带进度的状态栏
+- ✅ 首选项对话框
+- ✅ 海报预览显示
+- ✅ 字幕设置界面
 
-#### Settings & Configuration
-- ✅ JSON-based settings file
-- ✅ QSettings fallback for migration
-- ✅ User-configurable preferences
-- ✅ API key storage (template)
-- ✅ Scan path configuration
-- ✅ Target folder settings
-- ✅ Poster settings persistence
-- ✅ Subtitle settings persistence
-- ✅ NFO export settings
-- ✅ Window geometry saving
+#### 设置与配置
+- ✅ 基于 JSON 的设置文件
+- ✅ 迁移用的 QSettings 备用方案
+- ✅ 用户可配置的首选项
+- ✅ API 密钥存储（模板）
+- ✅ 扫描路径配置
+- ✅ 目标文件夹设置
+- ✅ 海报设置持久化
+- ✅ 字幕设置持久化
+- ✅ NFO 导出设置
+- ✅ 窗口几何保存
 
-#### Logging & Debugging
-- ✅ Structured logging with file output
-- ✅ Configurable log levels
-- ✅ Console and file output
-- ✅ Detailed error messages
-- ✅ Exception tracking with stack traces
+#### 日志与调试
+- ✅ 结构化日志，文件输出
+- ✅ 可配置日志级别
+- ✅ 控制台和文件输出
+- ✅ 详细的错误消息
+- ✅ 带堆栈跟踪的异常追踪
 
-#### Development & Testing
-- ✅ Comprehensive test suite (44+ tests)
-- ✅ Pytest with fixtures
-- ✅ Pytest-Qt for GUI testing
-- ✅ Mock providers for testing
-- ✅ Integration tests
-- ✅ Code quality tools (Black, Ruff, MyPy)
-- ✅ Type hints throughout codebase
-- ✅ Dependency injection system
-- ✅ Service registry pattern
+#### 开发与测试
+- ✅ 全面的测试套件（44+ 个测试）
+- ✅ 使用 fixtures 的 Pytest
+- ✅ 用于 GUI 测试的 Pytest-Qt
+- ✅ 用于测试的模拟提供者
+- ✅ 集成测试
+- ✅ 代码质量工具（Black、Ruff、MyPy）
+- ✅ 代码库中的类型提示
+- ✅ 依赖注入系统
+- ✅ 服务注册表模式
 
-#### Background Processing
-- ✅ QThreadPool for concurrent operations
-- ✅ MatchWorker for background matching
-- ✅ PosterDownloadWorker for artwork
-- ✅ SubtitleDownloadWorker for subtitles
-- ✅ SearchWorker for manual searches
-- ✅ WorkerManager for lifecycle management
-- ✅ Qt signals for async communication
-- ✅ Thread-safe operations
+#### 后台处理
+- ✅ 用于并发操作的 QThreadPool
+- ✅ 用于后台匹配的 MatchWorker
+- ✅ 用于图像的 PosterDownloadWorker
+- ✅ 用于字幕的 SubtitleDownloadWorker
+- ✅ 用于手动搜索的 SearchWorker
+- ✅ 用于生命周期管理的 WorkerManager
+- ✅ 异步通信的 Qt 信号
+- ✅ 线程安全操作
 
-#### Demo & Documentation
-- ✅ Demo application (media-manager-demo)
-- ✅ README with project overview
-- ✅ INSTALLATION guide
-- ✅ USAGE guide
-- ✅ API reference documentation
-- ✅ ARCHITECTURE design document
-- ✅ Implementation guides for subsystems
+#### 演示与文档
+- ✅ 演示应用（media-manager-demo）
+- ✅ 项目概述的 README
+- ✅ 安装指南
+- ✅ 使用指南
+- ✅ API 参考文档
+- ✅ 架构设计文档
+- ✅ 子系统实现指南
 
-### Breaking Changes
+### 重大变更
 
-None - this is the initial release.
+无 - 这是首次发布。
 
-### Known Issues
+### 已知问题
 
-#### Current Limitations
+#### 当前限制
 
-1. **Mock Data Only**
-   - TMDB/TVDB integration not implemented
-   - Uses mock data for demonstration
-   - All matches are simulated
+1. **仅模拟数据**
+   - TMDB/TVDB 集成未实现
+   - 使用模拟数据进行演示
+   - 所有匹配都是模拟的
 
-2. **No Database**
-   - Metadata stored only in JSON files
-   - No persistent library database
-   - Search only works on scanned items
+2. **无数据库**
+   - 元数据仅存储在 JSON 文件中
+   - 无持久化媒体库数据库
+   - 搜索仅适用于已扫描项目
 
-3. **No Web Interface**
-   - Desktop application only
-   - No remote management
-   - No REST API
+3. **无 Web 界面**
+   - 仅桌面应用
+   - 无远程管理
+   - 无 REST API
 
-4. **Limited Media Types**
-   - Only movies and TV episodes
-   - No music, podcasts, or images
-   - No anime-specific detection
+4. **有限的媒体类型**
+   - 仅支持电影和电视剧集
+   - 不支持音乐、播客或图像
+   - 无动漫特定检测
 
-5. **Single-Machine Only**
-   - No network sharing
-   - No cloud synchronization
-   - Settings local only
+5. **仅限单机**
+   - 无网络共享
+   - 无云同步
+   - 设置仅本地
 
-6. **Performance**
-   - Large libraries (10k+ items) may be slow
-   - No pagination in UI lists
-   - In-memory metadata only
+6. **性能**
+   - 大型媒体库（10k+ 项）可能较慢
+   - UI 列表无分页
+   - 仅内存元数据
 
-#### Platform-Specific Issues
+#### 平台特定问题
 
-- **macOS**: Wayland support incomplete (use X11 fallback)
-- **Windows**: Some special characters may not display correctly
-- **Linux**: Display server detection may require manual configuration
+- **macOS**: Wayland 支持不完整（使用 X11 备用方案）
+- **Windows**: 某些特殊字符可能无法正确显示
+- **Linux**: 显示服务器检测可能需要手动配置
 
-#### API Limitations
+#### API 限制
 
-- No real TMDB/TVDB API calls (mock only)
-- OpenSubtitles provider is mock implementation
-- No retry on API failures
-- No rate limiting implementation
+- 无真实的 TMDB/TVDB API 调用（仅模拟）
+- OpenSubtitles 提供者是模拟实现
+- API 失败时无重试
+- 无速率限制实现
 
-### Testing
+### 测试
 
-All features have been tested with:
+所有功能都经过以下测试：
 
-- ✅ 44+ unit and integration tests
-- ✅ All tests passing on Python 3.8-3.12
-- ✅ 100% coverage for core modules
-- ✅ GUI tests with pytest-qt
-- ✅ Mock providers for reproducibility
+- ✅ 44+ 个单元和集成测试
+- ✅ 在 Python 3.8-3.12 上所有测试通过
+- ✅ 核心模块 100% 覆盖率
+- ✅ 使用 pytest-qt 的 GUI 测试
+- ✅ 用于可重现性的模拟提供者
 
-### Project Structure
+### 项目结构
 
 ```
 media-manager/
-├── src/media_manager/          # Main application
-│   ├── models.py               # Data models
-│   ├── scanner.py              # Filesystem scanning
-│   ├── scan_engine.py          # Scan orchestration
-│   ├── workers.py              # Background workers
-│   ├── match_manager.py        # Match workflow
+├── src/media_manager/          # 主应用程序
+│   ├── models.py               # 数据模型
+│   ├── scanner.py              # 文件系统扫描
+│   ├── scan_engine.py          # 扫描编排
+│   ├── workers.py              # 后台工作器
+│   ├── match_manager.py        # 匹配工作流
 │   ├── main_window.py          # GUI
-│   ├── settings.py             # Configuration
-│   ├── logging.py              # Logging
-│   ├── services.py             # DI container
-│   ├── poster_downloader.py    # Poster system
-│   ├── subtitle_downloader.py  # Subtitle system
-│   ├── nfo_exporter.py         # NFO generation
-│   ├── renamer.py              # Path generation
-│   ├── library_postprocessor.py # Post-processing
-│   ├── main.py                 # Entry point
-│   └── demo_integration.py     # Demo app
-├── tests/                      # Test suite (16 test files)
-├── pyproject.toml              # Package config
-├── README.md                   # Overview
-├── INSTALLATION.md             # Setup guide
-├── API.md                      # API reference
-├── ARCHITECTURE.md             # Design guide
-├── USAGE.md                    # User guide
-└── CHANGELOG.md                # This file
+│   ├── settings.py             # 配置
+│   ├── logging.py              # 日志
+│   ├── services.py             # DI 容器
+│   ├── poster_downloader.py    # 海报系统
+│   ├── subtitle_downloader.py  # 字幕系统
+│   ├── nfo_exporter.py         # NFO 生成
+│   ├── renamer.py              # 路径生成
+│   ├── library_postprocessor.py # 后处理
+│   ├── main.py                 # 入口点
+│   └── demo_integration.py     # 演示应用
+├── tests/                      # 测试套件（16 个测试文件）
+├── pyproject.toml              # 包配置
+├── README.md                   # 概述
+└── CHANGELOG.md                # 本文件
 ```
 
-### Dependencies
+### 依赖项
 
-**Required:**
+**必需：**
 - PySide6 >= 6.5.0
 - Python >= 3.8
 
-**Development:**
+**开发：**
 - pytest >= 7.0.0
 - pytest-qt >= 4.2.0
 - black >= 23.0.0
 - ruff >= 0.1.0
 - mypy >= 1.5.0
 
-### Migration from Alpha
+### 从 Alpha 版迁移
 
-This is the initial release - no migrations needed.
+这是首次发布 - 无需迁移。
 
-### Contributors
+### 贡献者
 
 - 影藏·媒体管理器团队
 
-### Acknowledgments
+### 致谢
 
-- Built with PySide6/Qt6
-- Testing with pytest and pytest-qt
-- Code quality with Black, Ruff, and MyPy
+- 使用 PySide6/Qt6 构建
+- 使用 pytest 和 pytest-qt 测试
+- 使用 Black、Ruff 和 MyPy 保证代码质量
 
-## Release Timeline
+## 发布时间线
 
-- **2024-11-09**: v0.1.0 - Initial MVP Release
-- **Q1 2025**: v0.2.0 - Real API Integration (planned)
-- **Q2 2025**: v0.3.0 - Database Backend (planned)
-- **Q3 2025**: v1.0.0 - Stable Release (planned)
+- **2024-11-09**: v0.1.0 - 首次 MVP 发布
+- **2025 Q1**: v0.2.0 - 真实 API 集成（计划中）
+- **2025 Q2**: v0.3.0 - 数据库后端（计划中）
+- **2025 Q3**: v1.0.0 - 稳定版本（计划中）
 
-## Versioning
+## 版本控制
 
-This project follows [Semantic Versioning](https://semver.org/):
+本项目遵循[语义化版本控制](https://semver.org/)：
 
-- **MAJOR**: Breaking changes, significant new features
-- **MINOR**: New features, backward compatible
-- **PATCH**: Bug fixes, backward compatible
+- **主版本号**: 破坏性变更，重大新功能
+- **次版本号**: 新功能，向后兼容
+- **修订号**: 错误修复，向后兼容
 
-## Support
+## 支持
 
-- **Issues**: Report bugs on GitHub Issues
-- **Discussions**: Ask questions in GitHub Discussions
-- **Documentation**: Check README, USAGE.md, and API.md
-- **Logs**: Check `~/.media-manager/logs/app.log` for diagnostics
+- **问题反馈**: 在 GitHub Issues 上报告错误
+- **讨论**: 在 GitHub Discussions 中提问
+- **文档**: 查看 README 和其他文档
+- **日志**: 查看 `~/.media-manager/logs/app.log` 进行诊断
 
-## How to Contribute
+## 如何贡献
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+1. Fork 本仓库
+2. 创建功能分支
+3. 进行更改
+4. 为新功能添加测试
+5. 提交 Pull Request
 
-## License
+## 许可证
 
-This project is licensed under the MIT License.
+本项目采用 MIT 许可证。

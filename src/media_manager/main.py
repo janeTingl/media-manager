@@ -43,13 +43,13 @@ def main() -> int:
         # Create Qt application
         app = create_application()
 
-       # Get settings
+        # Get settings
         settings = get_settings()
-        current_language = settings.get_language()
-        logger.info(f"Current language from settings: {current_language}")
 
-        # Install translators before any widgets are created
-        install_translators(app, current_language)
+        # Install Chinese translators before any widgets are created
+        install_translators(app)
+        logger.info("简体中文翻译器已安装")
+
         # Initialize database service
         db_service = init_database_service(settings.get_database_url())
 

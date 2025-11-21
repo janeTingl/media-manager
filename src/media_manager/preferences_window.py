@@ -24,7 +24,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .i18n import get_language_choices
 from .library_manager_dialog import LibraryManagerDialog
 from .persistence.repositories import LibraryRepository
 from .poster_settings_widget import PosterSettingsWidget
@@ -553,11 +552,7 @@ class UIPreferencesWidget(BasePreferencesSection):
             self.theme_combo.addItem(theme_labels.get(theme, theme.title()), theme)
         form.addRow(self.tr("Theme:"), self.theme_combo)
 
-        self.language_combo = QComboBox()
-        for code, label in get_language_choices():
-            self.language_combo.addItem(label, code)
-        form.addRow(self.tr("Language:"), self.language_combo)
-
+        # 语言固定为简体中文，不再显示语言选择
         self.remember_layout_checkbox = QCheckBox(
             self.tr("Remember window layout between sessions")
         )
@@ -572,17 +567,12 @@ class UIPreferencesWidget(BasePreferencesSection):
         if index >= 0:
             self.theme_combo.setCurrentIndex(index)
 
-        language = self._settings.get_language()
-        index = self.language_combo.findData(language)
-        if index >= 0:
-            self.language_combo.setCurrentIndex(index)
-
         remember = bool(self._settings.get_ui_setting("remember_layout", True))
         self.remember_layout_checkbox.setChecked(remember)
 
     def apply(self) -> tuple[bool, str | None]:
         self._settings.set_ui_setting("theme", self.theme_combo.currentData())
-        self._settings.set_language(self.language_combo.currentData())
+        # 语言固定为简体中文，不需要设置
         self._settings.set_ui_setting(
             "remember_layout", self.remember_layout_checkbox.isChecked()
         )
