@@ -19,9 +19,7 @@ a = Analysis(
     ('assets/*', 'assets'),
     ('config/*', 'config'),
     (os.path.join(project_root, 'src/media_manager/resources/i18n/media_manager_zh_CN.qm'), 'resources/i18n'),
-    (os.path.join(project_root, 'src/media_manager/resources/i18n/media_manager_de_DE.qm'), 'resources/i18n'),
-    (os.path.join(project_root, 'src/media_manager/resources/i18n/media_manager_en_US.qm'), 'resources/i18n'),
-    
+       
     (translations_path + '/qtbase_zh_CN.qm', 'PySide6/translations'),
     (translations_path + '/qt_zh_CN.qm', 'PySide6/translations'),
 ],
