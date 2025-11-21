@@ -1,0 +1,34 @@
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+.venv/
+env/
+venv/
+
+# PyInstaller 产物
+/dist/
+/build/
+*.spec
+
+# IDE 配置
+.vscode/
+.idea/
+
+# 操作系统垃圾文件
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# i18n / 生成文件
+*.qm
+
+# cto.new ignore folders
+.github/
+docs/
+scripts/
+tests/
