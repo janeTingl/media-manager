@@ -149,9 +149,9 @@ class DashboardWidget(QWidget):
         layout = QHBoxLayout()
 
         # Library filter
-        layout.addWidget(QLabel(self.tr("Library:")))
+        layout.addWidget(QLabel("媒体库:"))
         self.library_combo = QComboBox()
-        self.library_combo.addItem(self.tr("All Libraries"), None)
+        self.library_combo.addItem("所有媒体库", None)
         libraries = self._library_repository.get_active()
         for lib in libraries:
             self.library_combo.addItem(lib.name, lib.id)
@@ -161,7 +161,7 @@ class DashboardWidget(QWidget):
         layout.addSpacing(20)
 
         # Date range filters
-        layout.addWidget(QLabel(self.tr("From:")))
+        layout.addWidget(QLabel("从:"))
         self.date_from = QDateEdit()
         self.date_from.setDate(
             (datetime.utcnow()).replace(day=1).date()
@@ -169,14 +169,14 @@ class DashboardWidget(QWidget):
         self.date_from.dateChanged.connect(self._on_date_changed)
         layout.addWidget(self.date_from)
 
-        layout.addWidget(QLabel(self.tr("To:")))
+        layout.addWidget(QLabel("到:"))
         self.date_to = QDateEdit()
         self.date_to.setDate(datetime.utcnow().date())
         self.date_to.dateChanged.connect(self._on_date_changed)
         layout.addWidget(self.date_to)
 
         # Refresh button
-        refresh_btn = QPushButton(self.tr("Refresh"))
+        refresh_btn = QPushButton("刷新")
         refresh_btn.clicked.connect(self._refresh_data)
         layout.addWidget(refresh_btn)
 
@@ -188,19 +188,19 @@ class DashboardWidget(QWidget):
         """Create summary stat cards."""
         layout = QHBoxLayout()
 
-        self.card_total = StatsCard(self.tr("Total Items"), "0")
+        self.card_total = StatsCard("总项数", "0")
         layout.addWidget(self.card_total)
 
-        self.card_movies = StatsCard(self.tr("Movies"), "0")
+        self.card_movies = StatsCard("电影", "0")
         layout.addWidget(self.card_movies)
 
-        self.card_tv = StatsCard(self.tr("TV Shows"), "0")
+        self.card_tv = StatsCard("电视剧", "0")
         layout.addWidget(self.card_tv)
 
-        self.card_runtime = StatsCard(self.tr("Total Runtime"), self.tr("0 hours"))
+        self.card_runtime = StatsCard("总时长", "0 小时")
         layout.addWidget(self.card_runtime)
 
-        self.card_storage = StatsCard(self.tr("Storage"), self.tr("0 GB"))
+        self.card_storage = StatsCard("存储空间", "0 GB")
         layout.addWidget(self.card_storage)
 
         return layout
@@ -210,12 +210,10 @@ class DashboardWidget(QWidget):
         layout = QHBoxLayout()
 
         # Top Directors
-        layout.addWidget(
-            self._create_top_list_group(self.tr("Top Directors"), "directors")
-        )
+        layout.addWidget(self._create_top_list_group("热门导演", "directors"))
 
         # Top Actors
-        layout.addWidget(self._create_top_list_group(self.tr("Top Actors"), "actors"))
+        layout.addWidget(self._create_top_list_group("热门演员", "actors"))
 
         return layout
 
@@ -242,7 +240,7 @@ class DashboardWidget(QWidget):
 
     def _create_recent_activity_group(self) -> QGroupBox:
         """Create recent activity group."""
-        group = QGroupBox(self.tr("Recent Activity"))
+        group = QGroupBox("最近活动")
         layout = QVBoxLayout(group)
 
         self.activity_widget = QWidget()
@@ -279,7 +277,7 @@ class DashboardWidget(QWidget):
                 library_id=library_id
             )
             runtime_hours = runtime_minutes / 60
-            self.card_runtime.set_value(f"{runtime_hours:.1f} hours")
+            self.card_runtime.set_value(f"{runtime_hours:.1f} 小时")
 
             # Get storage
             storage_bytes = self._stats_service.get_storage_usage(library_id=library_id)

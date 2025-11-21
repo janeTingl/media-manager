@@ -1,23 +1,22 @@
 """Search results widget with grid and table views."""
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QToolBar,
+    QComboBox,
     QLabel,
     QPushButton,
     QStackedWidget,
-    QComboBox,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
 from .logging import get_logger
 from .media_grid_view import MediaGridView
 from .media_table_view import MediaTableView
-from .search_results_model import SearchResultsModel
-from .search_criteria import SearchCriteria
 from .persistence.models import MediaItem
+from .search_criteria import SearchCriteria
+from .search_results_model import SearchResultsModel
 
 
 class SearchResultsWidget(QWidget):
@@ -30,13 +29,13 @@ class SearchResultsWidget(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
-        
+
         # Create model
         self._model = SearchResultsModel()
-        
+
         # Current view mode
         self._current_view = "grid"
-        
+
         self._setup_ui()
         self._connect_signals()
 
@@ -49,13 +48,13 @@ class SearchResultsWidget(QWidget):
         toolbar.setMovable(False)
 
         # View mode buttons
-        self.grid_btn = QPushButton("Grid View")
+        self.grid_btn = QPushButton("网格视图")
         self.grid_btn.setCheckable(True)
         self.grid_btn.setChecked(True)
         self.grid_btn.clicked.connect(lambda: self._switch_view("grid"))
         toolbar.addWidget(self.grid_btn)
 
-        self.table_btn = QPushButton("Table View")
+        self.table_btn = QPushButton("表格视图")
         self.table_btn.setCheckable(True)
         self.table_btn.clicked.connect(lambda: self._switch_view("table"))
         toolbar.addWidget(self.table_btn)
@@ -63,9 +62,9 @@ class SearchResultsWidget(QWidget):
         toolbar.addSeparator()
 
         # Thumbnail size controls (for grid view)
-        toolbar.addWidget(QLabel("Size:"))
+        toolbar.addWidget(QLabel("大小:"))
         self.size_combo = QComboBox()
-        self.size_combo.addItems(["Small", "Medium", "Large", "Extra Large"])
+        self.size_combo.addItems(["小", "中", "大", "超大"])
         self.size_combo.setCurrentIndex(1)  # Default to Medium
         self.size_combo.currentTextChanged.connect(self._on_size_changed)
         toolbar.addWidget(self.size_combo)
@@ -173,7 +172,7 @@ class SearchResultsWidget(QWidget):
     def _on_search_finished(self, total_count: int) -> None:
         """Handle search finished."""
         result_count = self._model.rowCount()
-        
+
         # Update results label
         if total_count == 0:
             self.results_label.setText("No results")
@@ -188,11 +187,10 @@ class SearchResultsWidget(QWidget):
 
         # Update pagination
         self._total_pages = (
-            (total_count + self._current_criteria.page_size - 1)
-            // self._current_criteria.page_size
-        )
+            total_count + self._current_criteria.page_size - 1
+        ) // self._current_criteria.page_size
         self.page_label.setText(f"Page {self._current_page + 1} of {self._total_pages}")
-        
+
         self.prev_btn.setEnabled(self._current_page > 0)
         self.next_btn.setEnabled(self._current_page < self._total_pages - 1)
 

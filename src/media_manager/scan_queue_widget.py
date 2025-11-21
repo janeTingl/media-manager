@@ -83,7 +83,7 @@ class ScanQueueWidget(QWidget):
 
         # First row - library selection
         library_layout = QHBoxLayout()
-        library_layout.addWidget(QLabel("Target Library:"))
+        library_layout.addWidget(QLabel("目标媒体库:"))
         self.library_combo = QComboBox()
         self.library_combo.setMinimumWidth(200)
         library_layout.addWidget(self.library_combo)
@@ -92,7 +92,7 @@ class ScanQueueWidget(QWidget):
 
         # Second row - filter and controls
         control_layout = QHBoxLayout()
-        
+
         # Search/filter
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText("Filter by title...")
@@ -113,7 +113,7 @@ class ScanQueueWidget(QWidget):
         self.clear_button = QPushButton("Clear")
         self.clear_button.clicked.connect(self._on_clear_clicked)
         control_layout.addWidget(self.clear_button)
-        
+
         layout.addLayout(control_layout)
 
         return group
@@ -149,7 +149,7 @@ class ScanQueueWidget(QWidget):
         conflict_layout.addWidget(self.conflict_combo)
         layout.addLayout(conflict_layout)
 
-        self.finalize_button = QPushButton("Finalize Library")
+        self.finalize_button = QPushButton("完成媒体库")
         self.finalize_button.clicked.connect(self._on_finalize_clicked)
         layout.addWidget(self.finalize_button)
 
@@ -212,7 +212,7 @@ class ScanQueueWidget(QWidget):
             MatchStatus.PENDING: "⏳",
             MatchStatus.MATCHED: "✓",
             MatchStatus.MANUAL: "🔧",
-            MatchStatus.SKIPPED: "⊘"
+            MatchStatus.SKIPPED: "⊘",
         }
         base_text = f"{status_icons.get(match.status, '?')} {base_text}"
 
@@ -392,7 +392,9 @@ class ScanQueueWidget(QWidget):
     @Slot(object, str)
     def _on_finalize_item_failed(self, match: MediaMatch, message: str) -> None:
         """Update UI when an item fails to finalize."""
-        self.finalize_status_label.setText(f"Failed to finalize {match.metadata.title}: {message}")
+        self.finalize_status_label.setText(
+            f"Failed to finalize {match.metadata.title}: {message}"
+        )
 
     @Slot(object)
     def _on_finalize_finished(self, summary) -> None:
@@ -451,9 +453,13 @@ class ScanQueueWidget(QWidget):
         if total == 0:
             self.status_label.setText("Queue empty")
         elif pending == 0:
-            self.status_label.setText(f"All {total} items processed ({matched} matched)")
+            self.status_label.setText(
+                f"All {total} items processed ({matched} matched)"
+            )
         else:
-            self.status_label.setText(f"{total} items ({matched} matched, {pending} pending)")
+            self.status_label.setText(
+                f"{total} items ({matched} matched, {pending} pending)"
+            )
 
     def clear_queue_items(self) -> None:
         """Clear all items from the queue."""
@@ -477,13 +483,12 @@ class ScanQueueWidget(QWidget):
         """Load libraries into the combo box."""
         self.library_combo.clear()
         libraries = self._library_repository.get_active()
-        
+
         for library in libraries:
             self.library_combo.addItem(
-                f"{library.name} ({library.media_type})",
-                library.id
+                f"{library.name} ({library.media_type})", library.id
             )
-        
+
         # If no libraries, show a placeholder
         if not libraries:
             self.library_combo.addItem("No libraries available", None)

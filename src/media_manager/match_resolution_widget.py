@@ -101,7 +101,9 @@ class MatchResolutionWidget(QWidget):
         self.poster_label.setMinimumSize(150, 225)
         self.poster_label.setMaximumSize(150, 225)
         self.poster_label.setAlignment(Qt.AlignCenter)
-        self.poster_label.setStyleSheet("border: 1px solid gray; background-color: #f0f0f0;")
+        self.poster_label.setStyleSheet(
+            "border: 1px solid gray; background-color: #f0f0f0;"
+        )
         poster_layout.addWidget(self.poster_label)
 
         # Poster status
@@ -129,15 +131,15 @@ class MatchResolutionWidget(QWidget):
         action_group = QGroupBox("Actions")
         action_layout = QHBoxLayout(action_group)
 
-        self.accept_button = QPushButton("Accept Match")
+        self.accept_button = QPushButton("接受匹配")
         self.accept_button.clicked.connect(self._on_accept_clicked)
         action_layout.addWidget(self.accept_button)
 
-        self.manual_search_button = QPushButton("Manual Search")
+        self.manual_search_button = QPushButton("手动搜索")
         self.manual_search_button.clicked.connect(self._on_manual_search_clicked)
         action_layout.addWidget(self.manual_search_button)
 
-        self.skip_button = QPushButton("Skip")
+        self.skip_button = QPushButton("跳过")
         self.skip_button.clicked.connect(self._on_skip_clicked)
         action_layout.addWidget(self.skip_button)
 
@@ -151,15 +153,15 @@ class MatchResolutionWidget(QWidget):
         layout = QVBoxLayout(widget)
 
         # Search controls
-        search_group = QGroupBox("Manual Search")
+        search_group = QGroupBox("手动搜索")
         search_layout = QHBoxLayout(search_group)
 
         self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Enter search terms...")
+        self.search_edit.setPlaceholderText("输入搜索词...")
         self.search_edit.returnPressed.connect(self._on_search_clicked)
         search_layout.addWidget(self.search_edit)
 
-        self.search_button = QPushButton("Search")
+        self.search_button = QPushButton("搜索")
         self.search_button.clicked.connect(self._on_search_clicked)
         search_layout.addWidget(self.search_button)
 
@@ -227,7 +229,11 @@ class MatchResolutionWidget(QWidget):
         # Confidence
         if match.confidence is not None:
             confidence_pct = int(match.confidence * 100)
-            color = "green" if match.confidence > 0.8 else "orange" if match.confidence > 0.6 else "red"
+            color = (
+                "green"
+                if match.confidence > 0.8
+                else "orange" if match.confidence > 0.6 else "red"
+            )
             self.confidence_label.setText(
                 f'Confidence: <span style="color: {color};">{confidence_pct}%</span>'
             )
@@ -262,7 +268,9 @@ class MatchResolutionWidget(QWidget):
         poster_info = posters.get(PosterType.POSTER)
         if poster_info and poster_info.is_downloaded():
             self._load_poster_image(poster_info.local_path)
-            self.poster_status_label.setText(f"Poster downloaded: {poster_info.local_path.name}")
+            self.poster_status_label.setText(
+                f"Poster downloaded: {poster_info.local_path.name}"
+            )
         elif poster_info and poster_info.url:
             self.poster_label.setText("Poster available for download")
             self.poster_status_label.setText(f"Poster URL: {poster_info.url}")
@@ -272,16 +280,16 @@ class MatchResolutionWidget(QWidget):
 
         # Update download buttons
         self.download_poster_button.setEnabled(
-            poster_info is not None and
-            poster_info.url is not None and
-            not poster_info.is_downloaded()
+            poster_info is not None
+            and poster_info.url is not None
+            and not poster_info.is_downloaded()
         )
 
         fanart_info = posters.get(PosterType.FANART)
         self.download_fanart_button.setEnabled(
-            fanart_info is not None and
-            fanart_info.url is not None and
-            not fanart_info.is_downloaded()
+            fanart_info is not None
+            and fanart_info.url is not None
+            and not fanart_info.is_downloaded()
         )
 
     def _load_poster_image(self, image_path: Path | None) -> None:
@@ -404,7 +412,9 @@ class MatchResolutionWidget(QWidget):
         self._update_action_buttons()
 
         self.match_updated.emit(self._current_match)
-        self._logger.info(f"Applied manual match for {self._current_match.metadata.title}")
+        self._logger.info(
+            f"Applied manual match for {self._current_match.metadata.title}"
+        )
 
     def _perform_search(self, query: str) -> None:
         """Perform a search with the given query."""
@@ -417,7 +427,7 @@ class MatchResolutionWidget(QWidget):
             media_type=self._current_match.metadata.media_type,
             year=self._current_match.metadata.year,
             season=self._current_match.metadata.season,
-            episode=self._current_match.metadata.episode
+            episode=self._current_match.metadata.episode,
         )
 
         # Emit search request signal
@@ -489,7 +499,9 @@ class MatchResolutionWidget(QWidget):
             return
 
         self.poster_download_requested.emit(self._current_match, [PosterType.POSTER])
-        self._logger.info(f"Requested poster download for {self._current_match.metadata.title}")
+        self._logger.info(
+            f"Requested poster download for {self._current_match.metadata.title}"
+        )
 
     @Slot()
     def _on_download_fanart_clicked(self) -> None:
@@ -498,10 +510,15 @@ class MatchResolutionWidget(QWidget):
             return
 
         self.poster_download_requested.emit(self._current_match, [PosterType.FANART])
-        self._logger.info(f"Requested fanart download for {self._current_match.metadata.title}")
+        self._logger.info(
+            f"Requested fanart download for {self._current_match.metadata.title}"
+        )
 
     def update_poster_status(self, match: MediaMatch) -> None:
         """Update poster display after download status change."""
-        if self._current_match and self._current_match.metadata.path == match.metadata.path:
+        if (
+            self._current_match
+            and self._current_match.metadata.path == match.metadata.path
+        ):
             self._current_match = match
             self._update_poster_display()

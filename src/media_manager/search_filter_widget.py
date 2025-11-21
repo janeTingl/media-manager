@@ -1,33 +1,30 @@
 """Search filter widget with advanced filtering controls."""
 
-from typing import List, Optional
+from typing import List
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
     QComboBox,
-    QPushButton,
-    QSlider,
-    QGroupBox,
-    QCheckBox,
-    QScrollArea,
-    QListWidget,
-    QListWidgetItem,
-    QSpinBox,
     QDoubleSpinBox,
     QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
     QInputDialog,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
 )
 
 from .logging import get_logger
+from .persistence.models import Person
 from .search_criteria import SearchCriteria
 from .search_service import SearchService
-from .persistence.models import Tag, Person, Collection, SavedSearch
 
 
 class SearchFilterWidget(QWidget):
@@ -41,7 +38,7 @@ class SearchFilterWidget(QWidget):
         super().__init__(parent)
         self._logger = get_logger().get_logger(__name__)
         self._search_service = SearchService()
-        
+
         self._setup_ui()
         self._load_filter_options()
         self._connect_signals()
@@ -54,7 +51,7 @@ class SearchFilterWidget(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        
+
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
 
@@ -69,7 +66,7 @@ class SearchFilterWidget(QWidget):
         # Quick filters
         quick_group = QGroupBox("Quick Filters")
         quick_layout = QVBoxLayout(quick_group)
-        
+
         quick_buttons_layout = QHBoxLayout()
         self.quick_filter_buttons = {}
         for filter_name, display_name in [
@@ -81,10 +78,12 @@ class SearchFilterWidget(QWidget):
         ]:
             btn = QPushButton(display_name)
             btn.setCheckable(True)
-            btn.clicked.connect(lambda checked, f=filter_name: self._on_quick_filter_clicked(f, checked))
+            btn.clicked.connect(
+                lambda checked, f=filter_name: self._on_quick_filter_clicked(f, checked)
+            )
             self.quick_filter_buttons[filter_name] = btn
             quick_buttons_layout.addWidget(btn)
-        
+
         quick_layout.addLayout(quick_buttons_layout)
         scroll_layout.addWidget(quick_group)
 
@@ -99,17 +98,17 @@ class SearchFilterWidget(QWidget):
         # Year range
         year_group = QGroupBox("Year Range")
         year_layout = QFormLayout(year_group)
-        
+
         self.year_min_spin = QSpinBox()
         self.year_min_spin.setRange(1900, 2100)
         self.year_min_spin.setValue(1900)
         self.year_min_spin.setSpecialValueText("Any")
-        
+
         self.year_max_spin = QSpinBox()
         self.year_max_spin.setRange(1900, 2100)
         self.year_max_spin.setValue(2100)
         self.year_max_spin.setSpecialValueText("Any")
-        
+
         year_layout.addRow("From:", self.year_min_spin)
         year_layout.addRow("To:", self.year_max_spin)
         scroll_layout.addWidget(year_group)
@@ -117,19 +116,19 @@ class SearchFilterWidget(QWidget):
         # Rating range
         rating_group = QGroupBox("Rating Range")
         rating_layout = QFormLayout(rating_group)
-        
+
         self.rating_min_spin = QDoubleSpinBox()
         self.rating_min_spin.setRange(0.0, 10.0)
         self.rating_min_spin.setValue(0.0)
         self.rating_min_spin.setSingleStep(0.1)
         self.rating_min_spin.setSpecialValueText("Any")
-        
+
         self.rating_max_spin = QDoubleSpinBox()
         self.rating_max_spin.setRange(0.0, 10.0)
         self.rating_max_spin.setValue(10.0)
         self.rating_max_spin.setSingleStep(0.1)
         self.rating_max_spin.setSpecialValueText("Any")
-        
+
         rating_layout.addRow("Min:", self.rating_min_spin)
         rating_layout.addRow("Max:", self.rating_max_spin)
         scroll_layout.addWidget(rating_group)
@@ -137,17 +136,17 @@ class SearchFilterWidget(QWidget):
         # Runtime range
         runtime_group = QGroupBox("Runtime (minutes)")
         runtime_layout = QFormLayout(runtime_group)
-        
+
         self.runtime_min_spin = QSpinBox()
         self.runtime_min_spin.setRange(0, 500)
         self.runtime_min_spin.setValue(0)
         self.runtime_min_spin.setSpecialValueText("Any")
-        
+
         self.runtime_max_spin = QSpinBox()
         self.runtime_max_spin.setRange(0, 500)
         self.runtime_max_spin.setValue(500)
         self.runtime_max_spin.setSpecialValueText("Any")
-        
+
         runtime_layout.addRow("Min:", self.runtime_min_spin)
         runtime_layout.addRow("Max:", self.runtime_max_spin)
         scroll_layout.addWidget(runtime_group)
@@ -185,13 +184,13 @@ class SearchFilterWidget(QWidget):
         # Sorting
         sort_group = QGroupBox("Sort By")
         sort_layout = QFormLayout(sort_group)
-        
+
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["Title", "Year", "Rating", "Added", "Runtime"])
-        
+
         self.sort_order_combo = QComboBox()
         self.sort_order_combo.addItems(["Ascending", "Descending"])
-        
+
         sort_layout.addRow("Field:", self.sort_combo)
         sort_layout.addRow("Order:", self.sort_order_combo)
         scroll_layout.addWidget(sort_group)
@@ -202,20 +201,20 @@ class SearchFilterWidget(QWidget):
 
         # Action buttons
         buttons_layout = QHBoxLayout()
-        
-        self.search_btn = QPushButton("Search")
+
+        self.search_btn = QPushButton("搜索")
         self.search_btn.setDefault(True)
         buttons_layout.addWidget(self.search_btn)
-        
-        self.clear_btn = QPushButton("Clear")
+
+        self.clear_btn = QPushButton("清除")
         buttons_layout.addWidget(self.clear_btn)
-        
-        self.save_btn = QPushButton("Save Search")
+
+        self.save_btn = QPushButton("保存搜索")
         buttons_layout.addWidget(self.save_btn)
-        
-        self.load_btn = QPushButton("Load Search")
+
+        self.load_btn = QPushButton("加载搜索")
         buttons_layout.addWidget(self.load_btn)
-        
+
         layout.addLayout(buttons_layout)
 
     def _connect_signals(self) -> None:
@@ -265,7 +264,7 @@ class SearchFilterWidget(QWidget):
         if not text:
             self._update_people_list(self._all_people)
             return
-        
+
         filtered = [p for p in self._all_people if text.lower() in p.name.lower()]
         self._update_people_list(filtered)
 
@@ -288,13 +287,9 @@ class SearchFilterWidget(QWidget):
 
     def _on_save_clicked(self) -> None:
         """Handle save search button click."""
-        name, ok = QInputDialog.getText(
-            self, "Save Search", "Enter search name:"
-        )
+        name, ok = QInputDialog.getText(self, "保存搜索", "输入搜索名称:")
         if ok and name:
-            description, _ = QInputDialog.getText(
-                self, "Save Search", "Enter description (optional):"
-            )
+            description, _ = QInputDialog.getText(self, "保存搜索", "输入描述 (可选):")
             try:
                 criteria = self.get_criteria()
                 self._search_service.save_search(name, criteria, description or None)
@@ -302,9 +297,7 @@ class SearchFilterWidget(QWidget):
                     self, "Success", f"Search '{name}' saved successfully!"
                 )
             except Exception as e:
-                QMessageBox.critical(
-                    self, "Error", f"Failed to save search: {str(e)}"
-                )
+                QMessageBox.critical(self, "Error", f"Failed to save search: {str(e)}")
 
     def _on_load_clicked(self) -> None:
         """Handle load search button click."""
@@ -318,7 +311,7 @@ class SearchFilterWidget(QWidget):
 
             items = [s.name for s in saved_searches]
             name, ok = QInputDialog.getItem(
-                self, "Load Search", "Select search to load:", items, 0, False
+                self, "加载搜索", "选择要加载的搜索:", items, 0, False
             )
             if ok and name:
                 # Find the saved search
@@ -330,9 +323,7 @@ class SearchFilterWidget(QWidget):
                     self._on_search_clicked()
 
         except Exception as e:
-            QMessageBox.critical(
-                self, "Error", f"Failed to load search: {str(e)}"
-            )
+            QMessageBox.critical(self, "Error", f"Failed to load search: {str(e)}")
 
     def get_criteria(self) -> SearchCriteria:
         """Build search criteria from current UI state."""
@@ -374,20 +365,17 @@ class SearchFilterWidget(QWidget):
 
         # Tags
         criteria.tags = [
-            item.data(Qt.UserRole)
-            for item in self.tags_list.selectedItems()
+            item.data(Qt.UserRole) for item in self.tags_list.selectedItems()
         ]
 
         # People
         criteria.people = [
-            item.data(Qt.UserRole)
-            for item in self.people_list.selectedItems()
+            item.data(Qt.UserRole) for item in self.people_list.selectedItems()
         ]
 
         # Collections
         criteria.collections = [
-            item.data(Qt.UserRole)
-            for item in self.collections_list.selectedItems()
+            item.data(Qt.UserRole) for item in self.collections_list.selectedItems()
         ]
 
         # Quick filter
@@ -404,9 +392,7 @@ class SearchFilterWidget(QWidget):
             "Added": "added",
             "Runtime": "runtime",
         }
-        criteria.sort_by = sort_fields.get(
-            self.sort_combo.currentText(), "title"
-        )
+        criteria.sort_by = sort_fields.get(self.sort_combo.currentText(), "title")
         criteria.sort_order = (
             "desc" if self.sort_order_combo.currentText() == "Descending" else "asc"
         )
@@ -450,9 +436,7 @@ class SearchFilterWidget(QWidget):
             "added": "Added",
             "runtime": "Runtime",
         }
-        self.sort_combo.setCurrentText(
-            sort_display.get(criteria.sort_by, "Title")
-        )
+        self.sort_combo.setCurrentText(sort_display.get(criteria.sort_by, "Title"))
         self.sort_order_combo.setCurrentText(
             "Descending" if criteria.sort_order == "desc" else "Ascending"
         )
@@ -470,9 +454,9 @@ class SearchFilterWidget(QWidget):
         self.tags_list.clearSelection()
         self.people_list.clearSelection()
         self.collections_list.clearSelection()
-        
+
         for btn in self.quick_filter_buttons.values():
             btn.setChecked(False)
-        
+
         self.sort_combo.setCurrentIndex(0)
         self.sort_order_combo.setCurrentIndex(0)
