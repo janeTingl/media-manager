@@ -6,6 +6,7 @@ This module provides common functionality and configuration for building
 """
 
 import platform
+import subprocess
 from pathlib import Path
 from typing import List, Optional
 
@@ -44,37 +45,65 @@ class BuildConfig:
         args = [
             "--clean",
             "--noconfirm",
-            "--name", APP_NAME,
+            "--name",
+            APP_NAME,
             "--onefile",
-            "--windowed" if not self.is_windows else "",  # Console on Windows for debugging
+            (
+                "--windowed" if not self.is_windows else ""
+            ),  # Console on Windows for debugging
         ]
 
         # Add platform-specific arguments
         if self.is_macos:
-            args.extend([
-                "--osx-bundle-identifier", f"com.mediamanager.{PROJECT_NAME}",
-                "--icon", "resources/icon.icns" if Path("resources/icon.icns").exists() else "",
-            ])
+            args.extend(
+                [
+                    "--osx-bundle-identifier",
+                    f"com.mediamanager.{PROJECT_NAME}",
+                    "--icon",
+                    (
+                        "resources/icon.icns"
+                        if Path("resources/icon.icns").exists()
+                        else ""
+                    ),
+                ]
+            )
         elif self.is_windows:
-            args.extend([
-                "--icon", "icon.ico" if Path("icon.ico").exists() else "",
-                "--add-data", "src/media_manager;media_manager",  # Include source
-                "--hidden-import", "PySide6.QtCore",
-                "--hidden-import", "PySide6.QtWidgets",
-                "--hidden-import", "PySide6.QtGui",
-                "--hidden-import", "sqlmodel",
-                "--hidden-import", "sqlalchemy",
-                "--hidden-import", "sqlalchemy.sql.default_comparator",
-                "--hidden-import", "alembic",
-                "--hidden-import", "requests",
-                "--hidden-import", "tenacity",
-                "--hidden-import", "openpyxl",
-                # Include Qt plugins
-                "--collect-all", "PySide6",
-                # Include multimedia backends if available
-                "--hidden-import", "PySide6.QtMultimedia",
-                "--hidden-import", "PySide6.QtMultimediaWidgets",
-            ])
+            args.extend(
+                [
+                    "--icon",
+                    "icon.ico" if Path("icon.ico").exists() else "",
+                    "--add-data",
+                    "src/media_manager;media_manager",  # Include source
+                    "--hidden-import",
+                    "PySide6.QtCore",
+                    "--hidden-import",
+                    "PySide6.QtWidgets",
+                    "--hidden-import",
+                    "PySide6.QtGui",
+                    "--hidden-import",
+                    "sqlmodel",
+                    "--hidden-import",
+                    "sqlalchemy",
+                    "--hidden-import",
+                    "sqlalchemy.sql.default_comparator",
+                    "--hidden-import",
+                    "alembic",
+                    "--hidden-import",
+                    "requests",
+                    "--hidden-import",
+                    "tenacity",
+                    "--hidden-import",
+                    "openpyxl",
+                    # Include Qt plugins
+                    "--collect-all",
+                    "PySide6",
+                    # Include multimedia backends if available
+                    "--hidden-import",
+                    "PySide6.QtMultimedia",
+                    "--hidden-import",
+                    "PySide6.QtMultimediaWidgets",
+                ]
+            )
 
         # Filter out empty strings
         return [arg for arg in args if arg]
@@ -83,18 +112,15 @@ class BuildConfig:
         """Get data files to include in the build."""
         data_files = []
 
-        # Include translation files if they exist
-        translations_dir = SRC_DIR / "media_manager" / "translations"
-        if translations_dir.exists():
-            data_files.append((str(translations_dir), "media_manager/translations"))
-
         # Include any resource files
         resources_dir = PROJECT_ROOT / "resources"
         if resources_dir.exists():
             for resource_file in resources_dir.rglob("*"):
                 if resource_file.is_file():
                     rel_path = resource_file.relative_to(resources_dir)
-                    data_files.append((str(resource_file), f"resources/{rel_path.parent}"))
+                    data_files.append(
+                        (str(resource_file), f"resources/{rel_path.parent}")
+                    )
 
         return data_files
 
@@ -184,7 +210,9 @@ if qt_plugins_path.exists():
 """
 
         # PYZ and EXE/APP configuration
-        spec_content = analysis_config + f"""
+        spec_content = (
+            analysis_config
+            + f"""
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
 exe = EXE(
@@ -206,6 +234,7 @@ exe = EXE(
     entitlements_file=None,
 )
 """
+        )
 
         # macOS app bundle configuration
         if self.is_macos:
@@ -275,10 +304,13 @@ app = BUNDLE(
 
         # Check if PyInstaller is available
         try:
-            import PyInstaller
+            import PyInstaller  # type: ignore[import-untyped]
+
             print(f"PyInstaller version: {PyInstaller.__version__}")
         except ImportError:
-            print("ERROR: PyInstaller not installed. Install with: pip install pyinstaller")
+            print(
+                "ERROR: PyInstaller not installed. Install with: pip install pyinstaller"
+            )
             return False
 
         # Check platform-specific requirements
@@ -299,10 +331,10 @@ def get_build_config(platform_name: Optional[str] = None) -> BuildConfig:
     return BuildConfig(platform_name)
 
 
-def run_command(cmd: List[str], cwd: Optional[Path] = None, check: bool = True) -> "subprocess.CompletedProcess":
+def run_command(
+    cmd: List[str], cwd: Optional[Path] = None, check: bool = True
+) -> subprocess.CompletedProcess:
     """Run a command and return the result."""
-    import subprocess
-
     print(f"Running: {' '.join(cmd)}")
     if cwd:
         print(f"Working directory: {cwd}")

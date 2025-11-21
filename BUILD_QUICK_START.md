@@ -17,7 +17,6 @@
 ### 功能
 
 ✅ 自动检查环境并安装依赖
-✅ 自动编译中文翻译文件
 ✅ 自动打包为独立可执行程序
 ✅ 自动生成便携版和安装包
 ✅ 完整的日志记录
@@ -103,7 +102,6 @@ Double-click: 一键构建.bat
 ### Features
 
 ✅ Auto environment check and dependency installation
-✅ Auto compile Chinese translation files
 ✅ Auto package as standalone executable
 ✅ Auto generate portable and installer packages
 ✅ Complete logging
@@ -183,13 +181,11 @@ Compare with hash in `BUILD_REPORT_*.txt`.
    ↓
 4. Clean Old Builds / 清理旧构建
    ↓
-5. Compile Translations / 编译中文翻译
+5. Build Executable / 构建可执行文件
    ↓
-6. Build Executable / 构建可执行文件
+6. Create Packages / 创建安装包
    ↓
-7. Create Packages / 创建安装包
-   ↓
-8. Generate Reports / 生成构建报告
+7. Generate Reports / 生成构建报告
    ↓
 ✓ Done! / 完成！
 ```

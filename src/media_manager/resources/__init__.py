@@ -1,1 +1,1 @@
-"""Resource package for translation and UI assets."""
+"""Resource package for UI assets."""
