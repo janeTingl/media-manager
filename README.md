@@ -63,7 +63,6 @@ python auto_build.py
 
 **自动构建功能包括：**
 - ✅ 自动检查和安装构建依赖
-- ✅ 自动编译中文翻译文件
 - ✅ 自动构建独立可执行文件
 - ✅ 自动创建便携版 ZIP 和安装程序
 - ✅ 完整的构建日志和文件完整性验证
@@ -232,7 +231,6 @@ media-manager/
 │       ├── main_window.py           # 主窗口
 │       ├── settings.py              # 设置管理
 │       ├── logging.py               # 日志配置
-│       ├── i18n.py                  # 国际化（中文）
 │       ├── services.py              # 依赖注入
 │       ├── persistence/             # 数据持久化
 │       │   ├── database.py         # 数据库管理
@@ -241,8 +239,7 @@ media-manager/
 │       │   ├── tmdb_provider.py    # TMDB API
 │       │   └── tvdb_provider.py    # TVDB API
 │       └── resources/               # 资源文件
-│           ├── icons/              # 图标
-│           └── i18n/               # 翻译文件
+│           └── icons/              # 图标
 ├── tests/                          # 测试文件
 │   ├── conftest.py                # Pytest 配置
 │   └── test_*.py                  # 各模块测试
