@@ -55,19 +55,19 @@ class BatchOperationsDialog(QDialog):
         self._apply_defaults()
 
     def _setup_ui(self) -> None:
-        self.setWindowTitle(self.tr("Batch Operations"))
+        self.setWindowTitle("批量操作")
         self.resize(520, 420)
 
         layout = QVBoxLayout(self)
 
         self.selection_label = QLabel(
-            self.tr("{count} items selected").format(count=len(self._items))
+            f"已选择 {len(self._items)} 项"
         )
         self.selection_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.selection_label)
 
         # Rename option
-        self.rename_checkbox = QCheckBox(self.tr("Rename using templates"))
+        self.rename_checkbox = QCheckBox("使用模板重命名")
         layout.addWidget(self.rename_checkbox)
 
         # Move option
@@ -76,7 +76,7 @@ class BatchOperationsDialog(QDialog):
         move_layout.setContentsMargins(0, 0, 0, 0)
         move_layout.setSpacing(8)
 
-        self.move_checkbox = QCheckBox(self.tr("Move to library"))
+        self.move_checkbox = QCheckBox("移动到媒体库")
         self.library_combo = QComboBox()
         self.library_combo.setEnabled(False)
         self.move_checkbox.toggled.connect(self.library_combo.setEnabled)
@@ -86,7 +86,7 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(move_container)
 
         # Delete option
-        self.delete_checkbox = QCheckBox(self.tr("Delete files (permanent)"))
+        self.delete_checkbox = QCheckBox("删除文件（永久）")
         layout.addWidget(self.delete_checkbox)
 
         # Tags assignment
@@ -95,9 +95,9 @@ class BatchOperationsDialog(QDialog):
         tags_layout.setContentsMargins(0, 0, 0, 0)
         tags_layout.setSpacing(8)
 
-        self.tags_checkbox = QCheckBox(self.tr("Assign tags"))
+        self.tags_checkbox = QCheckBox("分配标签")
         self.tags_edit = QLineEdit()
-        self.tags_edit.setPlaceholderText(self.tr("Comma-separated tags"))
+        self.tags_edit.setPlaceholderText("逗号分隔的标签")
         self.tags_edit.setEnabled(False)
         self.tags_checkbox.toggled.connect(self.tags_edit.setEnabled)
 
@@ -107,7 +107,7 @@ class BatchOperationsDialog(QDialog):
 
         # Metadata overrides
         self.metadata_checkbox = QCheckBox(
-            self.tr("Override metadata (genres, rating)")
+            "覆盖元数据（类型、评分）"
         )
         layout.addWidget(self.metadata_checkbox)
 
@@ -116,15 +116,15 @@ class BatchOperationsDialog(QDialog):
         metadata_layout.setContentsMargins(26, 0, 0, 0)
 
         self.genres_edit = QLineEdit()
-        self.genres_edit.setPlaceholderText(self.tr("Comma-separated genres"))
+        self.genres_edit.setPlaceholderText("逗号分隔的类型")
 
         self.rating_spin = QSpinBox()
         self.rating_spin.setRange(0, 100)
-        self.rating_spin.setSuffix(self.tr(" / 100"))
+        self.rating_spin.setSuffix(" / 100")
         self.rating_spin.setValue(0)
 
-        metadata_layout.addRow(self.tr("Genres"), self.genres_edit)
-        metadata_layout.addRow(self.tr("Rating"), self.rating_spin)
+        metadata_layout.addRow("类型", self.genres_edit)
+        metadata_layout.addRow("评分", self.rating_spin)
 
         self.metadata_fields_widget.setEnabled(False)
         self.metadata_checkbox.toggled.connect(self.metadata_fields_widget.setEnabled)
@@ -132,7 +132,7 @@ class BatchOperationsDialog(QDialog):
         layout.addWidget(self.metadata_fields_widget)
 
         # Provider re-sync
-        self.resync_checkbox = QCheckBox(self.tr("Re-sync metadata from providers"))
+        self.resync_checkbox = QCheckBox("从提供商重新同步元数据")
         layout.addWidget(self.resync_checkbox)
 
         # Progress section
@@ -164,7 +164,7 @@ class BatchOperationsDialog(QDialog):
         if not libraries:
             self.move_checkbox.setEnabled(False)
             self.library_combo.setEnabled(False)
-            self.move_checkbox.setToolTip(self.tr("No active libraries available"))
+            self.move_checkbox.setToolTip("没有可用的活动媒体库")
 
     def _apply_defaults(self) -> None:
         defaults = self._settings.get_batch_defaults()
@@ -218,8 +218,8 @@ class BatchOperationsDialog(QDialog):
         if not self._has_selected_operations(config):
             QMessageBox.information(
                 self,
-                self.tr("No Operations"),
-                self.tr("Select at least one batch operation to apply."),
+                "无操作",
+                "请选择至少一个批量操作。",
             )
             return
 
@@ -229,16 +229,16 @@ class BatchOperationsDialog(QDialog):
         ):
             QMessageBox.warning(
                 self,
-                self.tr("Select Library"),
-                self.tr("Choose a target library for the move operation."),
+                "选择媒体库",
+                "请选择移动操作的目标媒体库。",
             )
             return
 
         if config.delete_files:
             confirm = QMessageBox.question(
                 self,
-                self.tr("Confirm Deletion"),
-                self.tr("This will permanently delete the selected files. Continue?"),
+                "确认删除",
+                "这将永久删除所选文件。是否继续？",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No,
             )
@@ -293,7 +293,7 @@ class BatchOperationsDialog(QDialog):
     def _execute_operations(self, config: BatchOperationConfig) -> None:
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
-        self.status_label.setText(self.tr("Starting batch operations..."))
+        self.status_label.setText("正在开始批量操作...")
 
         def progress_callback(current: int, total: int, message: str) -> None:
             self.progress_bar.setMaximum(total)
@@ -304,15 +304,15 @@ class BatchOperationsDialog(QDialog):
         try:
             summary = self._service.perform(self._items, config, progress_callback)
         except Exception as exc:  # pragma: no cover - UI feedback path
-            QMessageBox.critical(self, self.tr("Batch Operation Failed"), str(exc))
-            self.status_label.setText(self.tr("Batch operation failed"))
+            QMessageBox.critical(self, "批量操作失败", str(exc))
+            self.status_label.setText("批量操作失败")
             return
 
-        self.status_label.setText(self.tr("Batch operations completed"))
+        self.status_label.setText("批量操作已完成")
         QMessageBox.information(
             self,
-            self.tr("Batch Operations"),
-            summary.to_message() or self.tr("Completed"),
+            "批量操作",
+            summary.to_message() or "已完成",
         )
         self.operations_completed.emit(summary)
         self.accept()

@@ -8,11 +8,10 @@ from typing import Any, cast
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
-from media_manager.i18n import DEFAULT_LANGUAGE
-
 DEFAULT_SETTINGS_PATH = Path.home() / ".media-manager" / "settings.json"
 
 # 固定使用简体中文
+DEFAULT_LANGUAGE = "zh_CN"
 SUPPORTED_UI_LANGUAGES: tuple[str, ...] = ("zh_CN",)
 
 LIBRARY_DOMAIN = "library_settings"

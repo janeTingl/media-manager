@@ -32,8 +32,6 @@ BUILD_DIR = PROJECT_ROOT / "build"
 DIST_DIR = PROJECT_ROOT / "dist"
 PACKAGE_DIR = PROJECT_ROOT / "package"
 LOG_DIR = PROJECT_ROOT / "build_logs"
-TRANSLATIONS_DIR = SRC_DIR / "media_manager" / "resources" / "i18n"
-TRANSLATIONS_SRC_DIR = PROJECT_ROOT / "translations" / "i18n"
 
 APP_NAME = "影藏·媒体管理器"
 APP_NAME_EN = "MediaManager"
@@ -332,86 +330,6 @@ class AutoBuildSystem:
         except Exception as e:
             self.log_step("清理旧构建", "failed", str(e))
             raise
-
-    def compile_translations(self):
-        """5. 编译中文翻译文件"""
-        self.log_step("编译中文翻译", "started")
-
-        try:
-            # 确保翻译目录存在
-            TRANSLATIONS_DIR.mkdir(parents=True, exist_ok=True)
-
-            # 查找所有 .ts 文件
-            ts_files = (
-                list(TRANSLATIONS_SRC_DIR.glob("*.ts"))
-                if TRANSLATIONS_SRC_DIR.exists()
-                else []
-            )
-
-            if not ts_files:
-                logger.warning("未找到翻译源文件 (.ts)")
-                logger.info("检查是否已有编译好的 .qm 文件...")
-
-                qm_files = list(TRANSLATIONS_DIR.glob("*.qm"))
-                if qm_files:
-                    logger.info(f"✓ 找到 {len(qm_files)} 个已编译的翻译文件")
-                    for qm_file in qm_files:
-                        logger.info(f"  - {qm_file.name}")
-                    self.log_step(
-                        "编译中文翻译",
-                        "completed",
-                        f"使用现有的 {len(qm_files)} 个翻译文件",
-                    )
-                    return True
-                else:
-                    logger.warning("⚠ 未找到任何翻译文件，将使用英文界面")
-                    self.log_step(
-                        "编译中文翻译", "completed", "未找到翻译文件，使用默认语言"
-                    )
-                    return True
-
-            # 编译翻译文件
-            compiled_count = 0
-            for ts_file in ts_files:
-                qm_file = TRANSLATIONS_DIR / ts_file.name.replace(".ts", ".qm")
-                logger.info(f"编译: {ts_file.name} -> {qm_file.name}")
-
-                try:
-                    # 尝试使用 pyside6-lrelease
-                    self.run_command(
-                        ["pyside6-lrelease", str(ts_file), "-qm", str(qm_file)]
-                    )
-                    logger.info(f"✓ 编译成功: {qm_file.name}")
-                    compiled_count += 1
-                except Exception as e:
-                    logger.warning(f"使用 pyside6-lrelease 失败: {e}")
-
-                    # 尝试使用 lrelease
-                    try:
-                        self.run_command(
-                            ["lrelease", str(ts_file), "-qm", str(qm_file)]
-                        )
-                        logger.info(f"✓ 编译成功 (lrelease): {qm_file.name}")
-                        compiled_count += 1
-                    except Exception as e2:
-                        logger.error(f"编译失败: {ts_file.name}: {e2}")
-
-            if compiled_count > 0:
-                logger.info(f"✓ 成功编译 {compiled_count} 个翻译文件")
-                self.log_step(
-                    "编译中文翻译", "completed", f"编译了 {compiled_count} 个翻译文件"
-                )
-            else:
-                logger.warning("未能编译任何翻译文件")
-                self.log_step("编译中文翻译", "completed", "未编译新文件，使用现有翻译")
-
-            return True
-
-        except Exception as e:
-            self.log_step("编译中文翻译", "failed", str(e))
-            # 不抛出异常，允许构建继续
-            logger.warning("翻译编译失败，但构建将继续")
-            return False
 
     def build_executable(self):
         """6. 构建可执行文件"""
@@ -846,10 +764,7 @@ end;
             # 4. 清理旧构建
             self.clean_old_builds()
 
-            # 5. 编译翻译文件
-            self.compile_translations()
-
-            # 6. 构建可执行文件
+            # 5. 构建可执行文件
             exe_path = self.build_executable()
 
             # 7a. 创建便携版包
@@ -913,10 +828,9 @@ Automatic Build and Packaging System
   2. ✓ 自动安装 PyInstaller
   3. ✓ 自动生成版本号
   4. ✓ 自动清理旧构建
-  5. ✓ 自动编译中文翻译
-  6. ✓ 自动构建可执行文件
-  7. ✓ 自动创建安装包
-  8. ✓ 全过程日志记录
+  5. ✓ 自动构建可执行文件
+  6. ✓ 自动创建安装包
+  7. ✓ 全过程日志记录
 
 {'='*70}
 """

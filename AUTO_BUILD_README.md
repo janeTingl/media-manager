@@ -10,7 +10,6 @@
 ✅ **自动安装 PyInstaller** - 自动安装或更新 PyInstaller
 ✅ **自动生成版本号** - 从代码或 Git 标签自动获取版本号
 ✅ **自动清理旧构建** - 清理之前的构建文件和缓存
-✅ **自动编译中文翻译** - 编译 Qt 翻译文件，确保中文界面
 ✅ **自动构建可执行文件** - 使用 PyInstaller 打包单文件 EXE
 ✅ **自动创建便携版** - 生成免安装的便携版压缩包
 ✅ **自动生成安装包** - 使用 Inno Setup 创建专业安装程序
@@ -81,12 +80,7 @@ python auto_build.py
    ├─ 删除 package 目录
    └─ 清理 __pycache__
 
-5. 编译中文翻译
-   ├─ 查找 .ts 翻译源文件
-   ├─ 使用 pyside6-lrelease 编译
-   └─ 生成 .qm 运行时文件
-
-6. 构建可执行文件
+5. 构建可执行文件
    ├─ 读取 spec 配置文件
    ├─ 运行 PyInstaller
    ├─ 验证生成的文件
@@ -236,19 +230,7 @@ shasum -a 256 MediaManager.exe
   pip install pyinstaller
   ```
 
-#### 3. 翻译文件编译失败
-```
-警告: 使用 pyside6-lrelease 失败
-```
-
-**解决方案：**
-- 这是非关键错误，构建会继续
-- 如需中文界面，请确保已安装 PySide6：
-  ```bash
-  pip install PySide6
-  ```
-
-#### 4. 未找到 Inno Setup
+#### 3. 未找到 Inno Setup
 ```
 警告: 未找到 Inno Setup，无法创建安装程序
 ```
