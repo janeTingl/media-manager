@@ -2,6 +2,8 @@
 
 一款基于 PySide6 开发的现代化媒体管理应用程序。
 
+> 📚 **[完整使用指南](docs/使用指南.md)** | 📖 [帮助中心](docs/HELP_QUICK_REFERENCE.md) | 🚀 [快速入门](docs/zh-CN/quick-start.html)
+
 ## 项目简介
 
 影藏·媒体管理器是一款功能强大的跨平台媒体资源管理工具，帮助您轻松整理、分类和管理影视资源。支持自动识别媒体信息、智能重命名、海报下载等功能。
@@ -102,6 +104,8 @@ pip install -e .
 
 ## 使用方法
 
+> 📖 **完整使用指南**：查看 [docs/使用指南.md](docs/使用指南.md) 获取详细的功能说明和使用教程。
+
 ### 启动应用
 
 #### 开发模式
@@ -128,6 +132,8 @@ python src/media_manager/main.py
 1. **设置 API 密钥** - 配置 TMDB/TVDB API 密钥（可选，用于自动识别）
 2. **创建媒体库** - 指定媒体文件存储位置
 3. **配置扫描选项** - 设置自动扫描和监控选项
+
+详细的首次使用说明请参考 [使用指南 - 快速开始](docs/使用指南.md#快速开始)。
 
 ### 主要功能使用
 
@@ -383,7 +389,9 @@ python build.py --platform macos --package
 
 ## 获取帮助
 
-- **应用内帮助**：点击 **帮助 → 帮助中心**
+- **完整使用指南**：查看 [docs/使用指南.md](docs/使用指南.md) - 包含详细的功能说明、使用教程和故障排除
+- **应用内帮助**：点击 **帮助 → 帮助中心**（或按 `F1`）
+- **快速参考**：查看 [docs/HELP_QUICK_REFERENCE.md](docs/HELP_QUICK_REFERENCE.md)
 - **问题反馈**：在 GitHub Issues 中提交问题
 - **功能建议**：在 GitHub Discussions 中讨论
 
