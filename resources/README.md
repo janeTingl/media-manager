@@ -1,25 +1,25 @@
-# Resources Directory
+# 资源目录
 
-This directory contains resources used by the 影藏·媒体管理器 application and build process.
+本目录包含影藏·媒体管理器应用程序和构建过程使用的资源。
 
-## Icons
+## 图标
 
-- `icon.png` - High-resolution PNG icon (512x512)
-- `icon.ico` - Windows icon file
-- `icon.icns` - macOS icon file
+- `icon.png` - 高分辨率 PNG 图标（512x512）
+- `icon.ico` - Windows 图标文件
+- `icon.icns` - macOS 图标文件
 
-## Other Resources
+## 其他资源
 
-- Any additional images, sounds, or data files needed by the application
+- 应用程序所需的任何额外图片、声音或数据文件
 
-## Icon Creation
+## 图标创建
 
-To create proper icons for distribution:
+为发布版本创建适当的图标：
 
-1. Create a 512x512 PNG image
-2. Convert to platform-specific formats:
-   - Windows: Use GIMP or online converter to create .ico file
-   - macOS: Use `iconutil` command to create .icns file:
+1. 创建 512x512 PNG 图像
+2. 转换为特定平台格式：
+   - Windows：使用 GIMP 或在线转换器创建 .ico 文件
+   - macOS：使用 `iconutil` 命令创建 .icns 文件：
      ```bash
      mkdir icon.iconset
      sips -z 16 16 icon.png --out icon.iconset/icon_16x16.png
@@ -34,6 +34,6 @@ To create proper icons for distribution:
      iconutil -c icns icon.iconset
      ```
 
-## Current Status
+## 当前状态
 
-For now, the build process will work without icons, but will show default system icons.
+目前，构建过程在没有图标的情况下也能工作，但会显示默认的系统图标。

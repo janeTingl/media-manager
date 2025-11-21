@@ -6,11 +6,63 @@
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
         h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <h1>导入与导出</h1>
-    <p>此主题的中文说明仍在准备阶段，感谢你的耐心等候。</p>
-    <p>可先阅读英文原文：<a href="../en/import-export.html">Import &amp; Export</a></p>
+    
+    <p>影藏·媒体管理器支持导入和导出媒体库数据，便于备份和迁移。</p>
+    
+    <h2>导出媒体</h2>
+    <p>选择 <strong>编辑 → 导出媒体</strong> 或按 <strong>Ctrl+E</strong>。</p>
+    
+    <h3>导出格式</h3>
+    <ul>
+        <li><strong>JSON 格式：</strong> 完整的媒体库数据，包含所有元数据</li>
+        <li><strong>NFO 文件：</strong> Kodi/Jellyfin 兼容的元数据文件</li>
+        <li><strong>CSV 格式：</strong> 表格数据，可用 Excel 打开</li>
+    </ul>
+    
+    <h3>导出选项</h3>
+    <ul>
+        <li>选择要导出的媒体库</li>
+        <li>包含/排除特定字段</li>
+        <li>导出海报和图片</li>
+        <li>选择导出位置</li>
+    </ul>
+    
+    <h2>导入媒体</h2>
+    <p>选择 <strong>编辑 → 导入媒体</strong> 或按 <strong>Ctrl+I</strong>。</p>
+    
+    <h3>支持的导入格式</h3>
+    <ul>
+        <li><strong>JSON 格式：</strong> 从之前的导出文件恢复</li>
+        <li><strong>NFO 文件：</strong> 从 Kodi/Jellyfin 导入元数据</li>
+        <li><strong>CSV 格式：</strong> 从电子表格批量导入</li>
+    </ul>
+    
+    <h3>导入选项</h3>
+    <ul>
+        <li>合并或替换现有数据</li>
+        <li>处理重复项</li>
+        <li>验证导入的数据</li>
+    </ul>
+    
+    <h2>备份策略</h2>
+    <p>建议定期备份媒体库：</p>
+    <ul>
+        <li>每月导出完整的媒体库数据</li>
+        <li>在重大更改前创建备份</li>
+        <li>将备份文件存储在安全位置</li>
+    </ul>
+    
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="library-setup.html">媒体库设置</a></li>
+        <li><a href="batch-operations.html">批量操作</a></li>
+    </ul>
 </body>
 </html>
