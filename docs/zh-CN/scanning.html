@@ -6,11 +6,63 @@
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
         h1 { color: #2c3e50; }
+        h2 { color: #34495e; margin-top: 20px; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <h1>扫描媒体</h1>
-    <p>我们正在撰写此章节的中文内容，敬请期待。</p>
-    <p>英文版本可在这里找到：<a href="../en/scanning.html">Scanning Media</a></p>
+    
+    <p>扫描功能可自动检测媒体库中的文件并与在线数据库匹配。</p>
+    
+    <h2>开始扫描</h2>
+    <ol>
+        <li>在左侧面板选择媒体库</li>
+        <li>应用程序会自动扫描该媒体库的文件夹</li>
+        <li>检测到的文件将显示在 <strong>匹配</strong> 标签页中</li>
+    </ol>
+    
+    <h2>自动匹配</h2>
+    <p>扫描过程中，应用程序会：</p>
+    <ul>
+        <li>从文件名提取标题、年份等信息</li>
+        <li>在 TMDB/TVDB 数据库中搜索匹配项</li>
+        <li>自动下载元数据和海报（如已启用）</li>
+        <li>将匹配结果添加到队列</li>
+    </ul>
+    
+    <h2>手动匹配</h2>
+    <p>如果自动匹配不准确：</p>
+    <ol>
+        <li>在匹配队列中选择项目</li>
+        <li>在右侧面板查看匹配建议</li>
+        <li>选择正确的匹配项</li>
+        <li>或手动搜索其他结果</li>
+    </ol>
+    
+    <h2>完成匹配</h2>
+    <p>审查所有匹配结果后：</p>
+    <ol>
+        <li>点击 <strong>完成匹配</strong> 按钮</li>
+        <li>选择后处理选项（重命名文件、下载图片等）</li>
+        <li>确认并应用更改</li>
+    </ol>
+    
+    <h2>扫描选项</h2>
+    <p>在 <strong>编辑 → 首选项 → 扫描</strong> 中配置：</p>
+    <ul>
+        <li>支持的文件类型</li>
+        <li>最小文件大小</li>
+        <li>自动匹配阈值</li>
+        <li>排除文件夹</li>
+    </ul>
+    
+    <h2>相关主题</h2>
+    <ul>
+        <li><a href="library-setup.html">媒体库设置</a></li>
+        <li><a href="metadata-editing.html">编辑元数据</a></li>
+        <li><a href="preferences.html">首选项设置</a></li>
+    </ul>
 </body>
 </html>

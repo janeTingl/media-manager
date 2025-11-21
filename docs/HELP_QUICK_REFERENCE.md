@@ -1,140 +1,138 @@
-# Help System Quick Reference
+# 帮助系统快速参考
 
-## User Guide
+## 用户指南
 
-### Accessing Help
+### 访问帮助
 
-| Action | Method |
-|--------|--------|
-| Open Help Center | Press **F1** or select **Help → Help Center** |
-| Context-Sensitive Help | Press **F1** while on any screen |
-| Run Onboarding | Select **Help → Show Onboarding Wizard** |
+| 操作 | 方法 |
+|------|------|
+| 打开帮助中心 | 按 **F1** 或选择 **帮助 → 帮助中心** |
+| 上下文相关帮助 | 在任何界面按 **F1** |
+| 运行新手引导 | 选择 **帮助 → 显示新手引导向导** |
 
-### Navigation
+### 导航
 
-| Key | Action |
-|-----|--------|
-| **F1** | Open help center |
-| **Ctrl+F** | Focus search box |
-| **Alt+Left** or **Back** | Navigate back |
-| **Alt+Right** or **Forward** | Navigate forward |
-| **Esc** | Close help center |
+| 按键 | 操作 |
+|-----|------|
+| **F1** | 打开帮助中心 |
+| **Ctrl+F** | 聚焦搜索框 |
+| **Alt+Left** 或 **后退** | 向后导航 |
+| **Alt+Right** 或 **前进** | 向前导航 |
+| **Esc** | 关闭帮助中心 |
 
-### Search Tips
+### 搜索技巧
 
-- Search by topic title
-- Search by keywords
-- Search is case-insensitive
-- Clear search to show all topics
+- 按主题标题搜索
+- 按关键词搜索
+- 搜索不区分大小写
+- 清除搜索以显示所有主题
 
-## Developer Guide
+## 开发者指南
 
-### File Structure
+### 文件结构
 
 ```
 docs/
-  zh-CN/                  # Simplified Chinese locale
-    index.json            # Topic index
-    *.html                # Help pages
+  zh-CN/                  # 简体中文语言环境
+    index.json            # 主题索引
+    *.html                # 帮助页面
 
 src/media_manager/
-  help_center_dialog.py   # Help center implementation
-  onboarding_wizard.py    # Onboarding wizard
+  help_center_dialog.py   # 帮助中心实现
+  onboarding_wizard.py    # 新手引导向导
 
 tests/
-  test_help_center.py     # Tests
+  test_help_center.py     # 测试
 ```
 
-### Adding a New Help Topic
+### 添加新的帮助主题
 
-1. **Create HTML file** in `docs/zh-CN/`:
+1. **在 `docs/zh-CN/` 创建 HTML 文件**：
    ```html
    <!DOCTYPE html>
    <html>
    <head>
        <meta charset="UTF-8">
-       <title>Your Topic</title>
+       <title>您的主题</title>
        <style>
            body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
            h1 { color: #2c3e50; }
        </style>
    </head>
    <body>
-       <h1>Your Topic</h1>
-       <p>Content here...</p>
-       <a href="other-topic.html">Link to other topic</a>
+       <h1>您的主题</h1>
+       <p>内容...</p>
+       <a href="other-topic.html">链接到其他主题</a>
    </body>
    </html>
    ```
 
-2. **Add to index.json**:
+2. **添加到 index.json**：
    ```json
    {
      "id": "your-topic",
-     "title": "Your Topic",
+     "title": "您的主题",
      "file": "your-topic.html",
-     "keywords": ["keyword1", "keyword2"]
+     "keywords": ["关键词1", "关键词2"]
    }
    ```
 
-3. **Link from other pages**:
+3. **从其他页面链接**：
    ```html
-   <a href="your-topic.html">Your Topic</a>
+   <a href="your-topic.html">您的主题</a>
    ```
 
-### Localization Policy
+### 本地化政策
 
-Simplified Chinese (`zh-CN`) is the only supported locale. Keep all help
-content under `docs/zh-CN/` synced with the application's features. Additional
-translations are not distributed with the product.
+简体中文（`zh-CN`）是唯一支持的语言环境。保持 `docs/zh-CN/` 下的所有帮助内容与应用程序的功能同步。产品不提供其他语言的翻译。
 
-### Testing
+### 测试
 
 ```bash
-# Validate help system
+# 验证帮助系统
 python3 validate_help.py
 
-# Run tests
+# 运行测试
 pytest tests/test_help_center.py -v
 
-# Compile check
+# 编译检查
 python3 -m py_compile src/media_manager/help_center_dialog.py
 python3 -m py_compile src/media_manager/onboarding_wizard.py
 ```
 
-### Context Mapping
+### 上下文映射
 
-Edit `main_window.py` to add/modify context mappings:
+编辑 `main_window.py` 以添加/修改上下文映射：
 
 ```python
 topic_map = {
-    0: "library-setup",      # Library tab
-    1: "search",             # Search tab  
-    2: "welcome",            # Dashboard tab
-    3: "metadata-editing",   # Metadata editor tab
-    4: "scanning",           # Matching/scan queue tab
+    0: "library-setup",      # 媒体库标签页
+    1: "search",             # 搜索标签页
+    2: "welcome",            # 仪表板标签页
+    3: "metadata-editing",   # 元数据编辑器标签页
+    4: "scanning",           # 匹配/扫描队列标签页
 }
 ```
 
-## API Reference
+## API 参考
 
 ### HelpCenterDialog
 
 ```python
 from src.media_manager.help_center_dialog import HelpCenterDialog
 
-# Open with default topic
+# 使用默认主题打开
 dialog = HelpCenterDialog()
 dialog.exec()
 
-# Open with specific topic
+# 使用特定主题打开
 dialog = HelpCenterDialog(initial_topic="library-setup")
 dialog.exec()
 
-# Show topic programmatically
+# 以编程方式显示主题
 dialog.show_topic("providers")
 
-# Change locale (zh-CN is the only supported option)
+# 更改语言环境（zh-CN 是唯一支持的选项）
 dialog.set_locale("zh-CN")
 ```
 
@@ -145,7 +143,7 @@ from src.media_manager.onboarding_wizard import OnboardingWizard
 
 wizard = OnboardingWizard(settings)
 if wizard.exec():
-    # User completed wizard
+    # 用户完成了向导
     pass
 ```
 
@@ -156,71 +154,71 @@ from src.media_manager.settings import get_settings
 
 settings = get_settings()
 
-# Language settings (zh-CN only)
-locale = settings.get_language()           # Get UI language
-settings.set_language("zh-CN")             # Reapply UI language
+# 语言设置（仅支持 zh-CN）
+locale = settings.get_language()           # 获取界面语言
+settings.set_language("zh-CN")             # 重新应用界面语言
 
-# Help locale (mirrors UI language)
-help_locale = settings.get_help_locale()   # Get help locale
-settings.set_help_locale("zh-CN")          # Reapply help locale
+# 帮助语言环境（镜像界面语言）
+help_locale = settings.get_help_locale()   # 获取帮助语言环境
+settings.set_help_locale("zh-CN")          # 重新应用帮助语言环境
 
-# Onboarding
+# 新手引导
 completed = settings.get("onboarding_completed", False)
 settings.set("onboarding_completed", True)
 ```
 
-## Troubleshooting
+## 故障排除
 
-### Help files not loading
+### 帮助文件无法加载
 
-**Problem**: Help center shows "Error" or blank content
+**问题**：帮助中心显示"错误"或空白内容
 
-**Solution**:
-1. Check that `docs/zh-CN/` directory exists
-2. Verify `index.json` is valid JSON
-3. Ensure HTML files exist and are readable
-4. Run `python3 validate_help.py`
+**解决方案**：
+1. 检查 `docs/zh-CN/` 目录是否存在
+2. 验证 `index.json` 是否为有效的 JSON
+3. 确保 HTML 文件存在且可读
+4. 运行 `python3 validate_help.py`
 
-### Onboarding not showing on first run
+### 首次运行时新手引导未显示
 
-**Problem**: Onboarding wizard doesn't appear
+**问题**：新手引导向导未出现
 
-**Solution**:
-1. Delete or clear settings file
-2. Or set `onboarding_completed` to `false` in settings
-3. Restart application
+**解决方案**：
+1. 删除或清除设置文件
+2. 或在设置中将 `onboarding_completed` 设置为 `false`
+3. 重启应用程序
 
-### Context help shows wrong topic
+### 上下文帮助显示错误的主题
 
-**Problem**: F1 opens incorrect help topic
+**问题**：F1 打开了错误的帮助主题
 
-**Solution**:
-1. Check topic mapping in `main_window.py`
-2. Verify topic ID exists in `index.json`
-3. Update `_open_context_help()` method
+**解决方案**：
+1. 检查 `main_window.py` 中的主题映射
+2. 验证主题 ID 是否存在于 `index.json` 中
+3. 更新 `_open_context_help()` 方法
 
-### Broken links in help
+### 帮助中的链接损坏
 
-**Problem**: Clicking links shows "not found"
+**问题**：点击链接显示"未找到"
 
-**Solution**:
-1. Run `python3 validate_help.py` to check links
-2. Verify target file exists in `docs/zh-CN/`
-3. Ensure filename matches exactly (case-sensitive)
-4. Check that target is listed in `index.json`
+**解决方案**：
+1. 运行 `python3 validate_help.py` 检查链接
+2. 验证目标文件是否存在于 `docs/zh-CN/` 中
+3. 确保文件名完全匹配（区分大小写）
+4. 检查目标是否列在 `index.json` 中
 
-## Common Customizations
+## 常见自定义
 
-### Change help window size
+### 更改帮助窗口大小
 
-Edit `help_center_dialog.py`:
+编辑 `help_center_dialog.py`：
 ```python
-self.resize(900, 700)  # width, height
+self.resize(900, 700)  # 宽度, 高度
 ```
 
-### Add custom CSS to help pages
+### 向帮助页面添加自定义 CSS
 
-Add to HTML `<style>` section:
+添加到 HTML `<style>` 部分：
 ```html
 <style>
     body { font-family: Arial, sans-serif; }
@@ -228,41 +226,39 @@ Add to HTML `<style>` section:
 </style>
 ```
 
-### Modify onboarding pages
+### 修改新手引导页面
 
-Edit `onboarding_wizard.py`:
-- Modify existing pages: `WelcomePage`, `LibrarySetupPage`, etc.
-- Add new pages: Create new `QWizardPage` subclass
-- Change order: Adjust `addPage()` calls in `__init__`
+编辑 `onboarding_wizard.py`：
+- 修改现有页面：`WelcomePage`、`LibrarySetupPage` 等
+- 添加新页面：创建新的 `QWizardPage` 子类
+- 更改顺序：调整 `__init__` 中的 `addPage()` 调用
 
-### Skip onboarding on first run
+### 首次运行时跳过新手引导
 
-In `main_window.py`, comment out:
+在 `main_window.py` 中，注释掉：
 ```python
 # self._check_first_run()
 ```
 
-Or in settings, set:
+或在设置中设置：
 ```python
 settings.set("onboarding_completed", True)
 ```
 
-## Best Practices
+## 最佳实践
 
-### For Documentation Authors
+### 对于文档作者
 
-1. **Keep it simple**: Use clear, concise language
-2. **Add keywords**: Help users find topics via search
-3. **Use examples**: Show practical usage
-4. **Link related topics**: Help users discover related content
-5. **Test links**: Run validation script regularly
+1. **保持简单**：使用清晰简洁的语言
+2. **添加关键词**：帮助用户通过搜索找到主题
+3. **使用示例**：展示实际用法
+4. **链接相关主题**：帮助用户发现相关内容
+5. **测试链接**：定期运行验证脚本
 
-### For Developers
+### 对于开发者
 
-1. **Validate changes**: Run `validate_help.py` after modifications
-2. **Test navigation**: Ensure all links work
-3. **Update tests**: Add tests for new topics
-4. **Document context**: Update context mappings
-5. **Maintain index**: Keep `index.json` synchronized
-
-
+1. **验证更改**：修改后运行 `validate_help.py`
+2. **测试导航**：确保所有链接正常工作
+3. **更新测试**：为新主题添加测试
+4. **记录上下文**：更新上下文映射
+5. **维护索引**：保持 `index.json` 同步
