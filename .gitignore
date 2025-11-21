@@ -29,7 +29,8 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-*.spec
+# Keep spec files for project configuration
+# *.spec
 
 # Installer logs
 pip-log.txt
@@ -137,3 +138,13 @@ Thumbs.db
 # Application specific
 settings.json
 logs/
+
+# Build system outputs
+package/
+build_logs/
+*.exe
+*.app
+*.dmg
+*.deb
+*.rpm
+*.iss
