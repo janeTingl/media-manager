@@ -47,51 +47,47 @@ class LibraryFormWidget(QWidget):
 
         # Name field
         self.name_edit = QLineEdit()
-        self.name_edit.setPlaceholderText(self.tr("e.g., My Movie Collection"))
-        layout.addRow(self.tr("Name:"), self.name_edit)
+        self.name_edit.setPlaceholderText("例如：我的电影收藏")
+        layout.addRow("名称：", self.name_edit)
 
         # Path field
         path_layout = QHBoxLayout()
         self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText(self.tr("/path/to/media/folder"))
+        self.path_edit.setPlaceholderText("/path/to/media/folder")
         path_layout.addWidget(self.path_edit)
-        self.browse_button = QPushButton(self.tr("Browse..."))
+        self.browse_button = QPushButton("浏览...")
         self.browse_button.clicked.connect(self._on_browse_path)
         path_layout.addWidget(self.browse_button)
-        layout.addRow(self.tr("Library Path:"), path_layout)
+        layout.addRow("媒体库路径：", path_layout)
 
         # Media type combo
         self.media_type_combo = QComboBox()
-        self.media_type_combo.addItems(
-            [self.tr("movie"), self.tr("tv"), self.tr("mixed")]
-        )
-        layout.addRow(self.tr("Media Type:"), self.media_type_combo)
+        self.media_type_combo.addItems(["电影", "电视", "混合"])
+        layout.addRow("媒体类型：", self.media_type_combo)
 
         # Default destination field
         dest_layout = QHBoxLayout()
         self.default_dest_edit = QLineEdit()
-        self.default_dest_edit.setPlaceholderText(
-            self.tr("/path/to/destination (optional)")
-        )
+        self.default_dest_edit.setPlaceholderText("/path/to/destination（可选）")
         dest_layout.addWidget(self.default_dest_edit)
-        self.browse_dest_button = QPushButton(self.tr("Browse..."))
+        self.browse_dest_button = QPushButton("浏览...")
         self.browse_dest_button.clicked.connect(self._on_browse_destination)
         dest_layout.addWidget(self.browse_dest_button)
-        layout.addRow(self.tr("Default Destination:"), dest_layout)
+        layout.addRow("默认目标位置：", dest_layout)
 
         # Scan roots group
-        scan_group = QGroupBox(self.tr("Scan Roots"))
+        scan_group = QGroupBox("扫描根目录")
         scan_layout = QVBoxLayout(scan_group)
 
         self.scan_roots_list = QListWidget()
         scan_layout.addWidget(self.scan_roots_list)
 
         scan_buttons_layout = QHBoxLayout()
-        self.add_scan_root_button = QPushButton(self.tr("Add Root..."))
+        self.add_scan_root_button = QPushButton("添加根目录...")
         self.add_scan_root_button.clicked.connect(self._on_add_scan_root)
         scan_buttons_layout.addWidget(self.add_scan_root_button)
 
-        self.remove_scan_root_button = QPushButton(self.tr("Remove"))
+        self.remove_scan_root_button = QPushButton("移除")
         self.remove_scan_root_button.clicked.connect(self._on_remove_scan_root)
         scan_buttons_layout.addWidget(self.remove_scan_root_button)
         scan_layout.addLayout(scan_buttons_layout)
@@ -100,29 +96,29 @@ class LibraryFormWidget(QWidget):
 
         # Color picker
         color_layout = QHBoxLayout()
-        self.color_label = QLabel(self.tr("No color selected"))
+        self.color_label = QLabel("未选择颜色")
         self.color_label.setStyleSheet("padding: 5px; border: 1px solid gray;")
         color_layout.addWidget(self.color_label)
-        self.pick_color_button = QPushButton(self.tr("Pick Color..."))
+        self.pick_color_button = QPushButton("选择颜色...")
         self.pick_color_button.clicked.connect(self._on_pick_color)
         color_layout.addWidget(self.pick_color_button)
-        layout.addRow(self.tr("Color:"), color_layout)
+        layout.addRow("颜色：", color_layout)
 
         # Active checkbox
-        self.active_checkbox = QCheckBox(self.tr("Active"))
+        self.active_checkbox = QCheckBox("活动")
         self.active_checkbox.setChecked(True)
-        layout.addRow(self.tr("Status:"), self.active_checkbox)
+        layout.addRow("状态：", self.active_checkbox)
 
         # Description field
         self.description_edit = QTextEdit()
-        self.description_edit.setPlaceholderText(self.tr("Optional description..."))
+        self.description_edit.setPlaceholderText("可选描述...")
         self.description_edit.setMaximumHeight(80)
-        layout.addRow(self.tr("Description:"), self.description_edit)
+        layout.addRow("描述：", self.description_edit)
 
     def _on_browse_path(self) -> None:
         """Handle browse path button click."""
         folder = QFileDialog.getExistingDirectory(
-            self, self.tr("Select Library Path"), self.path_edit.text()
+            self, "选择媒体库路径", self.path_edit.text()
         )
         if folder:
             self.path_edit.setText(folder)
@@ -130,14 +126,14 @@ class LibraryFormWidget(QWidget):
     def _on_browse_destination(self) -> None:
         """Handle browse destination button click."""
         folder = QFileDialog.getExistingDirectory(
-            self, self.tr("Select Default Destination"), self.default_dest_edit.text()
+            self, "选择默认目标位置", self.default_dest_edit.text()
         )
         if folder:
             self.default_dest_edit.setText(folder)
 
     def _on_add_scan_root(self) -> None:
         """Handle add scan root button click."""
-        folder = QFileDialog.getExistingDirectory(self, self.tr("Select Scan Root"))
+        folder = QFileDialog.getExistingDirectory(self, "选择扫描根目录")
         if folder:
             self.scan_roots_list.addItem(folder)
 
@@ -161,7 +157,10 @@ class LibraryFormWidget(QWidget):
         self._current_library = library
         self.name_edit.setText(library.name)
         self.path_edit.setText(library.path)
-        self.media_type_combo.setCurrentText(library.media_type)
+        # Map English type to Chinese display
+        type_map = {"movie": "电影", "tv": "电视", "mixed": "混合"}
+        display_type = type_map.get(library.media_type, library.media_type)
+        self.media_type_combo.setCurrentText(display_type)
         self.default_dest_edit.setText(library.default_destination or "")
         self.active_checkbox.setChecked(library.is_active)
         self.description_edit.setPlainText(library.description or "")
@@ -195,7 +194,7 @@ class LibraryFormWidget(QWidget):
         self.scan_roots_list.clear()
         self.active_checkbox.setChecked(True)
         self.description_edit.clear()
-        self.color_label.setText("No color selected")
+        self.color_label.setText("未选择颜色")
         self.color_label.setStyleSheet("padding: 5px; border: 1px solid gray;")
 
     def get_library_data(self) -> dict:
@@ -206,12 +205,17 @@ class LibraryFormWidget(QWidget):
             scan_roots.append(self.scan_roots_list.item(i).text())
 
         color_text = self.color_label.text()
-        color = color_text if color_text != "No color selected" else None
+        color = color_text if color_text != "未选择颜色" else None
+
+        # Map Chinese display back to English type
+        type_map_reverse = {"电影": "movie", "电视": "tv", "混合": "mixed"}
+        display_type = self.media_type_combo.currentText()
+        media_type = type_map_reverse.get(display_type, display_type)
 
         return {
             "name": self.name_edit.text().strip(),
             "path": self.path_edit.text().strip(),
-            "media_type": self.media_type_combo.currentText(),
+            "media_type": media_type,
             "default_destination": self.default_dest_edit.text().strip() or None,
             "scan_roots": json.dumps(scan_roots) if scan_roots else None,
             "is_active": self.active_checkbox.isChecked(),
@@ -222,17 +226,17 @@ class LibraryFormWidget(QWidget):
     def validate(self) -> tuple[bool, str]:
         """Validate form data."""
         if not self.name_edit.text().strip():
-            return False, "Library name is required"
+            return False, "需要媒体库名称"
 
         if not self.path_edit.text().strip():
-            return False, "Library path is required"
+            return False, "需要媒体库路径"
 
         path = Path(self.path_edit.text().strip())
         if not path.exists():
-            return False, f"Library path does not exist: {path}"
+            return False, f"媒体库路径不存在：{path}"
 
         if not path.is_dir():
-            return False, f"Library path is not a directory: {path}"
+            return False, f"媒体库路径不是目录：{path}"
 
         return True, ""
 
@@ -254,7 +258,7 @@ class LibraryManagerDialog(QDialog):
 
     def _setup_ui(self) -> None:
         """Setup the dialog UI."""
-        self.setWindowTitle("Library Manager")
+        self.setWindowTitle("媒体库管理器")
         self.setMinimumSize(900, 600)
 
         layout = QVBoxLayout(self)
@@ -267,18 +271,18 @@ class LibraryManagerDialog(QDialog):
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
 
-        left_layout.addWidget(QLabel("Libraries:"))
+        left_layout.addWidget(QLabel("媒体库："))
         self.library_list = QListWidget()
         self.library_list.itemSelectionChanged.connect(self._on_library_selected)
         left_layout.addWidget(self.library_list)
 
         # List buttons
         list_buttons_layout = QHBoxLayout()
-        self.new_button = QPushButton("New")
+        self.new_button = QPushButton("新建")
         self.new_button.clicked.connect(self._on_new_library)
         list_buttons_layout.addWidget(self.new_button)
 
-        self.delete_button = QPushButton("Delete")
+        self.delete_button = QPushButton("删除")
         self.delete_button.clicked.connect(self._on_delete_library)
         self.delete_button.setEnabled(False)
         list_buttons_layout.addWidget(self.delete_button)
@@ -291,18 +295,18 @@ class LibraryManagerDialog(QDialog):
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
 
-        right_layout.addWidget(QLabel("Library Details:"))
+        right_layout.addWidget(QLabel("媒体库详情："))
         self.library_form = LibraryFormWidget()
         right_layout.addWidget(self.library_form)
 
         # Form buttons
         form_buttons_layout = QHBoxLayout()
-        self.save_button = QPushButton("Save")
+        self.save_button = QPushButton("保存")
         self.save_button.clicked.connect(self._on_save_library)
         self.save_button.setEnabled(False)
         form_buttons_layout.addWidget(self.save_button)
 
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = QPushButton("取消")
         self.cancel_button.clicked.connect(self._on_cancel_edit)
         self.cancel_button.setEnabled(False)
         form_buttons_layout.addWidget(self.cancel_button)
@@ -356,7 +360,7 @@ class LibraryManagerDialog(QDialog):
         # Validate form
         is_valid, error_msg = self.library_form.validate()
         if not is_valid:
-            QMessageBox.warning(self, "Validation Error", error_msg)
+            QMessageBox.warning(self, "验证错误", error_msg)
             return
 
         # Get form data
@@ -371,13 +375,13 @@ class LibraryManagerDialog(QDialog):
                     setattr(current_library, key, value)
                 self._repository.update(current_library)
                 self.library_updated.emit(current_library)
-                QMessageBox.information(self, "Success", "Library updated successfully")
+                QMessageBox.information(self, "成功", "媒体库更新成功")
             else:
                 # Create new library
                 library = Library(**data)
                 library = self._repository.create(library)
                 self.library_created.emit(library)
-                QMessageBox.information(self, "Success", "Library created successfully")
+                QMessageBox.information(self, "成功", "媒体库创建成功")
 
             # Reload library list
             self._load_libraries()
@@ -386,8 +390,8 @@ class LibraryManagerDialog(QDialog):
             self.cancel_button.setEnabled(False)
 
         except Exception as e:
-            self._logger.error(f"Failed to save library: {e}")
-            QMessageBox.critical(self, "Error", f"Failed to save library: {e}")
+            self._logger.error(f"保存媒体库失败：{e}")
+            QMessageBox.critical(self, "错误", f"保存媒体库失败：{e}")
 
     def _on_delete_library(self) -> None:
         """Handle delete library button click."""
@@ -400,9 +404,9 @@ class LibraryManagerDialog(QDialog):
         # Confirm deletion
         reply = QMessageBox.question(
             self,
-            "Confirm Deletion",
-            f"Are you sure you want to delete library '{library.name}'?\n\n"
-            f"This will not delete the actual media files, only the library reference.",
+            "确认删除",
+            f"确定要删除媒体库 '{library.name}' 吗？\n\n"
+            "这不会删除实际的媒体文件，只删除媒体库引用。",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -414,9 +418,9 @@ class LibraryManagerDialog(QDialog):
                 if item_count > 0:
                     reply = QMessageBox.question(
                         self,
-                        "Library Has Items",
-                        f"This library contains {item_count} media items. "
-                        f"Delete anyway?\n\nItems will be removed from the database.",
+                        "媒体库包含项目",
+                        f"此媒体库包含 {item_count} 个媒体项目。"
+                        "仍然删除？\n\n项目将从数据库中删除。",
                         QMessageBox.Yes | QMessageBox.No,
                         QMessageBox.No,
                     )
@@ -425,15 +429,15 @@ class LibraryManagerDialog(QDialog):
 
                 self._repository.delete(library.id)
                 self.library_deleted.emit(library.id)
-                QMessageBox.information(self, "Success", "Library deleted successfully")
+                QMessageBox.information(self, "成功", "媒体库删除成功")
 
                 # Reload library list
                 self._load_libraries()
                 self.library_form.clear_form()
 
             except Exception as e:
-                self._logger.error(f"Failed to delete library: {e}")
-                QMessageBox.critical(self, "Error", f"Failed to delete library: {e}")
+                self._logger.error(f"删除媒体库失败：{e}")
+                QMessageBox.critical(self, "错误", f"删除媒体库失败：{e}")
 
     def _on_cancel_edit(self) -> None:
         """Handle cancel edit button click."""

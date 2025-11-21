@@ -40,40 +40,40 @@ class PosterSettingsWidget(QWidget):
         layout = QVBoxLayout(self)
 
         # Auto-download section
-        auto_group = QGroupBox("Automatic Downloads")
+        auto_group = QGroupBox("自动下载")
         auto_layout = QVBoxLayout(auto_group)
 
-        self.auto_download_checkbox = QCheckBox("Automatically download posters when matches are found")
+        self.auto_download_checkbox = QCheckBox("找到匹配时自动下载海报")
         self.auto_download_checkbox.stateChanged.connect(self._on_setting_changed)
         auto_layout.addWidget(self.auto_download_checkbox)
 
         layout.addWidget(auto_group)
 
         # Poster types section
-        types_group = QGroupBox("Poster Types")
+        types_group = QGroupBox("海报类型")
         types_layout = QVBoxLayout(types_group)
 
-        self.poster_checkbox = QCheckBox("Download posters")
+        self.poster_checkbox = QCheckBox("下载海报")
         self.poster_checkbox.stateChanged.connect(self._on_setting_changed)
         types_layout.addWidget(self.poster_checkbox)
 
-        self.fanart_checkbox = QCheckBox("Download fanart")
+        self.fanart_checkbox = QCheckBox("下载同人画")
         self.fanart_checkbox.stateChanged.connect(self._on_setting_changed)
         types_layout.addWidget(self.fanart_checkbox)
 
-        self.banner_checkbox = QCheckBox("Download banners")
+        self.banner_checkbox = QCheckBox("下载横幅")
         self.banner_checkbox.stateChanged.connect(self._on_setting_changed)
         types_layout.addWidget(self.banner_checkbox)
 
         layout.addWidget(types_group)
 
         # Size preferences section
-        size_group = QGroupBox("Size Preferences")
+        size_group = QGroupBox("尺寸偏好")
         size_layout = QVBoxLayout(size_group)
 
         # Poster size
         poster_size_layout = QHBoxLayout()
-        poster_size_layout.addWidget(QLabel("Poster size:"))
+        poster_size_layout.addWidget(QLabel("海报尺寸："))
         self.poster_size_combo = QComboBox()
         self.poster_size_combo.addItems([size.value for size in PosterSize])
         self.poster_size_combo.currentTextChanged.connect(self._on_setting_changed)
@@ -83,7 +83,7 @@ class PosterSettingsWidget(QWidget):
 
         # Fanart size
         fanart_size_layout = QHBoxLayout()
-        fanart_size_layout.addWidget(QLabel("Fanart size:"))
+        fanart_size_layout.addWidget(QLabel("同人画尺寸："))
         self.fanart_size_combo = QComboBox()
         self.fanart_size_combo.addItems([size.value for size in PosterSize])
         self.fanart_size_combo.currentTextChanged.connect(self._on_setting_changed)
@@ -93,7 +93,7 @@ class PosterSettingsWidget(QWidget):
 
         # Banner size
         banner_size_layout = QHBoxLayout()
-        banner_size_layout.addWidget(QLabel("Banner size:"))
+        banner_size_layout.addWidget(QLabel("横幅尺寸："))
         self.banner_size_combo = QComboBox()
         self.banner_size_combo.addItems([size.value for size in PosterSize])
         self.banner_size_combo.currentTextChanged.connect(self._on_setting_changed)
@@ -104,12 +104,12 @@ class PosterSettingsWidget(QWidget):
         layout.addWidget(size_group)
 
         # Download settings section
-        download_group = QGroupBox("Download Settings")
+        download_group = QGroupBox("下载设置")
         download_layout = QVBoxLayout(download_group)
 
         # Max retries
         retries_layout = QHBoxLayout()
-        retries_layout.addWidget(QLabel("Max retries:"))
+        retries_layout.addWidget(QLabel("最大重试次数："))
         self.max_retries_spinbox = QSpinBox()
         self.max_retries_spinbox.setMinimum(0)
         self.max_retries_spinbox.setMaximum(10)
@@ -120,7 +120,7 @@ class PosterSettingsWidget(QWidget):
 
         # Timeout
         timeout_layout = QHBoxLayout()
-        timeout_layout.addWidget(QLabel("Timeout (seconds):"))
+        timeout_layout.addWidget(QLabel("超时（秒）："))
         self.timeout_spinbox = QSpinBox()
         self.timeout_spinbox.setMinimum(5)
         self.timeout_spinbox.setMaximum(300)
@@ -133,23 +133,23 @@ class PosterSettingsWidget(QWidget):
         layout.addWidget(download_group)
 
         # Cache section
-        cache_group = QGroupBox("Cache Settings")
+        cache_group = QGroupBox("缓存设置")
         cache_layout = QVBoxLayout(cache_group)
 
         # Cache directory
         cache_dir_layout = QHBoxLayout()
-        cache_dir_layout.addWidget(QLabel("Cache directory:"))
+        cache_dir_layout.addWidget(QLabel("缓存目录："))
         self.cache_dir_edit = QLineEdit()
         self.cache_dir_edit.textChanged.connect(self._on_setting_changed)
         cache_dir_layout.addWidget(self.cache_dir_edit)
 
-        self.browse_cache_button = QPushButton("Browse...")
+        self.browse_cache_button = QPushButton("浏览...")
         self.browse_cache_button.clicked.connect(self._on_browse_cache)
         cache_dir_layout.addWidget(self.browse_cache_button)
         cache_layout.addLayout(cache_dir_layout)
 
         # Clear cache button
-        self.clear_cache_button = QPushButton("Clear Cache")
+        self.clear_cache_button = QPushButton("清空缓存")
         self.clear_cache_button.clicked.connect(self._on_clear_cache)
         cache_layout.addWidget(self.clear_cache_button)
 
@@ -192,7 +192,9 @@ class PosterSettingsWidget(QWidget):
     def _save_settings(self) -> None:
         """Save settings to storage."""
         # Auto-download
-        self._settings.set_auto_download_posters(self.auto_download_checkbox.isChecked())
+        self._settings.set_auto_download_posters(
+            self.auto_download_checkbox.isChecked()
+        )
 
         # Poster types
         enabled_types = []
@@ -205,9 +207,15 @@ class PosterSettingsWidget(QWidget):
         self._settings.set_enabled_poster_types(enabled_types)
 
         # Sizes
-        self._settings.set_poster_size(PosterType.POSTER.value, self.poster_size_combo.currentText())
-        self._settings.set_poster_size(PosterType.FANART.value, self.fanart_size_combo.currentText())
-        self._settings.set_poster_size(PosterType.BANNER.value, self.banner_size_combo.currentText())
+        self._settings.set_poster_size(
+            PosterType.POSTER.value, self.poster_size_combo.currentText()
+        )
+        self._settings.set_poster_size(
+            PosterType.FANART.value, self.fanart_size_combo.currentText()
+        )
+        self._settings.set_poster_size(
+            PosterType.BANNER.value, self.banner_size_combo.currentText()
+        )
 
         # Download settings
         self._settings.set_max_retries(self.max_retries_spinbox.value())
@@ -235,7 +243,7 @@ class PosterSettingsWidget(QWidget):
         from PySide6.QtWidgets import QFileDialog
 
         directory = QFileDialog.getExistingDirectory(
-            self, "Select Cache Directory", self.cache_dir_edit.text()
+            self, "选择缓存目录", self.cache_dir_edit.text()
         )
         if directory:
             self.cache_dir_edit.setText(directory)
@@ -245,8 +253,11 @@ class PosterSettingsWidget(QWidget):
         from PySide6.QtWidgets import QMessageBox
 
         reply = QMessageBox.question(
-            self, "Clear Cache", "Are you sure you want to clear the poster cache?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            self,
+            "清空缓存",
+            "确定要清空海报缓存吗？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
@@ -263,10 +274,10 @@ class PosterSettingsWidget(QWidget):
                 downloader.clear_cache()
                 self._logger.info("Poster cache cleared")
 
-                QMessageBox.information(self, "Cache Cleared", "Poster cache has been cleared.")
+                QMessageBox.information(self, "缓存已清空", "海报缓存已被清空。")
             except Exception as exc:
-                self._logger.error(f"Failed to clear cache: {exc}")
-                QMessageBox.warning(self, "Error", f"Failed to clear cache: {exc}")
+                self._logger.error(f"清空缓存失败：{exc}")
+                QMessageBox.warning(self, "Error", f"清空缓存失败：{exc}")
 
     def get_enabled_poster_types(self) -> list[PosterType]:
         """Get the list of enabled poster types."""

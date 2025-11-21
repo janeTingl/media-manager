@@ -26,7 +26,7 @@ class TMDBSettingsDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.settings = settings
-        self.setWindowTitle(self.tr("Alternative API Endpoints"))
+        self.setWindowTitle("备用 API 端点")
         self.setMinimumWidth(500)
 
         layout = QVBoxLayout(self)
@@ -35,26 +35,22 @@ class TMDBSettingsDialog(QDialog):
         # TMDB settings
         self.tmdb_api_edit = QLineEdit(self)
         self.tmdb_api_edit.setPlaceholderText("https://api.themoviedb.org")
-        form.addRow(self.tr("Alternative TMDB API Address:"), self.tmdb_api_edit)
+        form.addRow("备用 TMDB API 地址：", self.tmdb_api_edit)
 
         self.tmdb_image_edit = QLineEdit(self)
         self.tmdb_image_edit.setPlaceholderText("https://image.tmdb.org")
-        form.addRow(self.tr("Alternative TMDB Image Address:"), self.tmdb_image_edit)
+        form.addRow("备用 TMDB 图片地址：", self.tmdb_image_edit)
 
         self.tmdb_key_edit = QLineEdit(self)
         self.tmdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.tmdb_key_edit.setPlaceholderText(
-            self.tr("Leave empty to use main API key")
-        )
-        form.addRow(self.tr("Alternative TMDB API Key:"), self.tmdb_key_edit)
+        self.tmdb_key_edit.setPlaceholderText("留空以使用主 API 密钥")
+        form.addRow("备用 TMDB API 密钥：", self.tmdb_key_edit)
 
         # TVDB settings
         self.tvdb_key_edit = QLineEdit(self)
         self.tvdb_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.tvdb_key_edit.setPlaceholderText(
-            self.tr("Leave empty to use main API key")
-        )
-        form.addRow(self.tr("Alternative TVDB API Key:"), self.tvdb_key_edit)
+        self.tvdb_key_edit.setPlaceholderText("留空以使用主 API 密钥")
+        form.addRow("备用 TVDB API 密钥：", self.tvdb_key_edit)
 
         layout.addLayout(form)
 

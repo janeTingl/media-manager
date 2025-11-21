@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QDateEdit,
-    QDialog,
-    QDialogButtonBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -52,7 +49,7 @@ class ExportWizard(QWizard):
         self._service = ImportExportService()
         self._library_repo = LibraryRepository()
 
-        self.setWindowTitle("Export Media Metadata")
+        self.setWindowTitle("导出媒体元数据")
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setMinimumSize(600, 500)
 
@@ -70,13 +67,13 @@ class ExportFormatPage(QWizardPage):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setTitle("Export Format")
-        self.setSubTitle("Choose the export format and destination file.")
+        self.setTitle("导出格式")
+        self.setSubTitle("选择导出格式和目标文件。")
 
         layout = QVBoxLayout()
 
         # Format selection
-        format_group = QGroupBox("Export Format")
+        format_group = QGroupBox("导出格式")
         format_layout = QVBoxLayout()
 
         self.json_radio = QRadioButton("JSON")
@@ -89,12 +86,12 @@ class ExportFormatPage(QWizardPage):
         layout.addWidget(format_group)
 
         # File path selection
-        file_group = QGroupBox("Destination File")
+        file_group = QGroupBox("目标文件")
         file_layout = QHBoxLayout()
 
         self.file_path_edit = QLineEdit()
-        self.file_path_edit.setPlaceholderText("Choose destination file...")
-        self.browse_button = QPushButton("Browse...")
+        self.file_path_edit.setPlaceholderText("选择目标文件...")
+        self.browse_button = QPushButton("浏览...")
         self.browse_button.clicked.connect(self._browse_file)
 
         file_layout.addWidget(self.file_path_edit)
@@ -111,12 +108,16 @@ class ExportFormatPage(QWizardPage):
 
     def _browse_file(self) -> None:
         """Open file dialog to choose destination."""
-        format_filter = "JSON Files (*.json)" if self.json_radio.isChecked() else "Excel Files (*.xlsx)"
+        format_filter = (
+            "JSON Files (*.json)"
+            if self.json_radio.isChecked()
+            else "Excel Files (*.xlsx)"
+        )
         default_ext = ".json" if self.json_radio.isChecked() else ".xlsx"
 
         file_path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save Export File",
+            "保存导出文件",
             "",
             format_filter,
         )
@@ -135,19 +136,21 @@ class ExportFormatPage(QWizardPage):
 class ExportScopePage(QWizardPage):
     """Page for selecting export scope (libraries, media types, date range)."""
 
-    def __init__(self, library_repo: LibraryRepository, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, library_repo: LibraryRepository, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._library_repo = library_repo
-        self.setTitle("Export Scope")
-        self.setSubTitle("Select which items to export.")
+        self.setTitle("导出范围")
+        self.setSubTitle("选择要导出的项目。")
 
         layout = QVBoxLayout()
 
         # Library selection
-        library_group = QGroupBox("Libraries")
+        library_group = QGroupBox("媒体库")
         library_layout = QVBoxLayout()
 
-        self.all_libraries_check = QCheckBox("All Libraries")
+        self.all_libraries_check = QCheckBox("所有媒体库")
         self.all_libraries_check.setChecked(True)
         self.all_libraries_check.toggled.connect(self._on_all_libraries_toggled)
         library_layout.addWidget(self.all_libraries_check)
@@ -161,13 +164,13 @@ class ExportScopePage(QWizardPage):
         layout.addWidget(library_group)
 
         # Media type selection
-        media_type_group = QGroupBox("Media Types")
+        media_type_group = QGroupBox("媒体类型")
         media_type_layout = QVBoxLayout()
 
-        self.all_types_check = QCheckBox("All Types")
+        self.all_types_check = QCheckBox("所有类型")
         self.all_types_check.setChecked(True)
-        self.movie_check = QCheckBox("Movies")
-        self.tv_check = QCheckBox("TV Shows")
+        self.movie_check = QCheckBox("电影")
+        self.tv_check = QCheckBox("电视节目")
 
         media_type_layout.addWidget(self.all_types_check)
         media_type_layout.addWidget(self.movie_check)
@@ -186,7 +189,9 @@ class ExportScopePage(QWizardPage):
         libraries = self._library_repo.get_all()
         for library in libraries:
             self.library_list.addItem(library.name)
-            self.library_list.item(self.library_list.count() - 1).setData(Qt.ItemDataRole.UserRole, library.id)
+            self.library_list.item(self.library_list.count() - 1).setData(
+                Qt.ItemDataRole.UserRole, library.id
+            )
 
     def _on_all_libraries_toggled(self, checked: bool) -> None:
         """Handle all libraries checkbox toggle."""
@@ -222,24 +227,24 @@ class ExportFieldsPage(QWizardPage):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setTitle("Export Fields")
-        self.setSubTitle("Select which data to include in the export.")
+        self.setTitle("导出字段")
+        self.setSubTitle("选择要包含在导出中的数据。")
 
         layout = QVBoxLayout()
 
-        fields_group = QGroupBox("Include in Export")
+        fields_group = QGroupBox("包含在导出中")
         fields_layout = QVBoxLayout()
 
-        self.include_files_check = QCheckBox("File Paths")
+        self.include_files_check = QCheckBox("文件路径")
         self.include_files_check.setChecked(True)
 
-        self.include_external_ids_check = QCheckBox("External IDs (TMDB, IMDB, TVDB)")
+        self.include_external_ids_check = QCheckBox("外部 ID（TMDB、IMDB、TVDB）")
         self.include_external_ids_check.setChecked(True)
 
-        self.include_artwork_check = QCheckBox("Artwork Paths")
+        self.include_artwork_check = QCheckBox("艺术作品路径")
         self.include_artwork_check.setChecked(True)
 
-        self.include_subtitles_check = QCheckBox("Subtitle Paths")
+        self.include_subtitles_check = QCheckBox("字幕路径")
         self.include_subtitles_check.setChecked(True)
 
         fields_layout.addWidget(self.include_files_check)
@@ -257,15 +262,17 @@ class ExportFieldsPage(QWizardPage):
 class ExportProgressPage(QWizardPage):
     """Page showing export progress and results."""
 
-    def __init__(self, service: ImportExportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ImportExportService, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
-        self.setTitle("Export Progress")
-        self.setSubTitle("Exporting media metadata...")
+        self.setTitle("导出进度")
+        self.setSubTitle("正在导出媒体元数据...")
 
         layout = QVBoxLayout()
 
-        self.status_label = QLabel("Ready to export")
+        self.status_label = QLabel("准备导出")
         layout.addWidget(self.status_label)
 
         self.progress_bar = QProgressBar()
@@ -287,7 +294,6 @@ class ExportProgressPage(QWizardPage):
         format_str = wizard.field("export_format")
         file_path = Path(wizard.field("export_file_path"))
 
-        format_page = wizard.page(0)
         scope_page = wizard.page(1)
         fields_page = wizard.page(2)
 
@@ -303,14 +309,12 @@ class ExportProgressPage(QWizardPage):
 
         # Perform export
         try:
-            count = self._service.export_to_file(
-                file_path, options, self._on_progress
-            )
-            self.status_label.setText(f"Export complete: {count} items")
-            self.result_text.append(f"Successfully exported {count} items to {file_path}")
+            count = self._service.export_to_file(file_path, options, self._on_progress)
+            self.status_label.setText(f"导出完成：{count} 项")
+            self.result_text.append(f"成功导出 {count} 项到 {file_path}")
         except Exception as e:
-            self.status_label.setText("Export failed")
-            self.result_text.append(f"Error: {str(e)}")
+            self.status_label.setText("导出失败")
+            self.result_text.append(f"错误：{str(e)}")
 
     def _on_progress(self, current: int, total: int, message: str) -> None:
         """Handle progress updates."""
@@ -328,7 +332,7 @@ class ImportWizard(QWizard):
         self._service = ImportExportService()
         self._library_repo = LibraryRepository()
 
-        self.setWindowTitle("Import Media Metadata")
+        self.setWindowTitle("导入媒体元数据")
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setMinimumSize(700, 600)
 
@@ -345,22 +349,24 @@ class ImportWizard(QWizard):
 class ImportFilePage(QWizardPage):
     """Page for selecting import file."""
 
-    def __init__(self, service: ImportExportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ImportExportService, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
-        self.setTitle("Import File")
-        self.setSubTitle("Choose the file to import.")
+        self.setTitle("导入文件")
+        self.setSubTitle("选择要导入的文件。")
 
         layout = QVBoxLayout()
 
-        file_group = QGroupBox("Source File")
+        file_group = QGroupBox("源文件")
         file_layout = QHBoxLayout()
 
         self.file_path_edit = QLineEdit()
-        self.file_path_edit.setPlaceholderText("Choose file to import...")
+        self.file_path_edit.setPlaceholderText("选择要导入的文件...")
         self.file_path_edit.textChanged.connect(self._on_file_changed)
 
-        self.browse_button = QPushButton("Browse...")
+        self.browse_button = QPushButton("浏览...")
         self.browse_button.clicked.connect(self._browse_file)
 
         file_layout.addWidget(self.file_path_edit)
@@ -369,7 +375,7 @@ class ImportFilePage(QWizardPage):
         layout.addWidget(file_group)
 
         # Preview
-        preview_group = QGroupBox("File Preview")
+        preview_group = QGroupBox("文件预览")
         preview_layout = QVBoxLayout()
 
         self.preview_text = QTextEdit()
@@ -389,9 +395,9 @@ class ImportFilePage(QWizardPage):
         """Open file dialog to choose import file."""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Open Import File",
+            "打开导入文件",
             "",
-            "All Supported Files (*.json *.xlsx *.xls);;JSON Files (*.json);;Excel Files (*.xlsx *.xls)",
+            "所有支持的文件 (*.json *.xlsx *.xls);;JSON 文件 (*.json);;Excel 文件 (*.xlsx *.xls)",
         )
 
         if file_path:
@@ -406,33 +412,37 @@ class ImportFilePage(QWizardPage):
         try:
             path = Path(file_path)
             if path.suffix.lower() == ".json":
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     content = f.read(1000)
                     self.preview_text.setPlainText(content)
             elif path.suffix.lower() in (".xlsx", ".xls"):
                 headers = self._service.get_excel_headers(path)
-                self.preview_text.setPlainText(f"Excel file with columns:\n{', '.join(headers)}")
+                self.preview_text.setPlainText(
+                    f"Excel file with columns:\n{', '.join(headers)}"
+                )
         except Exception as e:
-            self.preview_text.setPlainText(f"Error reading file: {str(e)}")
+            self.preview_text.setPlainText(f"读取文件出错：{str(e)}")
 
 
 class ImportMappingPage(QWizardPage):
     """Page for mapping columns (for Excel imports)."""
 
-    def __init__(self, service: ImportExportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ImportExportService, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
-        self.setTitle("Column Mapping")
-        self.setSubTitle("Map columns from the import file to database fields.")
+        self.setTitle("列映射")
+        self.setSubTitle("将导入文件中的列映射到数据库字段。")
 
         layout = QVBoxLayout()
 
-        info_label = QLabel("Map the columns from your file to the expected fields:")
+        info_label = QLabel("将文件中的列映射到预期字段：")
         layout.addWidget(info_label)
 
         self.mapping_table = QTableWidget()
         self.mapping_table.setColumnCount(2)
-        self.mapping_table.setHorizontalHeaderLabels(["File Column", "Maps To"])
+        self.mapping_table.setHorizontalHeaderLabels(["文件列", "映射到"])
         layout.addWidget(self.mapping_table)
 
         self.setLayout(layout)
@@ -454,8 +464,16 @@ class ImportMappingPage(QWizardPage):
             self.mapping_table.setRowCount(len(headers))
 
             expected_fields = [
-                "title", "media_type", "year", "season", "episode",
-                "description", "genres", "runtime", "rating", "library_id"
+                "title",
+                "media_type",
+                "year",
+                "season",
+                "episode",
+                "description",
+                "genres",
+                "runtime",
+                "rating",
+                "library_id",
             ]
 
             for row, header in enumerate(headers):
@@ -466,7 +484,7 @@ class ImportMappingPage(QWizardPage):
 
                 # Target field (combo box)
                 target_combo = QComboBox()
-                target_combo.addItem("(skip)")
+                target_combo.addItem("（跳过）")
                 target_combo.addItems(expected_fields)
 
                 # Auto-detect mapping
@@ -479,7 +497,7 @@ class ImportMappingPage(QWizardPage):
             self.mapping_table.resizeColumnsToContents()
 
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to read file: {str(e)}")
+            QMessageBox.warning(self, "Error", f"读取文件失败：{str(e)}")
 
     def get_column_mapping(self) -> dict[str, str]:
         """Get the column mapping dictionary."""
@@ -490,7 +508,7 @@ class ImportMappingPage(QWizardPage):
 
             if source and isinstance(target_widget, QComboBox):
                 target = target_widget.currentText()
-                if target != "(skip)":
+                if target != "（跳过）":
                     mapping[source.text()] = target
 
         return mapping
@@ -499,7 +517,9 @@ class ImportMappingPage(QWizardPage):
 class ImportConflictsPage(QWizardPage):
     """Page for previewing and handling conflicts."""
 
-    def __init__(self, service: ImportExportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ImportExportService, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
         self._conflicts: list[ImportConflict] = []
@@ -514,7 +534,9 @@ class ImportConflictsPage(QWizardPage):
 
         self.conflicts_table = QTableWidget()
         self.conflicts_table.setColumnCount(4)
-        self.conflicts_table.setHorizontalHeaderLabels(["Row", "Title", "Conflict Type", "Details"])
+        self.conflicts_table.setHorizontalHeaderLabels(
+            ["Row", "Title", "Conflict Type", "Details"]
+        )
         layout.addWidget(self.conflicts_table)
 
         self.setLayout(layout)
@@ -541,10 +563,18 @@ class ImportConflictsPage(QWizardPage):
                 self.conflicts_table.setRowCount(len(conflicts))
 
                 for row, conflict in enumerate(conflicts):
-                    self.conflicts_table.setItem(row, 0, QTableWidgetItem(str(conflict.row_index)))
-                    self.conflicts_table.setItem(row, 1, QTableWidgetItem(conflict.title))
-                    self.conflicts_table.setItem(row, 2, QTableWidgetItem(conflict.conflict_type))
-                    self.conflicts_table.setItem(row, 3, QTableWidgetItem(conflict.details))
+                    self.conflicts_table.setItem(
+                        row, 0, QTableWidgetItem(str(conflict.row_index))
+                    )
+                    self.conflicts_table.setItem(
+                        row, 1, QTableWidgetItem(conflict.title)
+                    )
+                    self.conflicts_table.setItem(
+                        row, 2, QTableWidgetItem(conflict.conflict_type)
+                    )
+                    self.conflicts_table.setItem(
+                        row, 3, QTableWidgetItem(conflict.details)
+                    )
 
                 self.conflicts_table.resizeColumnsToContents()
             else:
@@ -558,10 +588,12 @@ class ImportConflictsPage(QWizardPage):
 class ImportOptionsPage(QWizardPage):
     """Page for selecting import options."""
 
-    def __init__(self, library_repo: LibraryRepository, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, library_repo: LibraryRepository, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._library_repo = library_repo
-        self.setTitle("Import Options")
+        self.setTitle("导入选项")
         self.setSubTitle("Configure how to handle the import.")
 
         layout = QVBoxLayout()
@@ -637,10 +669,12 @@ class ImportOptionsPage(QWizardPage):
 class ImportProgressPage(QWizardPage):
     """Page showing import progress and results."""
 
-    def __init__(self, service: ImportExportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ImportExportService, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
-        self.setTitle("Import Progress")
+        self.setTitle("导入进度")
         self.setSubTitle("Importing media metadata...")
 
         layout = QVBoxLayout()
@@ -690,7 +724,7 @@ class ImportProgressPage(QWizardPage):
 
         except Exception as e:
             self.status_label.setText("Import failed")
-            self.result_text.append(f"Error: {str(e)}")
+            self.result_text.append(f"错误：{str(e)}")
 
     def _on_progress(self, current: int, total: int, message: str) -> None:
         """Handle progress updates."""
