@@ -1,733 +1,363 @@
-# Contributing to 影藏·媒体管理器
+# 贡献指南
 
-Thank you for your interest in contributing to 影藏·媒体管理器! This document provides guidelines and instructions for contributing.
+感谢您对影藏·媒体管理器项目的关注！我们欢迎所有形式的贡献，包括错误报告、功能建议、文档改进和代码贡献。
 
-## Table of Contents
+## 目录
 
-1. [Code of Conduct](#code-of-conduct)
-2. [Getting Started](#getting-started)
-3. [Development Workflow](#development-workflow)
-4. [Code Style](#code-style)
-5. [Testing](#testing)
-6. [Documentation](#documentation)
-7. [Commit Messages](#commit-messages)
-8. [Pull Requests](#pull-requests)
-9. [Reporting Issues](#reporting-issues)
+- [行为准则](#行为准则)
+- [如何贡献](#如何贡献)
+  - [报告错误](#报告错误)
+  - [建议功能](#建议功能)
+  - [提交代码](#提交代码)
+- [开发环境设置](#开发环境设置)
+- [代码规范](#代码规范)
+- [测试要求](#测试要求)
+- [提交指南](#提交指南)
+- [Pull Request 流程](#pull-request-流程)
 
-## Code of Conduct
+## 行为准则
 
-### Our Pledge
+参与本项目的所有贡献者都应遵守以下准则：
 
-We are committed to providing a welcoming and inclusive environment for all contributors. We pledge to:
+- 尊重所有贡献者
+- 接受建设性的批评
+- 关注对项目最有利的事情
+- 对社区成员表现出同理心
 
-- Be respectful and inclusive
-- Welcome diverse perspectives
-- Focus on what is best for the community
-- Be patient and supportive with others
+## 如何贡献
 
-### Expected Behavior
+### 报告错误
 
-- Use welcoming and inclusive language
-- Be respectful of differing opinions and experiences
-- Accept constructive criticism gracefully
-- Focus on what is best for the community
+如果您发现了错误，请在 GitHub Issues 中创建问题报告，包括：
 
-### Unacceptable Behavior
+- **清晰的标题** - 简洁描述问题
+- **详细描述** - 说明问题的具体表现
+- **重现步骤** - 列出重现问题的详细步骤
+- **预期行为** - 说明您期望的正确行为
+- **实际行为** - 说明实际发生的情况
+- **环境信息** - 操作系统、Python 版本、应用版本
+- **日志文件** - 如果可能，附上相关日志
 
-- Harassment, discrimination, or intimidation
-- Insulting or derogatory comments
-- Public or private harassment
-- Publishing others' private information
+### 建议功能
 
-## Getting Started
+我们欢迎功能建议！提交建议时请包括：
 
-### Prerequisites
+- **功能描述** - 清晰说明建议的功能
+- **使用场景** - 说明该功能解决的问题
+- **实现思路** - 如果有，可以提供实现建议
+- **替代方案** - 考虑过的其他解决方案
 
-- Python 3.8 or higher
+### 提交代码
+
+1. **Fork 仓库** - 点击 GitHub 上的 Fork 按钮
+2. **克隆仓库** - 克隆您 fork 的仓库到本地
+3. **创建分支** - 为您的更改创建新分支
+4. **编写代码** - 实现您的功能或修复
+5. **添加测试** - 为新代码编写测试
+6. **运行测试** - 确保所有测试通过
+7. **提交更改** - 遵循提交信息规范
+8. **推送代码** - 推送到您的 fork
+9. **创建 PR** - 在 GitHub 上创建 Pull Request
+
+## 开发环境设置
+
+### 前置要求
+
+- Python 3.8 或更高版本
 - Git
-- Virtual environment (venv, poetry, etc.)
 
-### Setting Up Your Development Environment
+### 安装步骤
 
-1. **Fork the repository**
-   ```bash
-   # On GitHub: Click "Fork" button
-   ```
-
-2. **Clone your fork**
+1. **克隆仓库**
    ```bash
    git clone https://github.com/your-username/media-manager.git
    cd media-manager
    ```
 
-3. **Create a virtual environment**
+2. **创建虚拟环境**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Windows
+   venv\Scripts\activate
+   
+   # Linux/macOS
+   source venv/bin/activate
    ```
 
-4. **Install development dependencies**
+3. **安装开发依赖**
    ```bash
    pip install -e ".[dev]"
    ```
 
-5. **Verify setup**
+4. **验证安装**
    ```bash
-   pytest tests/test_smoke.py -v
-   black --check src/ tests/
-   ruff check src/ tests/
-   mypy src/
+   pytest
    ```
 
-## Development Workflow
+## 代码规范
 
-### Creating a Feature Branch
+### Python 代码规范
 
-1. **Update main branch**
-   ```bash
-   git checkout main
-   git pull upstream main
-   ```
+我们遵循 PEP 8 编码规范，并使用以下工具确保代码质量：
 
-2. **Create feature branch**
-   ```bash
-   git checkout -b feature/my-feature-name
-   ```
+#### 代码格式化
 
-3. **Push to your fork**
-   ```bash
-   git push origin feature/my-feature-name
-   ```
+使用 Black 进行代码格式化：
 
-### Making Changes
-
-#### Before You Start
-
-- Check existing issues and PRs
-- Discuss large changes first
-- Write tests alongside code
-
-#### During Development
-
-- Make focused, logical commits
-- Test frequently
-- Follow code style guidelines
-- Update relevant documentation
-
-#### Before Submitting
-
-- Run all tests
-- Format code with Black
-- Check with Ruff
-- Type check with MyPy
-- Update documentation
-
-## Code Style
-
-### Python Style Guide
-
-We follow PEP 8 with Black formatting:
-
-```python
-# Good
-def process_video(path: Path) -> VideoMetadata:
-    """Process a video file and extract metadata.
-    
-    Args:
-        path: Path to video file
-        
-    Returns:
-        VideoMetadata with extracted information
-    """
-    if not path.exists():
-        raise FileNotFoundError(f"Video not found: {path}")
-    
-    metadata = parser.parse(path)
-    return metadata
-
-
-# Bad - Too many blank lines, inconsistent formatting
-def process_video( path ):
-    """Process video"""
-
-
-    if not path.exists( ):
-        raise FileNotFoundError( "Video not found: {0}".format(path) )
-    
-    
-    
-    metadata = parser.parse( path )
-    return metadata
-```
-
-### Formatting
-
-**Black Configuration:**
-- Line length: 88 characters
-- Use double quotes for strings
-- Trailing commas in multi-line
-
-**Run formatter:**
 ```bash
 black src/ tests/
 ```
 
-### Linting
+#### 代码检查
 
-**Ruff Configuration:**
-- Check: E, W, F, I, B, C4, UP
-- Ignore: E501 (handled by black), B008
+使用 Ruff 进行代码检查：
 
-**Run linter:**
 ```bash
+# 检查代码
 ruff check src/ tests/
-ruff check --fix src/ tests/  # Auto-fix
+
+# 自动修复问题
+ruff check --fix src/ tests/
 ```
 
-### Type Hints
+#### 类型检查
 
-**Always include type hints:**
+使用 MyPy 进行类型检查：
 
-```python
-# Good
-def scan(
-    config: ScanConfig,
-    callback: Optional[Callable[[VideoMetadata], None]] = None
-) -> List[VideoMetadata]:
-    """Scan directory with config."""
-    results: List[VideoMetadata] = []
-    # ...
-    return results
-
-
-# Bad - Missing type hints
-def scan(config, callback=None):
-    """Scan directory with config."""
-    results = []
-    # ...
-    return results
-```
-
-**Run type checker:**
 ```bash
 mypy src/
 ```
 
-### Docstrings
+### 代码风格要求
 
-Use NumPy-style docstrings:
+- **命名规范**
+  - 类名：使用大驼峰命名法（PascalCase）
+  - 函数/方法：使用小写下划线命名法（snake_case）
+  - 常量：使用大写下划线命名法（UPPER_CASE）
+  - 私有成员：以单下划线开头
+
+- **类型提示**
+  - 所有公共函数都应包含类型提示
+  - 使用 `from __future__ import annotations` 以支持前向引用
+
+- **文档字符串**
+  - 所有公共模块、类、函数都应有文档字符串
+  - 使用 Google 风格的文档字符串格式
+
+- **注释**
+  - 代码应该是自解释的
+  - 只在必要时添加注释
+  - 注释使用中文
+
+### 示例代码
 
 ```python
-def extract_year(filename: str) -> Optional[int]:
-    """Extract year from filename.
+"""模块描述。"""
+
+from __future__ import annotations
+
+from typing import Optional
+
+
+class MediaManager:
+    """媒体管理器类。
     
-    Looks for 4-digit patterns matching years 1900-2099.
+    负责管理媒体文件的扫描、匹配和整理。
     
-    Args:
-        filename: The filename to parse
-        
-    Returns:
-        Year as integer, or None if not found
-        
-    Raises:
-        ValueError: If filename is empty
-        
-    Examples:
-        >>> extract_year("Movie.2020.1080p.mkv")
-        2020
-        >>> extract_year("No Year Here.mkv")
-        None
+    Attributes:
+        settings: 设置管理器实例
+        logger: 日志记录器
     """
-    if not filename:
-        raise ValueError("Filename cannot be empty")
     
-    match = YEAR_PATTERN.search(filename)
-    return int(match.group(1)) if match else None
+    def __init__(self, settings: SettingsManager) -> None:
+        """初始化媒体管理器。
+        
+        Args:
+            settings: 设置管理器实例
+        """
+        self._settings = settings
+        self._logger = get_logger().get_logger(__name__)
+    
+    def scan_directory(self, path: str, recursive: bool = True) -> list[MediaFile]:
+        """扫描目录以查找媒体文件。
+        
+        Args:
+            path: 要扫描的目录路径
+            recursive: 是否递归扫描子目录
+            
+        Returns:
+            找到的媒体文件列表
+            
+        Raises:
+            ValueError: 如果路径不存在
+        """
+        # 实现代码...
+        pass
 ```
 
-### Naming Conventions
+## 测试要求
 
-**Classes:**
-```python
-class VideoMetadata:      # PascalCase
-class ScanEngine:
-class MatchWorker:
-```
+### 编写测试
 
-**Functions/Methods:**
-```python
-def extract_metadata():   # snake_case
-def scan_directory():
-def process_video():
-```
+- 所有新功能都必须包含测试
+- 测试应该覆盖正常情况和边界情况
+- 使用描述性的测试函数名
 
-**Constants:**
-```python
-MAX_RETRIES = 3           # UPPER_SNAKE_CASE
-DEFAULT_TIMEOUT = 30
-IGNORED_DIRECTORIES = (...)
-```
-
-**Private Members:**
-```python
-def _internal_method():   # Leading underscore
-self._private_variable = value
-```
-
-## Testing
-
-### Running Tests
+### 运行测试
 
 ```bash
-# Run all tests
+# 运行所有测试
 pytest
 
-# Run specific test file
+# 运行特定测试文件
 pytest tests/test_scanner.py
 
-# Run with coverage
+# 运行并显示覆盖率
 pytest --cov=src/media_manager
 
-# Run with verbose output
+# 详细输出
 pytest -v
-
-# Run only fast tests
-pytest -m "not slow"
 ```
 
-### Writing Tests
+### 测试示例
 
 ```python
-"""Tests for scanner module."""
+"""扫描器测试。"""
 
 import pytest
-from pathlib import Path
-from media_manager.scanner import Scanner, ScanConfig
-from media_manager.models import MediaType
+from media_manager.scanner import Scanner
 
 
 class TestScanner:
-    """Test suite for Scanner class."""
+    """扫描器测试类。"""
     
-    def test_parse_movie(self):
-        """Test parsing movie filename."""
+    def test_scan_directory_finds_files(self, tmp_path):
+        """测试扫描目录能找到文件。"""
+        # 准备测试数据
+        test_file = tmp_path / "movie.mp4"
+        test_file.touch()
+        
+        # 执行扫描
         scanner = Scanner()
-        path = Path("Inception.2010.1080p.mkv")
+        results = scanner.scan_directory(str(tmp_path))
         
-        result = scanner.parse_video(path)
-        
-        assert result.title == "Inception"
-        assert result.year == 2010
-        assert result.media_type == MediaType.MOVIE
+        # 验证结果
+        assert len(results) == 1
+        assert results[0].path == str(test_file)
     
-    def test_parse_episode(self):
-        """Test parsing TV episode filename."""
+    def test_scan_empty_directory(self, tmp_path):
+        """测试扫描空目录。"""
         scanner = Scanner()
-        path = Path("Breaking Bad - S05E16 - Felina.mkv")
-        
-        result = scanner.parse_video(path)
-        
-        assert result.title == "Felina"
-        assert result.season == 5
-        assert result.episode == 16
-        assert result.media_type == MediaType.TV
-    
-    def test_parse_invalid_path(self):
-        """Test parsing invalid path raises error."""
-        scanner = Scanner()
-        
-        with pytest.raises(Exception):
-            scanner.parse_video(Path(""))
-
-
-class TestScanConfig:
-    """Test suite for ScanConfig."""
-    
-    def test_default_config(self):
-        """Test creating default config."""
-        config = ScanConfig(root_paths=[Path("/media")])
-        
-        assert len(config.root_paths) == 1
-        assert config.root_paths[0] == Path("/media")
-        assert ".mkv" in config.video_extensions
-    
-    def test_custom_extensions(self):
-        """Test config with custom extensions."""
-        config = ScanConfig(
-            root_paths=[Path("/media")],
-            video_extensions=(".mkv", ".mp4")
-        )
-        
-        assert len(config.video_extensions) == 2
-        assert ".avi" not in config.video_extensions
+        results = scanner.scan_directory(str(tmp_path))
+        assert len(results) == 0
 ```
 
-### Test Structure
+## 提交指南
+
+### 提交信息格式
+
+使用以下格式编写提交信息：
 
 ```
-tests/
-├── __init__.py
-├── conftest.py                    # Shared fixtures
-├── test_smoke.py                  # Basic functionality
-├── test_scanner.py                # Scanner tests
-├── test_scan_engine.py            # ScanEngine tests
-├── test_settings.py               # Settings tests
-├── test_match_integration.py      # Matching workflow
-├── test_poster_downloader.py      # Poster system
-├── test_poster_integration.py     # Poster workflow
-├── test_poster_settings.py        # Poster UI
-├── test_subtitle_provider.py      # Subtitle provider
-├── test_subtitle_downloader.py    # Subtitle system
-├── test_subtitle_integration.py   # Subtitle workflow
-├── test_nfo_exporter.py           # NFO generation
-├── test_nfo_integration.py        # NFO workflow
-├── test_library_postprocessor.py  # Post-processing
-└── test_matching_basic.py         # Basic matching
+<类型>: <简短描述>
+
+<详细描述>（可选）
+
+<相关问题>（可选）
 ```
 
-### Test Best Practices
+### 提交类型
 
-1. **Descriptive names:**
-   ```python
-   def test_scan_finds_movie_files():  # Good
-   def test_scan():                     # Bad
-   ```
+- **feat**: 新功能
+- **fix**: 错误修复
+- **docs**: 文档更改
+- **style**: 代码格式更改（不影响功能）
+- **refactor**: 代码重构
+- **test**: 测试相关更改
+- **chore**: 构建过程或辅助工具的变动
 
-2. **Arrange-Act-Assert pattern:**
-   ```python
-   def test_process_video(self):
-       # Arrange
-       scanner = Scanner()
-       path = Path("movie.mkv")
-       
-       # Act
-       result = scanner.parse_video(path)
-       
-       # Assert
-       assert result.title == "movie"
-   ```
+### 示例
 
-3. **Mock external dependencies:**
-   ```python
-   @pytest.fixture
-   def mock_api():
-       with patch('requests.get') as mock_get:
-           mock_get.return_value.json.return_value = {...}
-           yield mock_get
-   ```
+```
+feat: 添加批量重命名功能
 
-4. **Use fixtures for setup:**
-   ```python
-   @pytest.fixture
-   def scanner():
-       return Scanner()
-   
-   def test_parse(scanner):
-       result = scanner.parse_video(Path("test.mkv"))
-       assert result is not None
-   ```
+实现了批量重命名媒体文件的功能，支持自定义命名模板。
 
-## Documentation
+相关问题: #123
+```
 
-### Updating Documentation
+## Pull Request 流程
 
-When adding features, update relevant docs:
+### 创建 PR 前的检查清单
 
-- **README.md**: Project overview
-- **API.md**: API reference
-- **ARCHITECTURE.md**: Design changes
-- **USAGE.md**: User-facing features
-- **Code docstrings**: Implementation details
+- [ ] 代码遵循项目的代码规范
+- [ ] 已运行 Black、Ruff 和 MyPy
+- [ ] 所有测试都通过
+- [ ] 为新功能添加了测试
+- [ ] 更新了相关文档
+- [ ] 提交信息遵循规范
 
-### Writing Documentation
-
-- Use clear, concise language
-- Include code examples
-- Document edge cases
-- Explain design decisions
+### PR 描述模板
 
 ```markdown
-## Feature Name
+## 描述
+简要描述此 PR 的目的和内容。
 
-Brief description of the feature.
+## 变更类型
+- [ ] 错误修复
+- [ ] 新功能
+- [ ] 破坏性变更
+- [ ] 文档更新
 
-### Usage
+## 测试
+描述如何测试这些更改。
 
-```python
-# Code example
+## 截图（如适用）
+添加相关截图。
+
+## 相关问题
+链接到相关的 GitHub Issues。
 ```
 
-### Configuration
+### 审查流程
 
-List configuration options.
+1. 创建 PR 后，维护者会审查您的代码
+2. 根据反馈进行必要的修改
+3. 所有检查通过后，PR 将被合并
 
-### Known Limitations
+## 开发技巧
 
-Document any limitations.
-```
-
-## Commit Messages
-
-### Format
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-### Type
-
-- **feat**: New feature
-- **fix**: Bug fix
-- **docs**: Documentation
-- **style**: Formatting, no code change
-- **refactor**: Code refactor
-- **perf**: Performance improvement
-- **test**: Test addition/update
-- **ci**: CI/CD changes
-- **chore**: Maintenance
-
-### Scope
-
-Component affected:
-- scanner
-- matching
-- ui
-- settings
-- poster
-- subtitle
-- nfo
-
-### Subject
-
-- Use imperative mood ("add" not "added")
-- Don't capitalize first letter
-- No period at the end
-- Limit to 50 characters
-
-### Body
-
-- Explain what and why, not how
-- Wrap at 72 characters
-- Use bullet points for multiple changes
-
-### Footer
-
-Reference issues:
-```
-Closes #123
-Relates to #456
-```
-
-### Examples
-
-```
-feat(scanner): add episode number parsing
-
-Implement regex patterns for common TV episode formats:
-- S01E01 format
-- 1x01 format
-- Full date-based naming
-
-Closes #42
-
----
-
-fix(matching): handle missing metadata gracefully
-
-Return empty match instead of raising exception when
-title is missing from API response.
-
-Relates to #78
-
----
-
-docs(api): update API reference for new endpoints
-
-Add documentation for the new poster_urls field in
-SearchResult and update examples.
-```
-
-## Pull Requests
-
-### Before Submitting
-
-1. **Check your changes:**
-   ```bash
-   pytest                    # All tests pass
-   black --check src/ tests/ # Formatting
-   ruff check src/ tests/    # Linting
-   mypy src/                 # Type checking
-   ```
-
-2. **Update documentation** if needed
-
-3. **Rebase on main:**
-   ```bash
-   git fetch upstream
-   git rebase upstream/main
-   ```
-
-4. **Push to your fork:**
-   ```bash
-   git push origin feature/my-feature-name
-   ```
-
-### PR Template
-
-```markdown
-## Description
-
-Brief description of changes.
-
-## Type of Change
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
-
-## Related Issues
-
-Closes #123
-
-## Testing
-
-Describe testing performed:
-- [ ] Unit tests added
-- [ ] Integration tests added
-- [ ] Manual testing completed
-
-## Checklist
-
-- [ ] Code follows style guidelines
-- [ ] Docstrings updated
-- [ ] Tests pass locally
-- [ ] No new warnings generated
-- [ ] Documentation updated
-```
-
-### PR Guidelines
-
-- Keep PRs focused and single-purpose
-- Include tests for all changes
-- Update docs as needed
-- Respond to review feedback
-- Squash commits before merge if requested
-
-## Reporting Issues
-
-### Before Reporting
-
-- Check existing issues
-- Review documentation
-- Try latest development version
-- Verify reproduction steps
-
-### Issue Template
-
-```markdown
-## Description
-
-Clear description of the issue.
-
-## Steps to Reproduce
-
-1. First step
-2. Second step
-3. ...
-
-## Expected Behavior
-
-What should happen.
-
-## Actual Behavior
-
-What actually happens.
-
-## Screenshots
-
-If applicable, include screenshots.
-
-## Environment
-
-- OS: [e.g., Ubuntu 22.04]
-- Python: [e.g., 3.10.5]
-- Version: [e.g., 0.1.0]
-
-## Logs
-
-Include relevant log excerpts from `~/.media-manager/logs/app.log`
-
-## Additional Context
-
-Any other relevant information.
-```
-
-### Issue Types
-
-- **Bug Report**: Describe unexpected behavior
-- **Feature Request**: Suggest new functionality
-- **Enhancement**: Improve existing feature
-- **Documentation**: Documentation issues
-- **Question**: How-to and usage questions
-
-## Development Tools
-
-### Setup IDE
-
-**VS Code:**
-```json
-{
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.python",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    }
-  },
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": false,
-  "python.linting.flake8Enabled": false
-}
-```
-
-**PyCharm:**
-- Enable Black formatter
-- Enable Ruff as external tool
-- Configure pytest as test runner
-
-### Pre-commit Hook
-
-Setup auto-formatting on commit:
+### 调试
 
 ```bash
-pip install pre-commit
-pre-commit install
-
-# Create .pre-commit-config.yaml
+# 启用调试日志
+export MEDIA_MANAGER_LOG_LEVEL=DEBUG
+python -m src.media_manager.main
 ```
 
-## Recognition
+### 性能分析
 
-Contributors will be recognized in:
-- README.md contributors section
-- Release notes
-- GitHub contributors graph
+```bash
+# 运行性能测试
+python tests/performance/runner.py
 
-## Questions?
+# 生成性能报告
+python tests/performance/runner.py --report
+```
 
-- Open an issue with [question] label
-- Check existing discussions
-- Read documentation thoroughly
+## 获取帮助
 
-## License
+如果您在贡献过程中遇到问题：
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+- 查看现有的 Issues 和 Discussions
+- 在 GitHub Discussions 中提问
+- 查看项目文档
+
+## 致谢
+
+感谢所有贡献者对项目的支持！您的贡献让这个项目变得更好。
 
 ---
 
-Thank you for contributing to 影藏·媒体管理器! 🎉
+再次感谢您的贡献！🎉

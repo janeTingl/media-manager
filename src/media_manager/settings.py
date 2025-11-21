@@ -8,15 +8,12 @@ from typing import Any, cast
 
 from PySide6.QtCore import QObject, QSettings, Signal
 
-from media_manager.i18n import (
-    DEFAULT_LANGUAGE,
-    SUPPORTED_LANGUAGES,
-    normalize_language_code,
-)
+from media_manager.i18n import DEFAULT_LANGUAGE
 
 DEFAULT_SETTINGS_PATH = Path.home() / ".media-manager" / "settings.json"
 
-SUPPORTED_UI_LANGUAGES: tuple[str, ...] = SUPPORTED_LANGUAGES
+# 固定使用简体中文
+SUPPORTED_UI_LANGUAGES: tuple[str, ...] = ("zh_CN",)
 
 LIBRARY_DOMAIN = "library_settings"
 PROVIDER_DOMAIN = "providers"
@@ -106,16 +103,11 @@ class SettingsManager(QObject):
             self._get_domain(domain)
 
     def _ensure_language_defaults(self) -> None:
-        """Normalize persisted UI/help locales so they match supported values."""
+        """确保语言设置默认为简体中文。"""
         ui_settings = self._get_domain(UI_DOMAIN)
-        language = normalize_language_code(ui_settings.get("language"))
-        ui_settings["language"] = language
-
-        help_locale = ui_settings.get("help_locale")
-        if help_locale is None:
-            ui_settings["help_locale"] = language
-        else:
-            ui_settings["help_locale"] = normalize_language_code(help_locale)
+        # 固定使用简体中文
+        ui_settings["language"] = DEFAULT_LANGUAGE
+        ui_settings["help_locale"] = DEFAULT_LANGUAGE
 
     def _migrate_legacy_schema(self) -> None:
         """Migrate legacy flat keys into the new domain-based schema."""
@@ -775,22 +767,22 @@ class SettingsManager(QObject):
         self.set_ui_layout(key, None)
 
     def get_language(self) -> str:
-        """Get the UI language/locale setting."""
-        value = self.get_ui_setting("language", DEFAULT_LANGUAGE)
-        return normalize_language_code(value)
+        """获取界面语言设置（固定为简体中文）。"""
+        return DEFAULT_LANGUAGE
 
     def set_language(self, language: str) -> None:
-        """Set the UI language/locale setting."""
-        self.set_ui_setting("language", normalize_language_code(language))
+        """设置界面语言（忽略，始终使用简体中文）。"""
+        # 固定使用简体中文，忽略传入的语言参数
+        pass
 
     def get_help_locale(self) -> str:
-        """Get the help documentation locale (falls back to UI language)."""
-        value = self.get_ui_setting("help_locale", self.get_language())
-        return normalize_language_code(value)
+        """获取帮助文档语言（固定为简体中文）。"""
+        return DEFAULT_LANGUAGE
 
     def set_help_locale(self, locale: str) -> None:
-        """Set the help documentation locale."""
-        self.set_ui_setting("help_locale", normalize_language_code(locale))
+        """设置帮助文档语言（忽略，始终使用简体中文）。"""
+        # 固定使用简体中文，忽略传入的语言参数
+        pass
 
     # ------------------------------------------------------------------
     # Advanced settings
