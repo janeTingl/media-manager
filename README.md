@@ -44,9 +44,42 @@ media-manager/
 
 ### Building and Distribution
 
-### Cross-Platform Builds
+#### 🚀 Automated Build System (Recommended)
 
-The project includes a unified build system that supports multiple platforms:
+The project includes a fully automated build and packaging system with Chinese UI support:
+
+**Quick Start:**
+```bash
+# Windows
+一键构建.bat
+
+# Linux/macOS
+./auto_build.sh
+
+# Or use Python directly
+python auto_build.py
+```
+
+**Features:**
+- ✅ Auto environment check and dependency installation
+- ✅ Auto compile Chinese translations
+- ✅ Auto build standalone executable
+- ✅ Auto create portable ZIP and installer
+- ✅ Complete logging and file integrity verification
+
+**Output:** `package/` directory contains all distribution files
+
+**Documentation:**
+- Quick Start: `BUILD_QUICK_START.md` (Start here!)
+- Detailed Guide: `AUTO_BUILD_README.md`
+- Full System Docs: `AUTO_BUILD_SYSTEM.md`
+- Chinese Guide: `构建指南.md`
+
+---
+
+#### Cross-Platform Builds (Alternative)
+
+The project also includes a unified build system that supports multiple platforms:
 
 ```bash
 # Build for current platform with packages
@@ -61,6 +94,7 @@ python build.py --platform macos --sign --package
 
 ### Platform-Specific Scripts
 
+- **Auto Build**: `auto_build.py` - Fully automated build system (recommended)
 - **Windows**: `build_windows.py` - Creates .exe with installer
 - **macOS**: `build_macos.py` - Creates .app bundle and .dmg
 - **Unified**: `build.py` - Cross-platform build interface
