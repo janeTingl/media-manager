@@ -137,7 +137,9 @@ class MainWindow(QMainWindow):
         # Create library tree widget
         self.library_tree_widget = LibraryTreeWidget()
         self.library_tree_widget.library_selected.connect(self._on_library_selected)
-        self.library_tree_widget.manage_libraries_requested.connect(self._on_manage_libraries)
+        self.library_tree_widget.manage_libraries_requested.connect(
+            self._on_manage_libraries
+        )
         return self.library_tree_widget
 
     def _create_content_area(self) -> QWidget:
@@ -150,13 +152,13 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
 
         # View mode buttons
-        self.grid_action = QAction(self.tr("Grid View"), self)
+        self.grid_action = QAction("网格视图", self)
         self.grid_action.setCheckable(True)
         self.grid_action.setChecked(True)
         self.grid_action.triggered.connect(lambda: self._switch_view("grid"))
         toolbar.addAction(self.grid_action)
 
-        self.table_action = QAction(self.tr("Table View"), self)
+        self.table_action = QAction("表格视图", self)
         self.table_action.setCheckable(True)
         self.table_action.triggered.connect(lambda: self._switch_view("table"))
         toolbar.addAction(self.table_action)
@@ -164,12 +166,12 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
 
         # Thumbnail size controls
-        toolbar.addWidget(QLabel(self.tr("Thumbnail Size:")))
+        toolbar.addWidget(QLabel("缩略图大小:"))
         thumbnail_sizes = [
-            ("small", self.tr("Small")),
-            ("medium", self.tr("Medium")),
-            ("large", self.tr("Large")),
-            ("extra_large", self.tr("Extra Large")),
+            ("small", "小"),
+            ("medium", "中"),
+            ("large", "大"),
+            ("extra_large", "超大"),
         ]
         for size_key, label in thumbnail_sizes:
             action = QAction(label, self)
@@ -181,18 +183,20 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
 
         # Filter controls
-        self.filter_all_action = QAction(self.tr("All"), self)
+        self.filter_all_action = QAction("全部", self)
         self.filter_all_action.setCheckable(True)
         self.filter_all_action.setChecked(True)
         self.filter_all_action.triggered.connect(lambda: self._set_media_filter("all"))
         toolbar.addAction(self.filter_all_action)
 
-        self.filter_movies_action = QAction(self.tr("Movies"), self)
+        self.filter_movies_action = QAction("电影", self)
         self.filter_movies_action.setCheckable(True)
-        self.filter_movies_action.triggered.connect(lambda: self._set_media_filter("movie"))
+        self.filter_movies_action.triggered.connect(
+            lambda: self._set_media_filter("movie")
+        )
         toolbar.addAction(self.filter_movies_action)
 
-        self.filter_tv_action = QAction(self.tr("TV Shows"), self)
+        self.filter_tv_action = QAction("电视剧", self)
         self.filter_tv_action.setCheckable(True)
         self.filter_tv_action.triggered.connect(lambda: self._set_media_filter("tv"))
         toolbar.addAction(self.filter_tv_action)
@@ -208,25 +212,26 @@ class MainWindow(QMainWindow):
 
         # Create stacked widget for view switching
         from PySide6.QtWidgets import QStackedWidget
+
         self.view_stack = QStackedWidget()
         self.view_stack.addWidget(self.media_grid_view)
         self.view_stack.addWidget(self.media_table_view)
         library_layout.addWidget(self.view_stack)
 
-        self.tab_widget.addTab(library_widget, self.tr("Library"))
+        self.tab_widget.addTab(library_widget, "媒体库")
 
         # Add dashboard tab
-        self.tab_widget.addTab(self.dashboard_widget, self.tr("Dashboard"))
+        self.tab_widget.addTab(self.dashboard_widget, "仪表板")
 
         # Add search tab
-        self.tab_widget.addTab(self.search_tab_widget, self.tr("Search"))
+        self.tab_widget.addTab(self.search_tab_widget, "搜索")
 
         # Add other tabs (keeping existing structure)
-        self.tab_widget.addTab(QListWidget(), self.tr("Recent"))
-        self.tab_widget.addTab(QListWidget(), self.tr("Favorites"))
+        self.tab_widget.addTab(QListWidget(), "最近")
+        self.tab_widget.addTab(QListWidget(), "收藏")
 
         # Add matching tab
-        self.tab_widget.addTab(self._create_matching_tab(), self.tr("Matching"))
+        self.tab_widget.addTab(self._create_matching_tab(), "匹配")
 
         layout.addWidget(self.tab_widget)
 
@@ -267,36 +272,54 @@ class MainWindow(QMainWindow):
         # Media grid view signals
         self.media_grid_view.item_selected.connect(self._on_item_selected)
         self.media_grid_view.item_activated.connect(self._on_item_activated)
-        self.media_grid_view.context_menu_requested.connect(self._on_context_menu_requested)
+        self.media_grid_view.context_menu_requested.connect(
+            self._on_context_menu_requested
+        )
 
         # Media table view signals
         self.media_table_view.item_selected.connect(self._on_item_selected)
         self.media_table_view.item_activated.connect(self._on_item_activated)
-        self.media_table_view.context_menu_requested.connect(self._on_context_menu_requested)
+        self.media_table_view.context_menu_requested.connect(
+            self._on_context_menu_requested
+        )
         self.media_table_view.selection_changed.connect(self._on_selection_changed)
 
         # Detail panel signals
         self.detail_panel.edit_requested.connect(self._on_edit_requested)
         self.detail_panel.play_requested.connect(self._on_play_requested)
-        self.detail_panel.poster_download_requested.connect(self._on_poster_download_requested)
+        self.detail_panel.poster_download_requested.connect(
+            self._on_poster_download_requested
+        )
 
         # Scan queue signals
-        self.scan_queue_widget.match_selected.connect(self.match_resolution_widget.set_match)
+        self.scan_queue_widget.match_selected.connect(
+            self.match_resolution_widget.set_match
+        )
         self.scan_queue_widget.start_matching.connect(self._on_start_matching)
         self.scan_queue_widget.clear_queue.connect(self._on_clear_queue)
         self.scan_queue_widget.finalize_requested.connect(self._on_finalize_requested)
 
         # Match resolution signals
-        self.match_resolution_widget.match_updated.connect(self.match_manager.update_match)
-        self.match_resolution_widget.search_requested.connect(self.match_manager.search_matches)
-        self.match_resolution_widget.poster_download_requested.connect(self._on_poster_download_requested)
+        self.match_resolution_widget.match_updated.connect(
+            self.match_manager.update_match
+        )
+        self.match_resolution_widget.search_requested.connect(
+            self.match_manager.search_matches
+        )
+        self.match_resolution_widget.poster_download_requested.connect(
+            self._on_poster_download_requested
+        )
 
         # Match manager signals
-        self.match_manager.match_selected.connect(self.match_resolution_widget.set_match)
+        self.match_manager.match_selected.connect(
+            self.match_resolution_widget.set_match
+        )
         self.match_manager.status_changed.connect(self.update_status)
 
         # Metadata editor signals
-        self.metadata_editor_widget.match_updated.connect(self.match_manager.update_match)
+        self.metadata_editor_widget.match_updated.connect(
+            self.match_manager.update_match
+        )
         self.metadata_editor_widget.validation_error.connect(self.update_status)
 
         # Search tab signals
@@ -304,8 +327,12 @@ class MainWindow(QMainWindow):
         self.search_tab_widget.item_activated.connect(self._on_item_activated)
 
         # Dashboard signals
-        self.match_manager.matches_updated.connect(self.dashboard_widget.on_data_mutation)
-        self.library_view_model.data_loaded.connect(self.dashboard_widget.on_data_mutation)
+        self.match_manager.matches_updated.connect(
+            self.dashboard_widget.on_data_mutation
+        )
+        self.library_view_model.data_loaded.connect(
+            self.dashboard_widget.on_data_mutation
+        )
 
     def _on_start_matching(self) -> None:
         """Handle start matching request."""
@@ -324,7 +351,7 @@ class MainWindow(QMainWindow):
         self.match_manager.clear_all()
         self.scan_queue_widget.clear_queue()
         self.match_resolution_widget.clear_match()
-        self.update_status(self.tr("Queue cleared"))
+        self.update_status("队列已清空")
 
     def _on_poster_download_requested(self, match, poster_types) -> None:
         """Handle poster download request."""
@@ -348,64 +375,62 @@ class MainWindow(QMainWindow):
         # Switch to matching tab
         self.tab_widget.setCurrentIndex(4)  # Matching tab index
 
-        self.update_status(
-            self.tr("Added {count} items to scan queue").format(count=len(metadata_list))
-        )
+        self.update_status(f"已添加 {len(metadata_list)} 项到扫描队列")
 
     def _setup_menu_bar(self) -> None:
         """Setup the application menu bar."""
         menubar = self.menuBar()
 
         # File menu
-        file_menu = menubar.addMenu(self.tr("&File"))
+        file_menu = menubar.addMenu("文件(&F)")
 
-        open_action = QAction(self.tr("&Open"), self)
+        open_action = QAction("打开(&O)", self)
         open_action.setShortcut("Ctrl+O")
         open_action.triggered.connect(self._on_open_file)
         file_menu.addAction(open_action)
 
         file_menu.addSeparator()
 
-        manage_libraries_action = QAction(self.tr("Manage &Libraries..."), self)
+        manage_libraries_action = QAction("管理媒体库(&L)...", self)
         manage_libraries_action.setShortcut("Ctrl+L")
         manage_libraries_action.triggered.connect(self._on_manage_libraries)
         file_menu.addAction(manage_libraries_action)
 
         file_menu.addSeparator()
 
-        exit_action = QAction(self.tr("E&xit"), self)
+        exit_action = QAction("退出(&X)", self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
         # Edit menu
-        edit_menu = menubar.addMenu(self.tr("&Edit"))
+        edit_menu = menubar.addMenu("编辑(&E)")
 
-        preferences_action = QAction(self.tr("&Preferences"), self)
+        preferences_action = QAction("首选项(&P)", self)
         preferences_action.triggered.connect(self._on_preferences)
         edit_menu.addAction(preferences_action)
 
-        batch_ops_action = QAction(self.tr("Batch &Operations..."), self)
+        batch_ops_action = QAction("批量操作(&O)...", self)
         batch_ops_action.setShortcut("Ctrl+B")
         batch_ops_action.triggered.connect(self._on_batch_operations)
         edit_menu.addAction(batch_ops_action)
 
         edit_menu.addSeparator()
 
-        export_action = QAction(self.tr("&Export Media..."), self)
+        export_action = QAction("导出媒体(&E)...", self)
         export_action.setShortcut("Ctrl+E")
         export_action.triggered.connect(self._on_export_media)
         edit_menu.addAction(export_action)
 
-        import_action = QAction(self.tr("&Import Media..."), self)
+        import_action = QAction("导入媒体(&I)...", self)
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self._on_import_media)
         edit_menu.addAction(import_action)
 
         # View menu
-        view_menu = menubar.addMenu(self.tr("&View"))
+        view_menu = menubar.addMenu("查看(&V)")
 
-        toggle_panes_action = QAction(self.tr("Toggle &Panes"), self)
+        toggle_panes_action = QAction("切换面板(&P)", self)
         toggle_panes_action.setShortcut("F9")
         toggle_panes_action.setCheckable(True)
         toggle_panes_action.setChecked(True)
@@ -413,20 +438,20 @@ class MainWindow(QMainWindow):
         view_menu.addAction(toggle_panes_action)
 
         # Help menu
-        help_menu = menubar.addMenu(self.tr("&Help"))
+        help_menu = menubar.addMenu("帮助(&H)")
 
-        help_center_action = QAction(self.tr("&Help Center"), self)
+        help_center_action = QAction("帮助中心(&H)", self)
         help_center_action.setShortcut("F1")
         help_center_action.triggered.connect(self._on_help_center)
         help_menu.addAction(help_center_action)
 
-        onboarding_action = QAction(self.tr("Show &Onboarding Wizard"), self)
+        onboarding_action = QAction("显示新手引导向导(&O)", self)
         onboarding_action.triggered.connect(self._on_show_onboarding)
         help_menu.addAction(onboarding_action)
 
         help_menu.addSeparator()
 
-        about_action = QAction(self.tr("&About"), self)
+        about_action = QAction("关于(&A)", self)
         about_action.triggered.connect(self._on_about)
         help_menu.addAction(about_action)
 
@@ -436,11 +461,11 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         # Status label
-        self.status_label = QLabel(self.tr("Ready"))
+        self.status_label = QLabel("就绪")
         self.status_bar.addWidget(self.status_label)
 
         # Permanent widgets
-        self.item_count_label = QLabel(self.tr("0 items"))
+        self.item_count_label = QLabel("0 项")
         self.status_bar.addPermanentWidget(self.item_count_label)
 
     def _load_window_state(self) -> None:
@@ -463,7 +488,9 @@ class MainWindow(QMainWindow):
         """Save window geometry and state."""
         geometry_bytes = self.saveGeometry()
         state_bytes = self.saveState()
-        self._settings.set_ui_layout("main_window.geometry", bytes(geometry_bytes).hex())
+        self._settings.set_ui_layout(
+            "main_window.geometry", bytes(geometry_bytes).hex()
+        )
         self._settings.set_ui_layout("main_window.state", bytes(state_bytes).hex())
         self._settings.save_settings()
 
@@ -471,19 +498,17 @@ class MainWindow(QMainWindow):
         """Handle file open action."""
         from PySide6.QtWidgets import QFileDialog
 
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open File", "", "All Files (*)"
-        )
+        file_path, _ = QFileDialog.getOpenFileName(self, "打开文件", "", "所有文件 (*)")
         if file_path:
             self.file_opened.emit(file_path)
-            self.status_label.setText(f"Opened: {file_path}")
+            self.status_label.setText(f"已打开: {file_path}")
 
     def _on_preferences(self) -> None:
         """Handle preferences action."""
         dialog = PreferencesWindow(self._settings, self)
         dialog.preferences_applied.connect(self.settings_changed.emit)
         dialog.exec()
-        self.status_label.setText("Preferences updated")
+        self.status_label.setText("首选项已更新")
 
     def _on_about(self) -> None:
         """Handle about action."""
@@ -491,13 +516,11 @@ class MainWindow(QMainWindow):
 
         QMessageBox.about(
             self,
-            self.tr("About {app}").format(app=APP_DISPLAY_NAME),
-            self.tr(
-                "{app} v{version}\n\n"
-                "A PySide6-based media management application.\n\n"
-                "Built with Python and PySide6.\n"
-                "Author: janeT"
-            ).format(app=APP_DISPLAY_NAME, version=__version__),
+            f"关于 {APP_DISPLAY_NAME}",
+            f"{APP_DISPLAY_NAME} v{__version__}\n\n"
+            f"基于 PySide6 的媒体管理应用程序。\n\n"
+            f"使用 Python 和 PySide6 构建。\n"
+            f"作者: janeT",
         )
 
     def _on_settings_manager_changed(self, key: str, value: object) -> None:
@@ -508,8 +531,8 @@ class MainWindow(QMainWindow):
     def _toggle_panes(self, checked: bool) -> None:
         """Toggle navigation and properties panes."""
         # This is a placeholder - actual implementation would hide/show panes
-        state_text = self.tr("shown") if checked else self.tr("hidden")
-        self.status_label.setText(self.tr("Panes {state}").format(state=state_text))
+        state_text = "已显示" if checked else "已隐藏"
+        self.status_label.setText(f"面板{state_text}")
 
     def update_status(self, message: str) -> None:
         """Update the status bar message."""
@@ -517,7 +540,7 @@ class MainWindow(QMainWindow):
 
     def update_item_count(self, count: int) -> None:
         """Update the item count in the status bar."""
-        self.item_count_label.setText(self.tr("{count} items").format(count=count))
+        self.item_count_label.setText(f"{count} 项")
 
     def keyPressEvent(self, event: Any) -> None:
         """Handle key press events for context-sensitive help."""
@@ -536,11 +559,11 @@ class MainWindow(QMainWindow):
         current_tab_index = self.tab_widget.currentIndex()
 
         topic_map = {
-            0: "library-setup",      # Library tab
-            1: "search",              # Search tab
-            2: "dashboard",           # Dashboard tab (fallback to welcome)
-            3: "metadata-editing",    # Metadata editor tab
-            4: "scanning",            # Matching/scan queue tab
+            0: "library-setup",  # Library tab
+            1: "search",  # Search tab
+            2: "dashboard",  # Dashboard tab (fallback to welcome)
+            3: "metadata-editing",  # Metadata editor tab
+            4: "scanning",  # Matching/scan queue tab
         }
 
         topic = topic_map.get(current_tab_index, "welcome")
@@ -578,7 +601,7 @@ class MainWindow(QMainWindow):
     def _on_data_loaded(self, count: int) -> None:
         """Handle data loaded from model."""
         self.update_item_count(count)
-        self.update_status(self.tr("Loaded {count} media items").format(count=count))
+        self.update_status(f"已加载 {count} 个媒体项")
 
     def _on_item_selected(self, item) -> None:
         """Handle item selection in any view."""
@@ -591,7 +614,7 @@ class MainWindow(QMainWindow):
         """Handle item activation (double click)."""
         if item:
             # Could play media, open details, or trigger matching
-            self.update_status(self.tr("Activated: {title}").format(title=item.title))
+            self.update_status(f"已激活: {item.title}")
 
     def _on_selection_changed(self, items: list) -> None:
         """Handle selection change in table view."""
@@ -606,21 +629,23 @@ class MainWindow(QMainWindow):
         menu = QMenu(self)
 
         if item:
-            view_action = menu.addAction(self.tr("View Details"))
-            view_action.triggered.connect(lambda: self.detail_panel.set_media_item(item))
+            view_action = menu.addAction("查看详情")
+            view_action.triggered.connect(
+                lambda: self.detail_panel.set_media_item(item)
+            )
 
-            edit_action = menu.addAction(self.tr("Edit Metadata"))
+            edit_action = menu.addAction("编辑元数据")
             edit_action.triggered.connect(lambda: self._on_edit_requested(item))
 
             menu.addSeparator()
 
-            play_action = menu.addAction(self.tr("Play"))
+            play_action = menu.addAction("播放")
             play_action.triggered.connect(lambda: self._on_play_requested(item))
 
             menu.addSeparator()
 
             # Quick tags submenu
-            tags_menu = menu.addMenu(self.tr("Quick Tags"))
+            tags_menu = menu.addMenu("快速标签")
             from .search_service import SearchService
 
             search_service = SearchService()
@@ -635,23 +660,25 @@ class MainWindow(QMainWindow):
                 )
 
             tags_menu.addSeparator()
-            new_tag_action = tags_menu.addAction(self.tr("+ Add New Tag..."))
-            new_tag_action.triggered.connect(lambda: self._create_new_tag_for_item(item))
+            new_tag_action = tags_menu.addAction("+ 添加新标签...")
+            new_tag_action.triggered.connect(
+                lambda: self._create_new_tag_for_item(item)
+            )
 
             # Toggle favorite
-            favorite_action = menu.addAction(self.tr("Toggle Favorite"))
+            favorite_action = menu.addAction("切换收藏")
             favorite_action.setCheckable(True)
             favorite_action.setChecked(len(item.favorites) > 0)
             favorite_action.triggered.connect(lambda: self._toggle_favorite(item))
 
             menu.addSeparator()
 
-        batch_action = menu.addAction(self.tr("Batch Operations..."))
+        batch_action = menu.addAction("批量操作...")
         batch_action.triggered.connect(self._on_batch_operations)
 
         menu.addSeparator()
 
-        refresh_action = menu.addAction(self.tr("Refresh"))
+        refresh_action = menu.addAction("刷新")
         refresh_action.triggered.connect(lambda: self.library_view_model.refresh())
 
         menu.exec(global_pos)
@@ -660,7 +687,7 @@ class MainWindow(QMainWindow):
         """Open the batch operations dialog for the current selection."""
         selected_items = self._get_selected_media_items()
         if not selected_items:
-            self.update_status(self.tr("Select one or more items to run batch operations"))
+            self.update_status("选择一个或多个项以运行批量操作")
             return
         dialog = BatchOperationsDialog(selected_items, self._settings, self)
         dialog.operations_completed.connect(self._on_batch_operations_completed)
@@ -678,9 +705,9 @@ class MainWindow(QMainWindow):
 
         wizard = ExportWizard(self)
         if wizard.exec():
-            self.update_status(self.tr("Export completed successfully"))
+            self.update_status("导出已成功完成")
         else:
-            self.update_status(self.tr("Export cancelled"))
+            self.update_status("导出已取消")
 
     def _on_import_media(self) -> None:
         """Handle import media action."""
@@ -688,11 +715,11 @@ class MainWindow(QMainWindow):
 
         wizard = ImportWizard(self)
         if wizard.exec():
-            self.update_status(self.tr("Import completed successfully"))
+            self.update_status("导入已成功完成")
             # Refresh the library view to show imported items
             self.library_view_model.refresh()
         else:
-            self.update_status(self.tr("Import cancelled"))
+            self.update_status("导入已取消")
 
     def _get_selected_media_items(self) -> list:
         """Return the currently selected media items from the active view."""
@@ -705,7 +732,7 @@ class MainWindow(QMainWindow):
 
         if item:
             # Load item into metadata editor
-            self.update_status(self.tr("Editing: {title}").format(title=item.title))
+            self.update_status(f"正在编辑: {item.title}")
             # Could switch to metadata editor tab or open dialog
 
     def _on_play_requested(self, item) -> None:
@@ -713,7 +740,7 @@ class MainWindow(QMainWindow):
         if item and item.files:
             # Play the first file
             file_path = item.files[0].path
-            self.update_status(self.tr("Playing: {path}").format(path=file_path))
+            self.update_status(f"正在播放: {file_path}")
             # Could use system default media player
 
     def _synchronize_selection(self, item) -> None:
@@ -733,6 +760,7 @@ class MainWindow(QMainWindow):
         """Check if this is the first run and show onboarding if needed."""
         if not self._settings.get("onboarding_completed", False):
             from PySide6.QtCore import QTimer
+
             # Delay showing wizard until after window is displayed
             QTimer.singleShot(500, self._show_onboarding_wizard)
 
@@ -779,12 +807,10 @@ class MainWindow(QMainWindow):
         self.scan_queue_widget.set_target_library(library.id)
 
         # Update status
-        media_type_text = media_type_filter.title() if media_type_filter != "all" else self.tr("All")
-        self.update_status(
-            self.tr("Viewing {library} - {media_type}").format(
-                library=library.name, media_type=media_type_text
-            )
+        media_type_text = (
+            media_type_filter.title() if media_type_filter != "all" else "全部"
         )
+        self.update_status(f"正在查看 {library.name} - {media_type_text}")
 
     def _on_manage_libraries(self) -> None:
         """Handle manage libraries request."""
@@ -797,9 +823,7 @@ class MainWindow(QMainWindow):
     def _on_library_created(self, library) -> None:
         """Handle library created event."""
         self.library_tree_widget.load_libraries()
-        self.update_status(
-            self.tr("Library '{name}' created").format(name=library.name)
-        )
+        self.update_status(f"媒体库 '{library.name}' 已创建")
 
     def _on_library_updated(self, library) -> None:
         """Handle library updated event."""
@@ -810,9 +834,7 @@ class MainWindow(QMainWindow):
             self._current_library = library
             self.library_view_model.load_data()
 
-        self.update_status(
-            self.tr("Library '{name}' updated").format(name=library.name)
-        )
+        self.update_status(f"媒体库 '{library.name}' 已更新")
 
     def _on_library_deleted(self, library_id: int) -> None:
         """Handle library deleted event."""
@@ -823,7 +845,7 @@ class MainWindow(QMainWindow):
             self._current_library = None
             self.library_view_model.clear_filters()
 
-        self.update_status(self.tr("Library deleted"))
+        self.update_status("媒体库已删除")
 
     def _restore_last_active_library(self) -> None:
         """Restore the last active library from settings."""
@@ -840,9 +862,7 @@ class MainWindow(QMainWindow):
             self.library_tree_widget.select_library(libraries[0].id)
         else:
             # No libraries exist, prompt to create one
-            self.update_status(
-                self.tr("No libraries found. Please create a library to get started.")
-            )
+            self.update_status("未找到媒体库。请创建一个媒体库以开始使用。")
 
     def get_current_library(self):
         """Get the currently selected library."""
@@ -855,29 +875,22 @@ class MainWindow(QMainWindow):
         try:
             with transactional_context() as uow:
                 from .persistence.models import MediaItem
+
                 repo = uow.get_repository(MediaItem)
                 current_item = repo.read(item.id)
 
                 if tag in current_item.tags:
                     current_item.tags.remove(tag)
-                    self.update_status(
-                        self.tr("Removed tag '{tag}' from {title}").format(
-                            tag=tag.name, title=item.title
-                        )
-                    )
+                    self.update_status(f"已从 {item.title} 移除标签 '{tag.name}'")
                 else:
                     current_item.tags.append(tag)
-                    self.update_status(
-                        self.tr("Added tag '{tag}' to {title}").format(
-                            tag=tag.name, title=item.title
-                        )
-                    )
+                    self.update_status(f"已将标签 '{tag.name}' 添加到 {item.title}")
 
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:
             self._logger.error(f"Error toggling tag: {e}")
-            self.update_status(self.tr("Error toggling tag: {error}").format(error=str(e)))
+            self.update_status(f"切换标签时出错: {str(e)}")
 
     def _create_new_tag_for_item(self, item) -> None:
         """Create a new tag and add it to the item."""
@@ -886,15 +899,14 @@ class MainWindow(QMainWindow):
         from .persistence.models import Tag
         from .persistence.repositories import transactional_context
 
-        tag_name, ok = QInputDialog.getText(
-            self, "New Tag", "Enter tag name:"
-        )
+        tag_name, ok = QInputDialog.getText(self, "新建标签", "输入标签名称:")
 
         if ok and tag_name.strip():
             try:
                 with transactional_context() as uow:
                     tag_repo = uow.get_repository(Tag)
                     from .persistence.models import MediaItem
+
                     media_repo = uow.get_repository(MediaItem)
 
                     existing = tag_repo.filter_by(name=tag_name.strip())
@@ -910,42 +922,34 @@ class MainWindow(QMainWindow):
 
                     uow.commit()
                     self.update_status(
-                        self.tr("Created and added tag '{tag}' to {title}").format(
-                            tag=tag.name, title=item.title
-                        )
+                        f"已创建并将标签 '{tag.name}' 添加到 {item.title}"
                     )
                     self.library_view_model.refresh()
             except Exception as e:
                 self._logger.error(f"Error creating tag: {e}")
-                self.update_status(self.tr("Error creating tag: {error}").format(error=str(e)))
+                self.update_status(f"创建标签时出错: {str(e)}")
 
     def _toggle_favorite(self, item) -> None:
         """Toggle favorite status for a media item."""
-        from .persistence.models import Favorite, MediaItem
+        from .persistence.models import Favorite
         from .persistence.repositories import transactional_context
 
         try:
             with transactional_context() as uow:
-                media_repo = uow.get_repository(MediaItem)
                 favorite_repo = uow.get_repository(Favorite)
 
-                current_item = media_repo.read(item.id)
                 existing_favorite = favorite_repo.filter_by(media_item_id=item.id)
 
                 if existing_favorite:
                     favorite_repo.delete(existing_favorite[0].id)
-                    self.update_status(
-                        self.tr("Removed {title} from favorites").format(title=item.title)
-                    )
+                    self.update_status(f"已从收藏中移除 {item.title}")
                 else:
                     favorite = Favorite(media_item_id=item.id)
                     favorite_repo.create(favorite)
-                    self.update_status(
-                        self.tr("Added {title} to favorites").format(title=item.title)
-                    )
+                    self.update_status(f"已将 {item.title} 添加到收藏")
 
                 uow.commit()
                 self.library_view_model.refresh()
         except Exception as e:
             self._logger.error(f"Error toggling favorite: {e}")
-            self.update_status(self.tr("Error toggling favorite: {error}").format(error=str(e)))
+            self.update_status(f"切换收藏时出错: {str(e)}")

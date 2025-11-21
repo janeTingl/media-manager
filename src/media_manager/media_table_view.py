@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
-from PySide6.QtCore import Qt, Signal, QItemSelectionModel
+from PySide6.QtCore import QItemSelectionModel, Qt, Signal
 from PySide6.QtWidgets import (
     QHeaderView,
     QMenu,
@@ -19,7 +17,7 @@ from .library_view_model import LibraryViewModel
 class MediaTableView(QTableView):
     """
     Table view for media items with detailed information display.
-    
+
     Provides a tabular layout with sortable columns and comprehensive metadata.
     Supports filtering, grouping, and advanced selection features.
     """
@@ -30,9 +28,9 @@ class MediaTableView(QTableView):
     selection_changed = Signal(list)  # List[MediaItem]
     context_menu_requested = Signal(object, object)  # MediaItem, global_pos
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        
+
         # Setup table properties
         self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QTableView.SelectionMode.ExtendedSelection)
@@ -40,42 +38,42 @@ class MediaTableView(QTableView):
         self.setAlternatingRowColors(True)
         self.setSortingEnabled(True)
         self.setWordWrap(False)
-        
+
         # Header setup
         header = self.horizontalHeader()
         header.setStretchLastSection(True)
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         header.setSortIndicatorShown(True)
-        
+
         # Vertical header
         vertical_header = self.verticalHeader()
         vertical_header.setVisible(False)
         vertical_header.setDefaultSectionSize(25)
-        
+
         # Appearance
         self.setShowGrid(True)
         self.setGridStyle(Qt.PenStyle.SolidLine)
         self.setCornerButtonEnabled(True)
-        
+
         # Column widths (will be adjusted after model is set)
         self._default_column_widths = {
             0: 300,  # Title
-            1: 80,   # Year
-            2: 80,   # Type
-            3: 80,   # Rating
+            1: 80,  # Year
+            2: 80,  # Type
+            3: 80,  # Rating
             4: 100,  # Duration
             5: 100,  # Added
             6: 100,  # Size
             7: 100,  # Status
         }
-        
+
         # Model
-        self._model: Optional[LibraryViewModel] = None
-        self._selection_model: Optional[QItemSelectionModel] = None
-        
+        self._model: LibraryViewModel | None = None
+        self._selection_model: QItemSelectionModel | None = None
+
         # Context menu
-        self._context_menu: Optional[QMenu] = None
-        
+        self._context_menu: QMenu | None = None
+
         # Connect signals
         self.clicked.connect(self._on_item_clicked)
         self.doubleClicked.connect(self._on_item_double_clicked)
@@ -86,10 +84,10 @@ class MediaTableView(QTableView):
         self._model = model
         self.setModel(model)
         self._refresh_selection_model_binding()
-        
+
         # Apply default column widths
         self._apply_column_widths()
-        
+
         # Set default sort
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
@@ -97,7 +95,9 @@ class MediaTableView(QTableView):
         """Ensure the Qt selection model signal is connected safely."""
         if self._selection_model is not None:
             try:
-                self._selection_model.selectionChanged.disconnect(self._on_selection_changed)
+                self._selection_model.selectionChanged.disconnect(
+                    self._on_selection_changed
+                )
             except (RuntimeError, TypeError):
                 pass
 
@@ -110,15 +110,15 @@ class MediaTableView(QTableView):
         """Get currently selected media items."""
         if not self._model:
             return []
-        
+
         selected_indices = self.selectedIndexes()
         return self._model.get_items_for_indices(selected_indices)
 
-    def get_current_item(self) -> Optional[object]:
+    def get_current_item(self) -> object | None:
         """Get the current media item."""
         if not self._model:
             return None
-        
+
         current_index = self.currentIndex()
         if current_index.isValid():
             return current_index.internalPointer()
@@ -136,7 +136,7 @@ class MediaTableView(QTableView):
     def resize_columns_to_contents(self) -> None:
         """Resize all columns to fit their contents."""
         self.resizeColumnsToContents()
-        
+
         # Apply minimum widths for better readability
         header = self.horizontalHeader()
         for column, min_width in self._default_column_widths.items():
@@ -156,10 +156,10 @@ class MediaTableView(QTableView):
         """Automatically fit columns within the available width."""
         header = self.horizontalHeader()
         total_width = self.viewport().width()
-        
+
         # Calculate proportional widths
         total_proportion = sum(self._default_column_widths.values())
-        
+
         for column, width in self._default_column_widths.items():
             proportion = width / total_proportion
             new_width = int(total_width * proportion)
@@ -168,34 +168,36 @@ class MediaTableView(QTableView):
     def create_context_menu(self) -> QMenu:
         """Create and return the context menu."""
         menu = QMenu(self)
-        
+
         # Add actions
-        view_action = menu.addAction("View Details")
+        view_action = menu.addAction("查看详情")
         view_action.triggered.connect(lambda: self._view_selected_items())
-        
+
         menu.addSeparator()
-        
-        edit_action = menu.addAction("Edit Metadata")
+
+        edit_action = menu.addAction("编辑元数据")
         edit_action.triggered.connect(lambda: self._edit_selected_items())
-        
+
         menu.addSeparator()
-        
-        select_action = menu.addAction("Select All")
+
+        select_action = menu.addAction("全选")
         select_action.setShortcut("Ctrl+A")
         select_action.triggered.connect(self.select_all)
-        
+
         menu.addSeparator()
-        
+
         # Column visibility submenu
-        columns_menu = menu.addMenu("Show Columns")
-        headers = ["Title", "Year", "Type", "Rating", "Duration", "Added", "Size", "Status"]
-        
+        columns_menu = menu.addMenu("显示列")
+        headers = ["标题", "年份", "类型", "评分", "时长", "添加日期", "大小", "状态"]
+
         for i, header_text in enumerate(headers):
             action = columns_menu.addAction(header_text)
             action.setCheckable(True)
             action.setChecked(not self.isColumnHidden(i))
-            action.triggered.connect(lambda checked, col=i: self.set_column_visibility(col, checked))
-        
+            action.triggered.connect(
+                lambda checked, col=i: self.set_column_visibility(col, checked)
+            )
+
         return menu
 
     def _apply_column_widths(self) -> None:
@@ -231,49 +233,57 @@ class MediaTableView(QTableView):
         """Show enhanced tooltip for media item."""
         if not item:
             return
-        
+
         # Build detailed tooltip content
         tooltip = f"<b>{item.title}</b><br>"
-        tooltip += f"<table border='0' cellpadding='2' cellspacing='0'>"
-        
+        tooltip += "<table border='0' cellpadding='2' cellspacing='0'>"
+
         if item.year:
             tooltip += f"<tr><td><b>Year:</b></td><td>{item.year}</td></tr>"
-        
+
         if item.media_type:
-            tooltip += f"<tr><td><b>Type:</b></td><td>{item.media_type.capitalize()}</td></tr>"
-        
+            tooltip += (
+                f"<tr><td><b>Type:</b></td><td>{item.media_type.capitalize()}</td></tr>"
+            )
+
         if item.rating:
             stars = "★" * int(item.rating) + "☆" * (10 - int(item.rating))
-            tooltip += f"<tr><td><b>Rating:</b></td><td>{item.rating:.1f}/10 {stars}</td></tr>"
-        
+            tooltip += (
+                f"<tr><td><b>Rating:</b></td><td>{item.rating:.1f}/10 {stars}</td></tr>"
+            )
+
         if item.runtime:
             hours = item.runtime // 60
             minutes = item.runtime % 60
             runtime_str = f"{hours}h {minutes}m" if hours else f"{minutes}m"
             tooltip += f"<tr><td><b>Duration:</b></td><td>{runtime_str}</td></tr>"
-        
+
         if item.created_at:
             tooltip += f"<tr><td><b>Added:</b></td><td>{item.created_at.strftime('%Y-%m-%d %H:%M')}</td></tr>"
-        
+
         # File information
         if item.files:
             total_size = sum(f.file_size for f in item.files if f.file_size)
             if total_size:
                 tooltip += f"<tr><td><b>Size:</b></td><td>{self._format_file_size(total_size)}</td></tr>"
-        
+
         tooltip += "</table>"
-        
+
         if item.description:
-            desc = item.description[:200] + "..." if len(item.description) > 200 else item.description
+            desc = (
+                item.description[:200] + "..."
+                if len(item.description) > 200
+                else item.description
+            )
             tooltip += f"<br><br><i>{desc}</i>"
-        
+
         # Show tooltip at cursor position
         pos = self.viewport().mapToGlobal(self.visualRect(index).bottomLeft())
         QToolTip.showText(pos, tooltip, self)
 
     def _format_file_size(self, size_bytes: int) -> str:
         """Format file size in human readable format."""
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"
             size_bytes /= 1024
@@ -300,7 +310,7 @@ class MediaTableView(QTableView):
             item = index.internalPointer()
             global_pos = event.globalPos()
             self.context_menu_requested.emit(item, global_pos)
-            
+
             # Show context menu
             if not self._context_menu:
                 self._context_menu = self.create_context_menu()

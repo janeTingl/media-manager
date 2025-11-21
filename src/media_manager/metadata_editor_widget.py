@@ -775,7 +775,7 @@ class MetadataEditorWidget(QWidget):
         self.collections_table.setItem(row, 0, item)
 
         # Remove button
-        remove_btn = QPushButton("Remove")
+        remove_btn = QPushButton("移除")
         remove_btn.clicked.connect(lambda: self.collections_table.removeRow(row))
         self.collections_table.setCellWidget(row, 1, remove_btn)
 
@@ -802,12 +802,12 @@ class MetadataEditorWidget(QWidget):
 
         # View details button
         if person_id:
-            view_btn = QPushButton("View")
+            view_btn = QPushButton("查看")
             view_btn.clicked.connect(lambda: self._on_view_person_clicked(person_id))
             self.cast_table.setCellWidget(row, 2, view_btn)
 
         # Remove button
-        remove_btn = QPushButton("Remove")
+        remove_btn = QPushButton("移除")
         remove_btn.clicked.connect(lambda: self.cast_table.removeRow(row))
         self.cast_table.setCellWidget(row, 3, remove_btn)
 
@@ -830,12 +830,12 @@ class MetadataEditorWidget(QWidget):
 
         # View details button
         if person_id:
-            view_btn = QPushButton("View")
+            view_btn = QPushButton("查看")
             view_btn.clicked.connect(lambda: self._on_view_person_clicked(person_id))
             self.crew_table.setCellWidget(row, 2, view_btn)
 
         # Remove button
-        remove_btn = QPushButton("Remove")
+        remove_btn = QPushButton("移除")
         remove_btn.clicked.connect(lambda: self.crew_table.removeRow(row))
         self.crew_table.setCellWidget(row, 3, remove_btn)
 
